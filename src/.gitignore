@@ -1,0 +1,7 @@
+*.o
+*.sh
+*.slice
+*.txt
+tags
+bench/
+macro-netlist

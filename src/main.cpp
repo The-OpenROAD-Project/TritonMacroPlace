@@ -24,6 +24,12 @@ void PrintAllSets(FILE* fp, CircuitInfo& cInfo,
 
 
 typedef vector<pair<Partition, Partition>> TwoPartitions;
+    
+// Partition Class --> macroStor's index.
+void UpdateMacroPartInfo( MacroCircuit& _mckt,
+    MacroNetlist::Partition& part, 
+        unordered_map< MacroNetlist::PartClass, vector<int>,
+        MyHash<MacroNetlist::PartClass>>& macroPartMap);
  
 int main(int argc, char** argv) {
   using namespace std;
@@ -116,11 +122,27 @@ int main(int argc, char** argv) {
 
       for(int i=0; i<eastStor.size(); i++) {
         for(int j=0; j<westStor.size(); j++) {
+
           vector<Partition> oneSet;
+
           oneSet.push_back( eastStor[i].first );
           oneSet.push_back( eastStor[i].second );
           oneSet.push_back( westStor[j].first );
           oneSet.push_back( westStor[j].second );
+      
+          // Fill Macro Netlist
+          // update macroPartMap
+          unordered_map< PartClass, vector<int>, 
+            MyHash<PartClass>> macroPartMap;
+          for(auto& curSet: oneSet) {
+            UpdateMacroPartInfo( _mckt, curSet, macroPartMap );
+          }
+
+          for(auto& curSet: oneSet) {
+            curSet.FillNetlistTable( _mckt, macroPartMap );
+          }
+           
+
           allSets.push_back( oneSet );
         }
       } 
@@ -390,14 +412,16 @@ vector<pair<Partition, Partition>> GetPart(
         lowerPart.macroStor.push_back( 
             Macro( curMacro.name, curMacro.type,
               curMacro.lx, curMacro.ly,
-              curMacro.w, curMacro.h )) ; 
+              curMacro.w, curMacro.h,
+              curMacro.ptr, curMacro.instPtr )) ; 
       }
       else if( chkArr[i] == 2 ) {
         upperPart.macroStor.push_back(
             Macro( curMacro.name, curMacro.type,
               (isHorizontal)? curMacro.lx-cutLine : curMacro.lx, 
               (isHorizontal)? curMacro.ly : curMacro.ly-cutLine,
-              curMacro.w, curMacro.h));
+              curMacro.w, curMacro.h,
+              curMacro.ptr, curMacro.instPtr));
       }
       else if( chkArr[i] == 3 ) {
         double centerPoint = 
@@ -409,7 +433,8 @@ vector<pair<Partition, Partition>> GetPart(
           lowerPart.macroStor.push_back( 
               Macro( curMacro.name, curMacro.type,
                 curMacro.lx, curMacro.ly,
-                curMacro.w, curMacro.h )) ; 
+                curMacro.w, curMacro.h,
+                curMacro.ptr, curMacro.instPtr )) ; 
         
         }
         else {
@@ -417,7 +442,8 @@ vector<pair<Partition, Partition>> GetPart(
               Macro( curMacro.name, curMacro.type,
                 (isHorizontal)? curMacro.lx-cutLine : curMacro.lx, 
                 (isHorizontal)? curMacro.ly : curMacro.ly-cutLine,
-                curMacro.w, curMacro.h));
+                curMacro.w, curMacro.h,
+                curMacro.ptr, curMacro.instPtr));
         }
       }
     }
@@ -442,13 +468,14 @@ vector<pair<Partition, Partition>> GetPart(
       continue;
     }
 
-    if( partition.partClass == N || 
-        partition.partClass == E ||
-        partition.partClass == W ||
-        partition.partClass == S ) {
-      lowerPart.FillNetlistTable();
-      upperPart.FillNetlistTable();
-    }
+// Previous code
+//    if( partition.partClass == N || 
+//        partition.partClass == E ||
+//        partition.partClass == W ||
+//        partition.partClass == S ) {
+//      lowerPart.FillNetlistTable();
+//      upperPart.FillNetlistTable();
+//    }
     
     pair<Partition, Partition> curPart( lowerPart, upperPart );
     ret.push_back( curPart );
@@ -533,4 +560,253 @@ void PrintAllSets(FILE* fp, CircuitInfo& cInfo,
   }
   fflush(fp);
   cout << "Done!" << endl;
+}
+   
+
+#define EAST_IDX (macroStor.size())
+#define WEST_IDX (macroStor.size()+1)
+#define NORTH_IDX (macroStor.size()+2)
+#define SOUTH_IDX (macroStor.size()+3)
+
+#define GLOBAL_EAST_IDX (_mckt.macroStor.size())
+#define GLOBAL_WEST_IDX (_mckt.macroStor.size()+1)
+#define GLOBAL_NORTH_IDX (_mckt.macroStor.size()+2)
+#define GLOBAL_SOUTH_IDX (_mckt.macroStor.size()+3)
+
+void Partition::FillNetlistTable(MacroCircuit& _mckt, 
+    unordered_map<PartClass, vector<int>, MyHash<PartClass>>& macroPartMap ) {
+  tableCnt = (macroStor.size()+4)*(macroStor.size()+4);
+  netTable = new double[tableCnt];
+  for(int i=0; i<tableCnt; i++) {
+    netTable[i] = 0.0f;
+  }
+  // FillNetlistTableIncr();
+  // FillNetlistTableDesc();
+  
+  auto mpPtr = macroPartMap.find( partClass );
+  if( mpPtr == macroPartMap.end()) {
+    cout << "ERROR: Partition: " << partClass << " not exists MacroCell (macroPartMap)" << endl;
+    exit(1);
+  }
+
+  // row
+  for(int i=0; i<macroStor.size()+4; i++) {
+    // column
+    for(int j=0; j<macroStor.size()+4; j++) {
+      if( i == j ) {
+        continue;
+      }
+
+      // from: macro case
+      if ( i < macroStor.size() ) {
+        auto mPtr = _mckt.macroNameMap.find( macroStor[i].name );
+        if( mPtr == _mckt.macroNameMap.end()) {
+          cout << "ERROR on macroNameMap: " << endl;
+          exit(1);
+        }
+        int globalIdx1 = mPtr->second;
+
+        // to macro case
+        if( j < macroStor.size() ) {
+          auto mPtr = _mckt.macroNameMap.find( macroStor[j].name );
+          if( mPtr == _mckt.macroNameMap.end()) {
+            cout << "ERROR on macroNameMap: " << endl;
+            exit(1);
+          }
+          int globalIdx2 = mPtr->second;
+          netTable[ i*(macroStor.size()+4) + j ] = _mckt.macroWeight[globalIdx1][globalIdx2];
+        }
+        // to IO-west case
+        else if( j == WEST_IDX ) {
+          int westSum = _mckt.macroWeight[globalIdx1][GLOBAL_WEST_IDX];
+
+          if( partClass == PartClass::NE ) {
+            auto mpPtr = macroPartMap.find( PartClass::NW );
+            for(auto& curMacroIdx : mpPtr->second) {
+              int curGlobalIdx = _mckt.macroNameMap[_mckt.macroStor[curMacroIdx].name];
+              westSum += _mckt.macroWeight[globalIdx1][curGlobalIdx]; 
+            }
+          }
+          if( partClass == PartClass::SE ) {
+            auto mpPtr = macroPartMap.find( PartClass::SW );
+            for(auto& curMacroIdx : mpPtr->second) {
+              int curGlobalIdx = _mckt.macroNameMap[_mckt.macroStor[curMacroIdx].name];
+              westSum += _mckt.macroWeight[globalIdx1][curGlobalIdx]; 
+            }
+          }
+          netTable[ i*(macroStor.size()+4) + j] = westSum;
+        }
+        else if (j == EAST_IDX ) {
+          int eastSum = _mckt.macroWeight[globalIdx1][GLOBAL_EAST_IDX];
+
+          if( partClass == PartClass::NW ) {
+            auto mpPtr = macroPartMap.find( PartClass::NE );
+            for(auto& curMacroIdx : mpPtr->second) {
+              int curGlobalIdx = _mckt.macroNameMap[_mckt.macroStor[curMacroIdx].name];
+              eastSum += _mckt.macroWeight[globalIdx1][curGlobalIdx]; 
+            }
+          }
+          if( partClass == PartClass::SW ) {
+            auto mpPtr = macroPartMap.find( PartClass::SE );
+            for(auto& curMacroIdx : mpPtr->second) {
+              int curGlobalIdx = _mckt.macroNameMap[_mckt.macroStor[curMacroIdx].name];
+              eastSum += _mckt.macroWeight[globalIdx1][curGlobalIdx]; 
+            }
+          }
+          netTable[ i*(macroStor.size()+4) + j] = eastSum ;
+        }
+        else if (j == NORTH_IDX ) { 
+          int northSum = _mckt.macroWeight[globalIdx1][GLOBAL_NORTH_IDX];
+
+          if( partClass == PartClass::SE ) {
+            auto mpPtr = macroPartMap.find( PartClass::NE );
+            for(auto& curMacroIdx : mpPtr->second) {
+              int curGlobalIdx = _mckt.macroNameMap[_mckt.macroStor[curMacroIdx].name];
+              northSum += _mckt.macroWeight[globalIdx1][curGlobalIdx]; 
+            }
+          }
+          if( partClass == PartClass::SW ) {
+            auto mpPtr = macroPartMap.find( PartClass::NW );
+            for(auto& curMacroIdx : mpPtr->second) {
+              int curGlobalIdx = _mckt.macroNameMap[_mckt.macroStor[curMacroIdx].name];
+              northSum += _mckt.macroWeight[globalIdx1][curGlobalIdx]; 
+            }
+          }
+          netTable[ i*(macroStor.size()+4) + j] = northSum ;
+        }
+        else if (j == SOUTH_IDX ) {
+          int southSum = _mckt.macroWeight[globalIdx1][GLOBAL_SOUTH_IDX];
+
+          if( partClass == PartClass::NE ) {
+            auto mpPtr = macroPartMap.find( PartClass::SE );
+            for(auto& curMacroIdx : mpPtr->second) {
+              int curGlobalIdx = _mckt.macroNameMap[_mckt.macroStor[curMacroIdx].name];
+              southSum += _mckt.macroWeight[globalIdx1][curGlobalIdx]; 
+            }
+          }
+          if( partClass == PartClass::NW ) {
+            auto mpPtr = macroPartMap.find( PartClass::SW );
+            for(auto& curMacroIdx : mpPtr->second) {
+              int curGlobalIdx = _mckt.macroNameMap[_mckt.macroStor[curMacroIdx].name];
+              southSum += _mckt.macroWeight[globalIdx1][curGlobalIdx]; 
+            }
+          }
+          netTable[ i*(macroStor.size()+4) + j] = southSum;
+        }
+      }
+      //from IO
+      else if( i == WEST_IDX ){
+        // to Macro
+        if( j < macroStor.size() ) {
+          auto mPtr = _mckt.macroNameMap.find( macroStor[j].name );
+          if( mPtr == _mckt.macroNameMap.end()) {
+            cout << "ERROR on macroNameMap: " << endl;
+            exit(1);
+          }
+          int globalIdx2 = mPtr->second;
+          netTable[ i*(macroStor.size()+4) + j] = 
+            _mckt.macroWeight[GLOBAL_WEST_IDX][globalIdx2];
+        }
+      }
+      else if( i == EAST_IDX) {
+        // to Macro
+        if( j < macroStor.size() ) {
+          auto mPtr = _mckt.macroNameMap.find( macroStor[j].name );
+          if( mPtr == _mckt.macroNameMap.end()) {
+            cout << "ERROR on macroNameMap: " << endl;
+            exit(1);
+          }
+          int globalIdx2 = mPtr->second;
+          netTable[ i*(macroStor.size()+4) + j] = 
+            _mckt.macroWeight[GLOBAL_EAST_IDX][globalIdx2];
+        }
+      }
+      else if(i == NORTH_IDX) {
+        // to Macro
+        if( j < macroStor.size() ) {
+          auto mPtr = _mckt.macroNameMap.find( macroStor[j].name );
+          if( mPtr == _mckt.macroNameMap.end()) {
+            cout << "ERROR on macroNameMap: " << endl;
+            exit(1);
+          }
+          int globalIdx2 = mPtr->second;
+          netTable[ i*(macroStor.size()+4) + j] = 
+            _mckt.macroWeight[GLOBAL_NORTH_IDX][globalIdx2];
+        }
+      }
+      else if(i == SOUTH_IDX ) {
+        // to Macro
+        if( j < macroStor.size() ) {
+          auto mPtr = _mckt.macroNameMap.find( macroStor[j].name );
+          if( mPtr == _mckt.macroNameMap.end()) {
+            cout << "ERROR on macroNameMap: " << endl;
+            exit(1);
+          }
+          int globalIdx2 = mPtr->second;
+          netTable[ i*(macroStor.size()+4) + j] = 
+            _mckt.macroWeight[GLOBAL_SOUTH_IDX][globalIdx2];
+        }
+      }
+    }
+  }
+}
+
+void Partition::FillNetlistTableIncr() {
+  //      if( macroStor.size() <= 1 ) {
+  //        return;
+  //      }
+
+  for(int i=0; i<macroStor.size()+4; i++) {
+    for(int j=0; j<macroStor.size()+4; j++) {
+      double val = (i + j + 1)* 100;
+      if( i == j || 
+          i >= macroStor.size() && j >= macroStor.size() ) {
+        val = 0;
+      }
+      netTable[ i*(macroStor.size()+4) + j] = val;
+    }
+  } 
+}
+    
+void Partition::FillNetlistTableDesc() {
+  //      if( macroStor.size() <= 1 ) {
+  //        return;
+  //      }
+
+  for(int i=0; i<macroStor.size()+4; i++) {
+    for(int j=0; j<macroStor.size()+4; j++) {
+      double val = (2*macroStor.size()+8-(i+j)) * 100;
+      if( i == j || 
+          i >= macroStor.size() && j >= macroStor.size() ) {
+        val = 0;
+      }
+      netTable[ i*(macroStor.size()+4) + j] = val;
+    }
+  } 
+}
+
+void UpdateMacroPartInfo( 
+    MacroCircuit& _mckt,
+    MacroNetlist::Partition& part, 
+    unordered_map<MacroNetlist::PartClass, vector<int>, 
+    MyHash<MacroNetlist::PartClass>>& macroPartMap ) {
+
+  auto mpPtr = macroPartMap.find( part.partClass );
+  if( mpPtr == macroPartMap.end() ) {
+    vector<int> curMacroStor;
+    // convert macro Information into macroIdx
+    for(auto& curMacro: part.macroStor) {
+      auto miPtr = _mckt.macroInstMap.find( curMacro.instPtr );
+      if( miPtr == _mckt.macroInstMap.end() ) {
+        cout << "ERROR: macro " << curMacro.name << " not exists in macroInstMap: " << curMacro.instPtr << endl;
+        exit(1);
+      }
+      curMacroStor.push_back( miPtr->second) ;
+    }
+    macroPartMap[ part.partClass ] = curMacroStor; 
+  }
+  else {
+    cout << "ERROR: Partition- " << part.partClass << " already updated (UpdateMacroPartInfo)" << endl; 
+    exit(1);
+  }
 }

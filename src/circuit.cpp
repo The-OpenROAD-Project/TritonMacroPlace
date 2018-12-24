@@ -19,6 +19,8 @@ _ckt(ckt), _env(env), _cinfo(cinfo) {
 
 using namespace sta;
 using MacroNetlist::VertexClass;
+using MacroNetlist::PinGroup;
+using MacroNetlist::PinGroupClass;
 using std::cout;
 using std::endl;
 using std::make_pair;
@@ -76,7 +78,7 @@ void MacroCircuit::FillMacroStor() {
         MacroNetlist::Macro( curComp.id(), curComp.name(), 
           1.0*curComp.placementX()/defScale, 
           1.0*curComp.placementY()/defScale, 
-          curMacro.sizeX(), curMacro.sizeY())); 
+          curMacro.sizeX(), curMacro.sizeY(), NULL, NULL)); 
 
 //    cout << curComp.id() << " " 
 //      << 1.0*curComp.placementX()/defScale << " " 
@@ -137,8 +139,8 @@ void MacroCircuit::FillPinGroup(){
   pinGroupStor.resize(4);
 
   // save PG-Class info in below
-  pinGroupStor[(int)PinGroupClass::West].pinGroupClass = PinGroupClass::West;
   pinGroupStor[(int)PinGroupClass::East].pinGroupClass = PinGroupClass::East;
+  pinGroupStor[(int)PinGroupClass::West].pinGroupClass = PinGroupClass::West;
   pinGroupStor[(int)PinGroupClass::North].pinGroupClass = PinGroupClass::North;
   pinGroupStor[(int)PinGroupClass::South].pinGroupClass = PinGroupClass::South;
 
@@ -162,8 +164,8 @@ void MacroCircuit::FillPinGroup(){
   }
 
   cout << endl << "Pin Group Classification Info: " << endl;
-  cout << "West: " << pinGroupStor[(int)PinGroupClass::West].pins.size() << endl;
   cout << "East: " << pinGroupStor[(int)PinGroupClass::East].pins.size() << endl;
+  cout << "West: " << pinGroupStor[(int)PinGroupClass::West].pins.size() << endl;
   cout << "North: " << pinGroupStor[(int)PinGroupClass::North].pins.size() << endl;
   cout << "South: " << pinGroupStor[(int)PinGroupClass::South].pins.size() << endl;
   
@@ -204,9 +206,10 @@ MacroNetlist::Vertex* MacroCircuit::GetVertex( sta::Pin *pin) {
   pair<void*, VertexClass> vertInfo = GetPtrClassPair( pin);
   auto vertPtr = pinInstVertexMap.find(vertInfo.first);
   if( vertPtr == pinInstVertexMap.end() )  {
-    cout << "ERROR: " << _sta->network()->name(pin) << " not exists in pinInstVertexMap" << endl;
-    exit(1);
+    cout << "WARNING: " << _sta->network()->name(pin) << " not exists in pinInstVertexMap" << endl;
+    return NULL;
   }
+//  cout << "GetVertex: " << &vertexStor[vertPtr->second] << endl;;
   return &vertexStor[vertPtr->second];
 }
 
@@ -230,26 +233,32 @@ void MacroCircuit::FillVertexEdge() {
   for(int i=1; i<=numVertex; i++) {
     Vertex* vert = _sta->graph()->vertex(i); 
     Pin* pin = vert->pin();
+    
+//    cout << "vert: " << _sta->graph()->name(vert) << endl;
+//    cout << "pin: " << _sta->network()->name(pin) << endl ;
 
     bool isTopPin = _sta->network()->isTopLevelPort(pin);
     if( isTopPin ) {
       continue;
     }
-    // skip for below two cases; Already visited, or non-FF cells
+//    cout << "passed level1 "<< endl;
+
+    // skip for below two cases; non-FF cells
     Instance* inst = _sta->network()->instance(pin);
-    if( instMap.find(inst ) != instMap.end()) {
-      continue;
-    }
-    instMap.insert( inst );
-
-
     LibertyCell* libCell = _sta->network()->libertyCell(inst);
     if( !libCell -> hasSequentials() && macroInstMap.find(inst) == macroInstMap.end() ) {
       continue;
     }  
     
-    cout << "vert: " << _sta->network()->name(inst) << endl;
-    cout << "pin: " << _sta->network()->name(pin) << endl << endl;
+//    cout << "passed level2 "<< endl << endl;
+    
+    // skip for below two cases; non visited
+    if( instMap.find(inst ) != instMap.end()) {
+      continue;
+    }
+    instMap.insert( inst );
+
+//    cout << "passed level3 "<< endl;
 
     pair<void*, VertexClass> vertex = GetPtrClassPair( pin );
     auto vertPtr = pinInstVertexMap.find( vertex.first );
@@ -268,6 +277,7 @@ void MacroCircuit::FillVertexEdge() {
   cout << "Vertex Building: " << elapsed.count()<< "s" << endl;
 
 
+  
   startTime = std::chrono::system_clock::now();
 
   // Query Get_FanIn/ Get_FainOut
@@ -276,6 +286,12 @@ void MacroCircuit::FillVertexEdge() {
     Pin* pin = vert->pin();
     
     bool isTopPin = _sta->network()->isTopLevelPort(pin);
+    // !!!!!!!!!!!!!!!!
+    // Future support of OpenSTA
+    if( isTopPin ) {
+      continue;
+    }
+
     // Skip For Non-FF Cells
     if( !isTopPin ) {
       Instance* inst = _sta->network()->instance(pin);
@@ -287,7 +303,7 @@ void MacroCircuit::FillVertexEdge() {
     }
 
     //skip for clock pin
-    if( _sta->network()->isCheckClk(pin) ) {
+    if( _sta->network()->isCheckClk(pin) || _sta->sdc()->isClock(pin) ) {
       continue;
     }
 
@@ -302,9 +318,8 @@ void MacroCircuit::FillVertexEdge() {
 //     bool thru_disabled,
 //     bool thru_constants)
 //{
-   
 
-    cout << "[" << _sta->network()->name(pin) << "]" << endl;
+//    cout << "[" << _sta->network()->name(pin) << "]" << endl;
     
     PinSeq pinStor;
     pinStor.push_back(pin);
@@ -312,15 +327,14 @@ void MacroCircuit::FillVertexEdge() {
     PortDirection* dir = _sta->network()->direction(pin);
     MacroNetlist::Vertex* curVertex = GetVertex(pin);
 
-
-
+    // Query for get_fanin/get_fanout
     if( dir->isAnyOutput() ) {
-      cout << "FanOut!" << endl;
+//      cout << "FanOut!" << endl;
       PinSet *fanout = _sta->findFanoutPins(&pinStor, false, true ,
           500, 700,
           false, false);
       for(auto& adjPin: *fanout) {
-        cout << _sta->network()->name(pin) << " -> " << _sta->network()->name(adjPin) << endl;
+//        cout << _sta->network()->name(pin) << " -> " << _sta->network()->name(adjPin) << endl;
         // Skip For Non-FF Pin 
         if( !_sta->network()->isTopLevelPort(adjPin) ) {
           Instance* inst = _sta->network()->instance(adjPin);
@@ -334,6 +348,12 @@ void MacroCircuit::FillVertexEdge() {
         if( adjVertex == curVertex ) {
           continue;
         }
+
+        //skip for clock pin
+        if( _sta->network()->isCheckClk(adjPin) || _sta->sdc()->isClock(adjPin) ) {
+          continue;
+        }
+
 //        cout << _sta->network()->name(pin) << " -> " << _sta->network()->name(adjPin) << endl;
 
         auto mapPtr = vertexPairEdgeMap.find( make_pair(curVertex , adjVertex) );
@@ -342,8 +362,8 @@ void MacroCircuit::FillVertexEdge() {
           edgeStor.push_back( MacroNetlist::Edge(curVertex, adjVertex, 1) );
 
           // Vertex Update
-          curVertex->to.push_back(&edgeStor[edgeStor.size()-1]);
-          adjVertex->from.push_back(&edgeStor[edgeStor.size()-1]);
+          curVertex->to.push_back(edgeStor.size()-1);
+          adjVertex->from.push_back(edgeStor.size()-1);
         }
         else {
           // increase the edge weight
@@ -352,12 +372,12 @@ void MacroCircuit::FillVertexEdge() {
       }
     }
     else {
-      cout << "FanIn!" << endl;
+//      cout << "FanIn!" << endl;
       PinSet *fanin = _sta->findFaninPins(&pinStor, false, true ,
           500, 700,
           false, false);
       for(auto& adjPin: *fanin) {
-        cout <<  _sta->network()->name(adjPin) << " -> " << _sta->network()->name(pin) << endl;
+//        cout <<  _sta->network()->name(adjPin) << " -> " << _sta->network()->name(pin) << endl;
         // Skip For Non-FF Pin 
         if( !_sta->network()->isTopLevelPort(adjPin) ) {
           Instance* inst = _sta->network()->instance(adjPin);
@@ -371,6 +391,12 @@ void MacroCircuit::FillVertexEdge() {
         if( adjVertex == curVertex ) {
           continue;
         }
+        
+        //skip for clock pin
+        if( _sta->network()->isCheckClk(adjPin) || _sta->sdc()->isClock(adjPin) ) {
+          continue;
+        }
+
 //        cout << _sta->network()->name(adjPin) << " -> " << _sta->network()->name(pin) << endl;
 
         auto mapPtr = vertexPairEdgeMap.find( make_pair(adjVertex, curVertex) );
@@ -379,8 +405,8 @@ void MacroCircuit::FillVertexEdge() {
           edgeStor.push_back( MacroNetlist::Edge(adjVertex, curVertex, 1) );
 
           // Vertex Update
-          curVertex->from.push_back(&edgeStor[edgeStor.size()-1]);
-          adjVertex->to.push_back(&edgeStor[edgeStor.size()-1]);
+          curVertex->from.push_back(edgeStor.size()-1);
+          adjVertex->to.push_back(edgeStor.size()-1);
         }
         else {
           // increase the edge weight
@@ -391,172 +417,259 @@ void MacroCircuit::FillVertexEdge() {
   }
   endTime = std::chrono::system_clock::now();
   elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
-  cout << "Edge Building: " << elapsed.count() << "s" << endl;
-
-
-  cout << "Sequential Graph Building is Done!" << endl;
-  cout << "Vertex: " << vertexStor.size() << endl;
-  cout << "Edge: " << edgeStor.size() << endl;
+  cout << "Edge Building for Non-FF: " << elapsed.count() << "s" << endl;
 
 
 
+  startTime = std::chrono::system_clock::now();
 
-  /*
-   * Previous Version
-
-  Corner* corner = _sta->corners()->defaultCorner();
-
-  cout << -INF << " " << INF << endl;
-  PathEndSeq *ends = _sta->findPathEnds(NULL, NULL, NULL, //from, thru, to
-      corner, MinMaxAll::max(), // corner, delay_min_max
-      INT_MAX, 1, false, //group_count, endpoint_count, unique_pins
-      -INF, INF, //slack_min, slack_max
-      true, NULL, //sort_by_slack, group_name
-      true, false, // setup, hold
-      true, true, // recovery, removal
-      true, false); // clk gating setup, hold
-
-  if (ends->empty()) cout << "NO PATH !" << endl;
-
-  PathEndSeq::Iterator tmpIter(ends), pathEndIter(ends), pathEndIter2(ends);
-  int edgeCnt = 0;
-  while( tmpIter.hasNext() ) {
-    tmpIter.next();
-    edgeCnt ++; 
-  }
-  
-  cout << "Total Possible Path: " << edgeCnt << endl;
-
-  // below is for generating vertex 
-  while( pathEndIter.hasNext()) {
-    PathEnd *end = pathEndIter.next();
-    //TimingPathPrint( _sta, end );
-
-    PathExpanded expanded(end->path(), _sta);
-   
-    // get Un-clockpin 
-    int startIdx = 0;
-    PathRef *startPath = expanded.path(startIdx);
-    while( startIdx < expanded.size()-1 && startPath->isClock(_sta->search())) {
-      startPath = expanded.path(++startIdx);
-    }
-
-    PathRef *endPath = expanded.path(expanded.size()-1);
-
-    sta::Vertex *startVert = startPath->vertex(_sta);
-    sta::Vertex *endVert = endPath->vertex(_sta);
-
-    Pin* startPin = startVert->pin();
-    Pin* endPin = endVert->pin();
-
-    Instance* startInst = _sta->network()->instance(startPin);
-    Instance* endInst = _sta->network()->instance(endPin);
-
-    void* startPtr = (_sta->network()->isTopLevelPort(startPin))? 
-      (void*) startPin : (void*) startInst;
-    void* endPtr = (_sta->network()->isTopLevelPort(endPin))?
-      (void*) endPin : (void*) endInst;
-
-    // below two var is only used when each is not the topLevelPorts
-    string startName = _sta->network()->name(startInst);
-    string endName = _sta->network()->name(endInst);
-
-    ReplaceStringInPlace( startName, "\\[",  "[" );
-    ReplaceStringInPlace( startName, "\\]",  "]" );
-    ReplaceStringInPlace( startName, "\\/",  "/" );
+  // Query find_timing_paths 
+  for(int i=1; i<=numVertex; i++) {
+    Vertex* vert = _sta->graph()->vertex(i);
+    Pin* pin = vert->pin();
     
-    ReplaceStringInPlace( endName, "\\[",  "[" );
-    ReplaceStringInPlace( endName, "\\]",  "]" );
-    ReplaceStringInPlace( endName, "\\/",  "/" );
-
-    VertexClass startClass = (_sta->network()->isTopLevelPort(startPin))?
-      VertexClass::pin : 
-      (macroNameMap.find( startName ) != macroNameMap.end())? 
-        VertexClass::instMacro : VertexClass::instOther;
-    VertexClass endClass = (_sta->network()->isTopLevelPort(endPin))?
-      VertexClass::pin : 
-      (macroNameMap.find( endName ) != macroNameMap.end())? 
-        VertexClass::instMacro : VertexClass::instOther;
-
-//    if( startClass == VertexClass::instMacro ) { 
-//      cout << _sta->network()->name(startInst) << endl;
-//    }
-
-    // Vertex Update
-    auto mapPtr = pinInstVertexMap.find(startPtr);
-    if( mapPtr == pinInstVertexMap.end()) {
-      pinInstVertexMap[ startPtr ] = vertexStor.size();
-      vertexStor.push_back( MacroNetlist::Vertex(startPtr, startClass) );
-    }
-    
-    mapPtr = pinInstVertexMap.find(endPtr);
-    if( mapPtr == pinInstVertexMap.end()) {
-      pinInstVertexMap[ endPtr ] = vertexStor.size();
-      vertexStor.push_back( MacroNetlist::Vertex(endPtr, endClass) );
-    }
-    
-//    if( _sta->network()->isTopLevelPort(startPin) ||
-//        _sta->network()->isTopLevelPort(endPin)) {
-    cout << _sta->network()->name(startPin) << " -> " << _sta->network()->name(endPin) << endl;
-//      } 
-  }
-
-  // VertexPtrMap Initialize
-  for(auto& curVertex: vertexStor) {
-    vertexPtrMap[&curVertex] = &curVertex - &vertexStor[0];
-  }
-
-  cout << "Total Vertex: " << vertexStor.size() << endl;
-
-  // This MUST be done, otherwise the memory address would be different
-  edgeStor.reserve(edgeCnt);
-  
-  // below is for generating Edges 
-  while( pathEndIter2.hasNext()) {
-    PathEnd *end = pathEndIter2.next();
-    //TimingPathPrint( _sta, end );
-
-    PathExpanded expanded(end->path(), _sta);
-   
-    // get Un-clockpin 
-    int startIdx = 0;
-    PathRef *startPath = expanded.path(startIdx);
-    while( startIdx < expanded.size()-1 && startPath->isClock(_sta->search())) {
-      startPath = expanded.path(++startIdx);
+    bool isTopPin = _sta->network()->isTopLevelPort(pin);
+    // only query for IO/Pins
+    if( !isTopPin ) {
+      continue;
     }
 
-    PathRef *endPath = expanded.path(expanded.size()-1);
-
-    sta::Vertex *startVert = startPath->vertex(_sta);
-    sta::Vertex *endVert = endPath->vertex(_sta);
-
-    Pin* startPin = startVert->pin();
-    Pin* endPin = endVert->pin();
-
-    Instance* startInst = _sta->network()->instance(startPin);
-    Instance* endInst = _sta->network()->instance(endPin);
-
-    void* startPtr = (_sta->network()->isTopLevelPort(startPin))? 
-      (void*) startPin : (void*) startInst;
-    void* endPtr = (_sta->network()->isTopLevelPort(endPin))?
-      (void*) endPin : (void*) endInst;
-
-    MacroNetlist::Vertex* startVertPtr = &vertexStor[pinInstVertexMap[startPtr]];
-    MacroNetlist::Vertex* endVertPtr = &vertexStor[pinInstVertexMap[endPtr]];
-
-    // Edge Update
-    auto mapPtr = vertexPairEdgeMap.find( make_pair(startVertPtr, endVertPtr) );
-    if( mapPtr == vertexPairEdgeMap.end() ) {
-      vertexPairEdgeMap[ make_pair(startVertPtr, endVertPtr) ] = edgeStor.size();
-      edgeStor.push_back( MacroNetlist::Edge(startVertPtr, endVertPtr, 1) );
-      // Vertex Update
-      startVertPtr->to.push_back(&edgeStor[edgeStor.size()-1]);
-      endVertPtr->from.push_back(&edgeStor[edgeStor.size()-1]);
+    /*
+    // Skip For Non-FF Cells
+    if( !isTopPin ) {
+      Instance* inst = _sta->network()->instance(pin);
+      LibertyCell* libCell = _sta->network()->libertyCell(inst);
+      if( !libCell -> hasSequentials() && macroInstMap.find(inst) == macroInstMap.end() ) {
+        continue;
+      }
     }
+      
+    // skip for output toplevelport;
+    PortDirection* dir = _sta->network()->direction(pin);
+    if( dir->isAnyOutput() ) {
+      if( _sta->network()->isTopLevelPort(pin)) {
+        continue;
+      }
+    }
+    // skip for input Non-FF/Macro pins
     else {
-      // increase the edge weight
-      edgeStor[mapPtr->second].weight ++;
+      if( !_sta->network()->isTopLevelPort(pin)) {
+        continue;
+      }
     }
+    */
+
+    // Survived
+    // FF/Macro with non-clock output pins
+    // topLevelPort(I). i.e. input top-level-port.
+    
+    //skip for clock pin
+    if( _sta->network()->isCheckClk(pin) || _sta->sdc()->isClock(pin) ) {
+      continue;
+    }
+    if( string(_sta->network()->name(pin)) == "reset_i" ) {
+      continue;
+    }
+
+    MacroNetlist::Vertex* mVert = GetVertex(pin);
+
+//    cout << "[" << _sta->network()->name(pin) << "]" << endl;
+
+//  virtual PathEndSeq *findPathEnds(ExceptionFrom *from,
+//           ExceptionThruSeq *thrus,
+//           ExceptionTo *to,
+//           // Use corner NULL to report timing
+//           // for all corners.
+//           const Corner *corner,
+//           // max for setup checks.
+//           // min for hold checks.
+//           // min_max for setup and hold checks.
+//           const MinMaxAll *min_max,
+//           // Number of path ends to report in
+//           // each group.
+//           int group_count,
+//           // Number of paths to report for
+//           // each endpoint.
+//           int endpoint_count,
+//           // endpoint_count paths report unique pins
+//           // without rise/fall variations.
+//           bool unique_pins,
+//           // Min/max bounds for slack of
+//           // returned path ends.
+//           float slack_min,
+//           float slack_max,
+//           // Sort path ends by slack ignoring path groups.
+//           bool sort_by_slack,
+//           // Path groups to report.
+//           // Null or empty list reports all groups.
+//           PathGroupNameSet *group_names,
+//           // Predicates to filter the type of path
+//           // ends returned.
+//           bool setup,
+//           bool hold,
+//           bool recovery,
+//           bool removal,
+//           bool clk_gating_setup,
+//           bool clk_gating_hold);
+    
+    
+    Corner* corner = _sta->corners()->defaultCorner();
+
+    PinSet* pSet = new PinSet;
+    pSet->insert(pin);
+
+//    InstanceSet* instSet = new InstanceSet;
+//  ExceptionFrom(PinSet *pins,
+//    ClockSet *clks,
+//    InstanceSet *insts,
+//    const TransRiseFallBoth *tr,
+//    bool own_pts);
+    
+    // Get Pin direction
+    PortDirection* dir = _sta->network()->direction(pin);
+
+    ExceptionFrom* from = (!dir->isAnyOutput())? 
+      _sta->sdc()->makeExceptionFrom(pSet, NULL, NULL, 
+        TransRiseFallBoth::riseFall()) : NULL;
+
+    ExceptionTo* to = (dir->isAnyOutput())? 
+      _sta->sdc()->makeExceptionTo(pSet, NULL, NULL, 
+        TransRiseFallBoth::riseFall(), 
+        TransRiseFallBoth::riseFall()) : NULL;
+
+    PathEndSeq *ends = _sta->findPathEnds(from, NULL, to, //from, thru, to
+        corner, MinMaxAll::max(), // corner, delay_min_max
+        INT_MAX, 1, false, //group_count, endpoint_count, unique_pins
+        -INF, INF, //slack_min, slack_max
+        false, NULL, //sort_by_slack, group_name
+        true, true, // setup, hold
+        true, true, // recovery, removal
+        true, true); // clk gating setup, hold
+
+    if (ends->empty()) {
+//      cout << "ERROR: NO PATH !" << endl;
+      continue;
+    }
+
+    PathEndSeq::Iterator tmpIter(ends), pathEndIter(ends), pathEndIter2(ends);
+    int edgeCnt = 0;
+    while( tmpIter.hasNext() ) {
+      tmpIter.next();
+      edgeCnt ++; 
+    }
+
+//    delete pSet;
+
+//    cout << "Total Possible Path: " << edgeCnt << endl;
+
+    while( pathEndIter.hasNext()) {
+      PathEnd *end = pathEndIter.next();
+      //TimingPathPrint( _sta, end );
+
+      PathExpanded expanded(end->path(), _sta);
+
+      // get Un-clockpin 
+      int startIdx = 0;
+      PathRef *startPath = expanded.path(startIdx);
+      while( startIdx < expanded.size()-1 && startPath->isClock(_sta->search())) {
+        startPath = expanded.path(++startIdx);
+      }
+
+      PathRef *endPath = expanded.path(expanded.size()-1);
+
+      sta::Vertex *startVert = startPath->vertex(_sta);
+      sta::Vertex *endVert = endPath->vertex(_sta);
+
+      Pin* startPin = startVert->pin();
+      Pin* endPin = endVert->pin();
+
+//      cout << _sta->network()->name(startPin) << " -> " << _sta->network()->name(endPin) << endl;
+      MacroNetlist::Vertex* startVertPtr = GetVertex( startPin );
+      MacroNetlist::Vertex* endVertPtr = GetVertex( endPin );
+
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // OpenSTA could return Null Vertex:
+      // This means that non-Timing cells would be returned by findPathEnds command...
+      if( startVertPtr == NULL || endVertPtr == NULL) {
+        continue;
+      }
+
+//      cout << startVertPtr << " -> " << endVertPtr << endl;
+      // Edge Update
+      auto mapPtr = vertexPairEdgeMap.find( make_pair(startVertPtr, endVertPtr) );
+      if( mapPtr == vertexPairEdgeMap.end() ) {
+        vertexPairEdgeMap[ make_pair(startVertPtr, endVertPtr) ] = edgeStor.size();
+        edgeStor.push_back( MacroNetlist::Edge(startVertPtr, endVertPtr, 1) );
+        // Vertex Update
+        startVertPtr->to.push_back(edgeStor.size()-1);
+        endVertPtr->from.push_back(edgeStor.size()-1);
+      }
+      else {
+        // increase the edge weight
+        edgeStor[mapPtr->second].weight ++;
+      }
+    }
+  }
+  endTime = std::chrono::system_clock::now();
+  elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
+  cout << "Edge Building for IO: " << elapsed.count()<< "s" << endl;
+
+//  for(auto& curEdge: edgeStor) {
+//    cout << "EdgePrint: " << &curEdge << " " << curEdge.from << " " << curEdge.to << endl;
+//  }
+
+          /*
+          // This MUST be done, otherwise the memory address would be different
+          edgeStor.reserve(edgeCnt);
+
+          // below is for generating Edges 
+          while( pathEndIter2.hasNext()) {
+      PathEnd *end = pathEndIter2.next();
+      //TimingPathPrint( _sta, end );
+
+      PathExpanded expanded(end->path(), _sta);
+
+      // get Un-clockpin 
+      int startIdx = 0;
+      PathRef *startPath = expanded.path(startIdx);
+      while( startIdx < expanded.size()-1 && startPath->isClock(_sta->search())) {
+        startPath = expanded.path(++startIdx);
+      }
+
+      PathRef *endPath = expanded.path(expanded.size()-1);
+
+      sta::Vertex *startVert = startPath->vertex(_sta);
+      sta::Vertex *endVert = endPath->vertex(_sta);
+
+      Pin* startPin = startVert->pin();
+      Pin* endPin = endVert->pin();
+
+      Instance* startInst = _sta->network()->instance(startPin);
+      Instance* endInst = _sta->network()->instance(endPin);
+
+      void* startPtr = (_sta->network()->isTopLevelPort(startPin))? 
+        (void*) startPin : (void*) startInst;
+      void* endPtr = (_sta->network()->isTopLevelPort(endPin))?
+        (void*) endPin : (void*) endInst;
+
+      MacroNetlist::Vertex* startVertPtr = &vertexStor[pinInstVertexMap[startPtr]];
+      MacroNetlist::Vertex* endVertPtr = &vertexStor[pinInstVertexMap[endPtr]];
+
+      // Edge Update
+      auto mapPtr = vertexPairEdgeMap.find( make_pair(startVertPtr, endVertPtr) );
+      if( mapPtr == vertexPairEdgeMap.end() ) {
+        vertexPairEdgeMap[ make_pair(startVertPtr, endVertPtr) ] = edgeStor.size();
+        edgeStor.push_back( MacroNetlist::Edge(startVertPtr, endVertPtr, 1) );
+        // Vertex Update
+        startVertPtr->to.push_back(&edgeStor[edgeStor.size()-1]);
+        endVertPtr->from.push_back(&edgeStor[edgeStor.size()-1]);
+      }
+      else {
+        // increase the edge weight
+        edgeStor[mapPtr->second].weight ++;
+      }
+    }
+    */
     
     
 //    mapPtr = pinInstVertexMap.find(endPtr);
@@ -569,10 +682,9 @@ void MacroCircuit::FillVertexEdge() {
 //        _sta->network()->isTopLevelPort(endPin)) {
 //      cout << _sta->network()->name(startPin) << " -> " << _sta->network()->name(endPin) << endl; 
 //    } 
-  }
-    */
-
-  cout << "Total Edge: " << edgeStor.size() << endl;
+  cout << "Sequential Graph Building is Done!" << endl;
+  cout << "Vertex: " << vertexStor.size() << endl;
+  cout << "Edge: " << edgeStor.size() << endl;
 }
 
 
@@ -610,6 +722,7 @@ void MacroCircuit::UpdateVertexToMacroStor() {
       continue;
     }
     string name = _sta->network()->name((sta::Instance*)curVertex.ptr);
+//    cout << "Macro: " << name << endl;
     ReplaceStringInPlace(name, "\\[", "[");
     ReplaceStringInPlace(name, "\\]", "]");
     ReplaceStringInPlace(name, "\\/", "/");
@@ -626,17 +739,60 @@ void MacroCircuit::UpdateVertexToMacroStor() {
 
 void MacroCircuit::FillMacroConnection() {
 
-  for(auto& curMacro1: macroStor) {
-    int idx1 = &curMacro1 - &macroStor[0];
-    for(auto& curMacro2: macroStor) {
-      int idx2 = &curMacro2- &macroStor[0];
+  vector<MacroNetlist::Vertex*> searchVert;
+  for(auto& curMacro: macroStor) {
+    searchVert.push_back( curMacro.ptr );
+  }
+
+  for(int i=0; i<4; i++) {
+    searchVert.push_back( &vertexStor[i] );
+  }
+
+  cout << "searchVertSize: " << searchVert.size() << endl;
+  // macroNetlistWeight Initialize
+  macroWeight.resize(searchVert.size());
+  for(int i=0; i<searchVert.size(); i++) {
+    macroWeight[i] = vector<int> (searchVert.size(), 0);
+  }
+ 
+  auto startTime = std::chrono::system_clock::now();
+  for(auto& curVertex1: searchVert) {
+    int idx1 = &curVertex1 - &searchVert[0];
+    for(auto& curVertex2: searchVert) {
+      int idx2 = &curVertex2 - &searchVert[0];
       if( idx1 == idx2 ) { 
         continue;
       }
+
+      if( curVertex1->vertexClass == VertexClass::pin 
+          && curVertex2->vertexClass == VertexClass::pin) {
+        continue;
+      }
      
-      cout << "[ " << curMacro1.name << " --> " << curMacro2.name << " ]" <<endl; 
-      cout << GetPathWeight( curMacro1.ptr, curMacro2.ptr, 20) << endl;
+//      cout << "[ " << curMacro1.name << " --> " << curMacro2.name << " ]" <<endl; 
+//      cout << "[ " << curMacro1.ptr << " --> " << curMacro2.ptr << " ]" <<endl;
+     
+      PinGroup* ptr1 = (PinGroup*)curVertex1->ptr;
+      PinGroup* ptr2 = (PinGroup*)curVertex2->ptr;
+
+      string name1 = (curVertex1->vertexClass == VertexClass::pin)? 
+        ptr1->name() : _sta->network()->name((sta::Instance*)curVertex1->ptr);
+      string name2 = (curVertex2->vertexClass == VertexClass::pin)?
+        ptr2->name() : _sta->network()->name((sta::Instance*)curVertex2->ptr);
+      cout << "[ " << name1 << " --> " << name2 << " ]" <<endl;
+
+      macroWeight[idx1][idx2] = GetPathWeight( curVertex1, curVertex2, 3);
+//      cout << GetPathWeight( curVertex1, curVertex2, 3) << endl;
     }
+  }
+  auto endTime = std::chrono::system_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
+  cout << "BFS Search: " << elapsed.count()<< "s" << endl;
+  for(int i=0; i<searchVert.size(); i++) {
+    for(int j=0; j<searchVert.size(); j++) {
+      cout << macroWeight[i][j] << " ";
+    }
+    cout << endl;
   }
 
 //  VertexInfo vertexList;
@@ -765,8 +921,17 @@ int MacroCircuit::GetPathWeight(MacroNetlist::Vertex* from, MacroNetlist::Vertex
   path.push_back(from);
 
   q.push(path);
+//  for(auto& curEdge: edgeStor) {
+//    cout << "EdgePrint2: " << curEdge.from << " " << curEdge.to << endl;
+//  }
+
+//  for(auto& curAdj : from->to) {
+//    cout << "Adj: " << curAdj << " " << curAdj->to << endl;
+//  }
 
   vector< vector<MacroNetlist::Vertex*> > result;
+  int pathDepth = 1;
+  cout << "Depth: " << 1 << endl;
   while(!q.empty()) {
 //    if( i > limit ) {
 //      break;
@@ -776,30 +941,64 @@ int MacroCircuit::GetPathWeight(MacroNetlist::Vertex* from, MacroNetlist::Vertex
     q.pop();
     MacroNetlist::Vertex* last = path[path.size()-1];
 
-    if( last == to ) { 
-      result.push_back(path);
+//    cout << path.size() << endl;
+//    for(auto& curVert: path){
+//      cout << "currentVert: " << curVert <<" ";
+//    }
+//  for(auto& curAdj : from->to) {
+//    cout << "Adj2: " << curAdj->to << endl;
+//  }
+//    cout << endl;
+//  for(auto& curAdj : last->to) {
+//    cout << "Adj3: " << curAdj << endl;
+//  }
+
+    if( pathDepth < path.size() ){
+      cout << "Depth: " << path.size() << endl;
+      pathDepth = path.size();
     }
 
+
+    if( last == to ) { 
+      result.push_back(path);
+      continue;
+    }
+//    cout << "dead" << endl;
+//  for(auto& curAdj : last->to) {
+//    cout << "Adj4: " << curAdj->to << endl;
+//  }
+
     for(auto& curOutEdge: last->to) {
-      MacroNetlist::Vertex* nextVert = curOutEdge->to;
-      if( !isTerminal(nextVert, to) && path.size()+1 < limit 
+      MacroNetlist::Vertex* nextVert = edgeStor[curOutEdge].to;
+//      cout << "PrevToConnected: " << nextVert << endl;
+      if( !isTerminal(nextVert, to) && path.size() < limit 
           && isNotVisited(nextVert, path)) {
-//      cout << "ToConnected: " << nextVert << endl;
+//        cout << "ToConnected: " << nextVert << endl;
         vector<MacroNetlist::Vertex*> newPath(path);
         newPath.push_back(nextVert);
         q.push(newPath);
       } 
     }
     for(auto& curInEdge: last->from) {
-      MacroNetlist::Vertex* nextVert = curInEdge->from;
-      if( !isTerminal(nextVert, to) && path.size()+1 < limit 
+      MacroNetlist::Vertex* nextVert = edgeStor[curInEdge].from;
+//      cout << "PrevFromConnected: " << nextVert << endl;
+      if( !isTerminal(nextVert, to) && path.size() < limit 
           && isNotVisited(nextVert, path)) {
-//      cout << "FromConnected: " << nextVert << endl;
+//        cout << "FromConnected: " << nextVert << endl;
         vector<MacroNetlist::Vertex*> newPath(path);
         newPath.push_back(nextVert);
         q.push(newPath);
       } 
     }
+//    for(auto& curVert: path) {
+//      MacroNetlist::PinGroup* ptr = (MacroNetlist::PinGroup*) curVert->ptr;
+//      string name = (curVert->vertexClass == VertexClass::pin)?
+//        ptr->name() :
+//        _sta->network()->name((sta::Instance*)curVert->ptr);
+//      cout << name << " -> ";
+//    }
+//    cout << endl;
+//    cout << "qSize: " << q.size() << " " << path.size() << endl;
   }
   int ret = 0;
   for(auto& curPath: result) {
@@ -816,8 +1015,9 @@ int MacroCircuit::GetPathWeight(MacroNetlist::Vertex* from, MacroNetlist::Vertex
     }
     cout << " " ;
     for(auto& curVert: curPath) {
+      MacroNetlist::PinGroup* ptr = (MacroNetlist::PinGroup*) curVert->ptr;
       string name = (curVert->vertexClass == VertexClass::pin)?
-        _sta->network()->name((sta::Pin*)curVert->ptr) :
+        ptr->name() :
         _sta->network()->name((sta::Instance*)curVert->ptr);
       cout << name << " -> ";
     }
@@ -825,4 +1025,92 @@ int MacroCircuit::GetPathWeight(MacroNetlist::Vertex* from, MacroNetlist::Vertex
   }
   return ret;
 }
+
+
+
 //MACRO_NETLIST_NAMESPACE_CLOSE
+  
+/*
+  // below is for generating vertex 
+  while( pathEndIter.hasNext()) {
+    PathEnd *end = pathEndIter.next();
+    //TimingPathPrint( _sta, end );
+
+    PathExpanded expanded(end->path(), _sta);
+   
+    // get Un-clockpin 
+    int startIdx = 0;
+    PathRef *startPath = expanded.path(startIdx);
+    while( startIdx < expanded.size()-1 && startPath->isClock(_sta->search())) {
+      startPath = expanded.path(++startIdx);
+    }
+
+    PathRef *endPath = expanded.path(expanded.size()-1);
+
+    sta::Vertex *startVert = startPath->vertex(_sta);
+    sta::Vertex *endVert = endPath->vertex(_sta);
+
+    Pin* startPin = startVert->pin();
+    Pin* endPin = endVert->pin();
+
+    Instance* startInst = _sta->network()->instance(startPin);
+    Instance* endInst = _sta->network()->instance(endPin);
+
+    void* startPtr = (_sta->network()->isTopLevelPort(startPin))? 
+      (void*) startPin : (void*) startInst;
+    void* endPtr = (_sta->network()->isTopLevelPort(endPin))?
+      (void*) endPin : (void*) endInst;
+
+    // below two var is only used when each is not the topLevelPorts
+    string startName = _sta->network()->name(startInst);
+    string endName = _sta->network()->name(endInst);
+
+    ReplaceStringInPlace( startName, "\\[",  "[" );
+    ReplaceStringInPlace( startName, "\\]",  "]" );
+    ReplaceStringInPlace( startName, "\\/",  "/" );
+    
+    ReplaceStringInPlace( endName, "\\[",  "[" );
+    ReplaceStringInPlace( endName, "\\]",  "]" );
+    ReplaceStringInPlace( endName, "\\/",  "/" );
+
+    VertexClass startClass = (_sta->network()->isTopLevelPort(startPin))?
+      VertexClass::pin : 
+      (macroNameMap.find( startName ) != macroNameMap.end())? 
+        VertexClass::instMacro : VertexClass::instOther;
+    VertexClass endClass = (_sta->network()->isTopLevelPort(endPin))?
+      VertexClass::pin : 
+      (macroNameMap.find( endName ) != macroNameMap.end())? 
+        VertexClass::instMacro : VertexClass::instOther;
+
+//    if( startClass == VertexClass::instMacro ) { 
+//      cout << _sta->network()->name(startInst) << endl;
+//    }
+
+    // Vertex Update
+    auto mapPtr = pinInstVertexMap.find(startPtr);
+    if( mapPtr == pinInstVertexMap.end()) {
+      pinInstVertexMap[ startPtr ] = vertexStor.size();
+      vertexStor.push_back( MacroNetlist::Vertex(startPtr, startClass) );
+    }
+    
+    mapPtr = pinInstVertexMap.find(endPtr);
+    if( mapPtr == pinInstVertexMap.end()) {
+      pinInstVertexMap[ endPtr ] = vertexStor.size();
+      vertexStor.push_back( MacroNetlist::Vertex(endPtr, endClass) );
+    }
+    
+//    if( _sta->network()->isTopLevelPort(startPin) ||
+//        _sta->network()->isTopLevelPort(endPin)) {
+    cout << _sta->network()->name(startPin) << " -> " << _sta->network()->name(endPin) << endl;
+//      } 
+  }
+
+  // VertexPtrMap Initialize
+  for(auto& curVertex: vertexStor) {
+    vertexPtrMap[&curVertex] = &curVertex - &vertexStor[0];
+  }
+
+  cout << "Total Vertex: " << vertexStor.size() << endl;
+  */
+
+

@@ -63,6 +63,8 @@ class Sta;
 class Instance;
 class Pin; 
 }
+class MacroCircuit;
+template <class T> struct MyHash;
 
 
 MACRO_NETLIST_NAMESPACE_OPEN
@@ -77,8 +79,9 @@ class Macro {
     double w, h;
     Vertex* ptr;
     sta::Instance* instPtr;
-    Macro( string _name, string _type, double _lx, double _ly, double _w, double _h ) 
-      : name(_name), type(_type), lx(_lx), ly(_ly), w(_w), h(_h), ptr(0), instPtr(0) {};
+    Macro( string _name, string _type, double _lx, double _ly, double _w, double _h,
+        Vertex* _ptr, sta::Instance* _instPtr) 
+      : name(_name), type(_type), lx(_lx), ly(_ly), w(_w), h(_h), ptr(_ptr), instPtr(_instPtr) {};
     void Dump() {
 //      cout << "name: " << name << endl;
 //      cout << "type: " << type << endl;
@@ -118,8 +121,8 @@ class PinGroup;
 class Vertex {
   public: 
     VertexClass vertexClass;
-    vector<Edge*> from;
-    vector<Edge*> to;
+    vector<int> from;
+    vector<int> to;
 
     // This can be either PinGroup / sta::Instance*,
     // based on vertexClass
@@ -138,6 +141,20 @@ class PinGroup {
   public:
     PinGroupClass pinGroupClass;
     vector<sta::Pin*> pins;
+    string name() {
+      if( pinGroupClass == PinGroupClass::West ) {
+        return "West";
+      }
+      else if( pinGroupClass == PinGroupClass::East ) {
+        return "East";
+      } 
+      else if( pinGroupClass == PinGroupClass::North) {
+        return "North";
+      } 
+      else if( pinGroupClass == PinGroupClass::South) {
+        return "South";
+      } 
+    }
 };
 
 
@@ -153,6 +170,7 @@ class Partition {
     vector<Macro> macroStor;
     double* netTable;
     int tableCnt;
+    unordered_map<string, int> macroMap;
     Partition() : 
       partClass(PartClass::None), lx(FLT_MAX), ly(FLT_MAX), 
       width(FLT_MAX), height(FLT_MAX), netTable(0), tableCnt(0) {};
@@ -169,7 +187,7 @@ class Partition {
     Partition(const Partition& prev) :
       partClass(prev.partClass), lx(prev.lx), ly(prev.ly),
       width(prev.width), height(prev.height),
-      macroStor(prev.macroStor), tableCnt(prev.tableCnt) {
+      macroStor(prev.macroStor), tableCnt(prev.tableCnt), macroMap(prev.macroMap) {
         if( prev.netTable ) {
           netTable = new double[tableCnt];
           for(int i=0; i<tableCnt; i++) {
@@ -189,6 +207,7 @@ class Partition {
       height = prev.height;
       macroStor = prev.macroStor;
       tableCnt = prev.tableCnt;
+      macroMap = prev.macroMap; 
 
       if( prev.netTable ) {
         netTable = new double[tableCnt];
@@ -201,15 +220,8 @@ class Partition {
       }
     }
 
-    void FillNetlistTable() {
-      tableCnt = (macroStor.size()+4)*(macroStor.size()+4);
-      netTable = new double[tableCnt];
-      for(int i=0; i<tableCnt; i++) {
-        netTable[i] = 0.0f;
-      }
-//      FillNetlistTableIncr();
-      FillNetlistTableDesc();
-    }
+    void FillNetlistTable(MacroCircuit& _mckt,
+        unordered_map<PartClass, vector<int>, MyHash<PartClass>>& macroPartMap);
 
     void Dump() {
       cout << "partClass: " << partClass << endl;
@@ -222,44 +234,12 @@ class Partition {
     void PrintSetFormat(FILE* fp);
 
   private:
-    void FillNetlistTableIncr() {
-//      if( macroStor.size() <= 1 ) {
-//        return;
-//      }
-
-      for(int i=0; i<macroStor.size()+4; i++) {
-        for(int j=0; j<macroStor.size()+4; j++) {
-          double val = (i + j + 1)* 100;
-          if( i == j || 
-              i >= macroStor.size() && j >= macroStor.size() ) {
-            val = 0;
-          }
-          netTable[ i*(macroStor.size()+4) + j] = val;
-        }
-      } 
-    }
-    
-    void FillNetlistTableDesc() {
-//      if( macroStor.size() <= 1 ) {
-//        return;
-//      }
-
-      for(int i=0; i<macroStor.size()+4; i++) {
-        for(int j=0; j<macroStor.size()+4; j++) {
-          double val = (2*macroStor.size()+8-(i+j)) * 100;
-          if( i == j || 
-              i >= macroStor.size() && j >= macroStor.size() ) {
-            val = 0;
-          }
-          netTable[ i*(macroStor.size()+4) + j] = val;
-        }
-      } 
-    }
+    void FillNetlistTableIncr();
+    void FillNetlistTableDesc();
 }; 
 
 MACRO_NETLIST_NAMESPACE_CLOSE
 
-template <class T> struct MyHash;
 
 template<>
 struct MyHash< std::pair<void*, void*> > {
@@ -268,6 +248,16 @@ struct MyHash< std::pair<void*, void*> > {
     size_t seed = 0;
     hash_combine(seed, k.first);
     hash_combine(seed, k.second);
+    return seed; 
+  }
+};
+
+template<>
+struct MyHash< MacroNetlist::PartClass > {
+  std::size_t operator()( const MacroNetlist::PartClass & k ) const {
+    using boost::hash_combine;
+    size_t seed = 0;
+    hash_combine(seed, (int)k);
     return seed; 
   }
 };
@@ -316,6 +306,10 @@ class MacroCircuit {
     void SetEdgeWeight(MacroNetlist::Edge* edge, double weight);
     void AddEdgeFromVertex(MacroNetlist::Edge* edge, MacroNetlist::Vertex* vertex);
     void AddEdgeToVertex(MacroNetlist::Edge* edge, MacroNetlist::Vertex* vertex);
+    
+    
+    // sta::Instance* --> macroStor's index stor
+    unordered_map<sta::Instance*, int> macroInstMap;
 
   private:
     void FillMacroStor();
@@ -327,8 +321,6 @@ class MacroCircuit {
     void UpdateInstanceToMacroStor();
 //    unordered_map<MacroNetlist::Edge*, int> edgeMap;
 
-    // sta::Instance* --> macroStor's index
-    unordered_map<sta::Instance*, int> macroInstMap;
 
     // either Pin*, Inst* -> vertexStor's index.
     unordered_map<void*, int> pinInstVertexMap;
@@ -344,9 +336,8 @@ class MacroCircuit {
 
 //    VertexInfo GetAdjVertexList( VertexInfo candiVertex,
 //       unordered_set<MacroNetlist::Vertex*> &vertexVisit );
+    int GetPathWeight( MacroNetlist::Vertex* from, MacroNetlist::Vertex* to, int limit );
 
-
-  int GetPathWeight( MacroNetlist::Vertex* from, MacroNetlist::Vertex* to, int limit);
 
 };
 

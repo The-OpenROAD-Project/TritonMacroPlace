@@ -22,7 +22,7 @@ sta::Sta* GetStaObject(EnvFile& _env ) {
   Sta::setSta(_sta);
   _sta->makeComponents();
   _sta->setTclInterp(_interp);
-  _sta->setThreadCount(8);
+//  _sta->setThreadCount(8);
 
   // environment settings
 
