@@ -1,3 +1,7 @@
 [submodule "module/OpenSTA"]
 	path = module/OpenSTA
 	url = https://github.com/mgwoo/OpenSTA.git
+[submodule "module/eigen-git-mirror"]
+	path = module/eigen-git-mirror
+  url = https://github.com/eigenteam/eigen-git-mirror.git
+  branch = branches/3.3
