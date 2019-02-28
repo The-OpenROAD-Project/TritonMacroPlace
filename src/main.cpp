@@ -93,13 +93,28 @@ int main(int argc, char** argv) {
  
   bool isHorizontal = true;
 
-  Partition layout(None, _cinfo.lx, _cinfo.ly, _cinfo.ux-_cinfo.lx, _cinfo.uy-_cinfo.ly);
+  Partition layout(ALL, _cinfo.lx, _cinfo.ly, _cinfo.ux-_cinfo.lx, _cinfo.uy-_cinfo.ly);
   layout.macroStor = _mckt.macroStor;
 
   TwoPartitions oneLevelPart = GetPart(_cinfo, layout, isHorizontal);
   TwoPartitions eastStor, westStor;
 
   vector< vector<Partition> > allSets;
+
+
+  // Fill the MacroNetlist for ALL circuits
+  unordered_map< PartClass, vector<int>, 
+    MyHash<PartClass>> globalMacroPartMap;
+  UpdateMacroPartInfo( _mckt, layout, globalMacroPartMap );
+  layout.FillNetlistTable( _mckt, globalMacroPartMap );
+ 
+  // push to the outer vector 
+  vector<Partition> layoutSet;
+  layoutSet.push_back(layout);
+
+  // push
+  allSets.push_back(layoutSet);
+
   for(auto& curSet : oneLevelPart ) {
     if( isHorizontal ) {
       CircuitInfo eastInfo(_cinfo, curSet.first);
@@ -253,6 +268,10 @@ bool ParseArgv(int argc, char** argv, EnvFile& _env) {
       i++;
       _env.output = string(argv[i]);
     }
+    else if (STRING_EQUAL("-depth", argv[i])){
+      i++;
+      _env.searchDepth = atoi(argv[i]);
+    }
   }
 
   return _env.IsFilled();
@@ -286,6 +305,9 @@ vector<pair<Partition, Partition>> GetPart(
   typedef std::set<int> MacroSetT;
   interval_map<double, MacroSetT> macroMap;
 
+  double maxWidth = DBL_MIN;
+  double maxHeight = DBL_MIN;
+
   for(auto& curMacro: partition.macroStor) {
     MacroSetT macroInfo;
     macroInfo.insert( &curMacro - &partition.macroStor[0]);
@@ -296,9 +318,15 @@ vector<pair<Partition, Partition>> GetPart(
             (isHorizontal)? curMacro.lx : curMacro.ly,
             (isHorizontal)? curMacro.lx + curMacro.w : 
                 curMacro.ly + curMacro.h ), macroInfo));
+    maxWidth = ( maxWidth < curMacro.w)? curMacro.w: maxWidth;
+    maxHeight = ( maxHeight < curMacro.h)? curMacro.h: maxHeight;
   }
 
-  
+  double cutLineLimit = (isHorizontal)? maxWidth * 0.25 : maxHeight * 0.25;
+
+
+  double prevPushLimit = DBL_MIN;
+  bool isFirst = true;
   vector<double> cutLineStor;
   for( interval_map<double, MacroSetT>::iterator 
       it = macroMap.begin();
@@ -306,7 +334,15 @@ vector<pair<Partition, Partition>> GetPart(
     interval<double>::type macroInterval = it->first;
     MacroSetT result = it->second;
 
-    cutLineStor.push_back( macroInterval.lower() );
+    if( isFirst ) {
+      cutLineStor.push_back( macroInterval.lower() );
+      prevPushLimit = macroInterval.lower();
+      isFirst = false;
+    }
+    else if( abs(macroInterval.lower()-prevPushLimit) > cutLineLimit ) {
+      cutLineStor.push_back( macroInterval.lower() );
+      prevPushLimit = macroInterval.lower();
+    }
   }
   
   // 0 for uninitialize
@@ -366,7 +402,7 @@ vector<pair<Partition, Partition>> GetPart(
     }
 
     PartClass lClass, uClass;
-    if( partition.partClass == None ) {
+    if( partition.partClass == ALL ) {
       lClass = (isHorizontal)? W : S;
       uClass = (isHorizontal)? E : N;
     }
@@ -488,7 +524,10 @@ vector<pair<Partition, Partition>> GetPart(
 
 void Partition::PrintSetFormat(FILE* fp) {
   string sliceStr = "";
-  if( partClass == NW ) {
+  if( partClass == ALL ) {
+    sliceStr = "ALL";
+  }
+  else if( partClass == NW ) {
     sliceStr = "NW";
   }
   else if( partClass == NE ) {
@@ -530,9 +569,11 @@ void Partition::PrintSetFormat(FILE* fp) {
         fprintf(fp, "%.3f ", netTable[(macroStor.size()+4)*i + j]);
       }
       if( i == macroStor.size()+3 ) {
-        fprintf(fp, ";");
+        fprintf(fp, "; \n");
       }
-      fprintf(fp, "\n    ");
+      else {
+        fprintf(fp, "\n    ");
+      }
     }
   }
   else {
@@ -587,6 +628,16 @@ void Partition::FillNetlistTable(MacroCircuit& _mckt,
   if( mpPtr == macroPartMap.end()) {
     cout << "ERROR: Partition: " << partClass << " not exists MacroCell (macroPartMap)" << endl;
     exit(1);
+  }
+
+  // Just Copy to the netlistTable.
+  if( partClass == ALL ) {
+    for(int i=0; i< (macroStor.size()+4); i++) {
+      for(int j=0; j< macroStor.size()+4; j++) {
+        netTable[ i*(macroStor.size()+4)+j ] = (double)_mckt.macroWeight[i][j]; 
+      }
+    }
+    return; 
   }
 
   // row

@@ -13,6 +13,14 @@
 #include "lefdefIO.h"
 //#include "timingSta.h"
 
+#include <Eigen/Core>
+#include <Eigen/SparseCore>
+
+using Eigen::VectorXf;
+typedef Eigen::SparseMatrix<int, Eigen::RowMajor> SMatrix;
+typedef Eigen::Triplet<int> T;
+
+
 using std::unordered_map;
 using std::unordered_set;
 
@@ -25,8 +33,14 @@ class EnvFile {
   std::string sdc; 
   std::vector<std::string> lefStor;
   std::vector<std::string> libStor;
-  EnvFile() : def(""), verilog(""), design(""), output(""), sdc("") {};
-  bool IsFilled() { return design != "" && def != "" && verilog != "" && output != "" && sdc != "" && lefStor.size() != 0 && libStor.size() != 0; };
+  int searchDepth;
+  EnvFile() : def(""), verilog(""), design(""), output(""), sdc(""), searchDepth(INT_MIN) {};
+
+  bool IsFilled() { return design != "" && def != "" && 
+      verilog != "" && output != "" && sdc != "" && 
+      lefStor.size() != 0 && libStor.size() != 0 &&
+      searchDepth!= INT_MIN; };
+
   void Print() {
     using std::cout;
     using std::endl;
@@ -54,6 +68,9 @@ class EnvFile {
     
     cout << "Output: " << endl;
     cout << output << endl << endl;
+    
+    cout << "Search Depth: " << endl;
+    cout << searchDepth << endl << endl;
   }
 
 };
@@ -91,18 +108,7 @@ class Macro {
     }
 };
 
-enum IoClass{ 
-  IoS, IoE, IoW, IoN
-};
-
-class Io {
-  public: 
-    IoClass ioClass;
-};
-
-
 class Vertex;
-
 class Edge {
   public:
     Vertex* from;
@@ -157,9 +163,8 @@ class PinGroup {
     }
 };
 
-
 enum PartClass {
-  S, N, W, E, NW, NE, SW, SE, None
+  S, N, W, E, NW, NE, SW, SE, ALL, None
 }; 
 
 class Partition {
@@ -262,9 +267,7 @@ struct MyHash< MacroNetlist::PartClass > {
   }
 };
 
-typedef vector< pair<MacroNetlist::Vertex*, int> > VertexInfo;
 class CircuitInfo;
-
 class MacroCircuit {
   public:
     MacroCircuit(Circuit::Circuit& ckt, EnvFile& env, CircuitInfo& cinfo);
@@ -297,16 +300,8 @@ class MacroCircuit {
     // macro idx/idx pair -> give each 
     vector< vector<int> > macroWeight;
 
-
     string GetEdgeName(MacroNetlist::Edge* edge);
     string GetVertexName(MacroNetlist::Vertex* vertex);
-
-    void SetEdgeName(MacroNetlist::Edge* edge, string& name);
-    void SetVertexName(MacroNetlist::Vertex* vertex, string& name);
-    void SetEdgeWeight(MacroNetlist::Edge* edge, double weight);
-    void AddEdgeFromVertex(MacroNetlist::Edge* edge, MacroNetlist::Vertex* vertex);
-    void AddEdgeToVertex(MacroNetlist::Edge* edge, MacroNetlist::Vertex* vertex);
-    
     
     // sta::Instance* --> macroStor's index stor
     unordered_map<sta::Instance*, int> macroInstMap;
@@ -321,10 +316,13 @@ class MacroCircuit {
     void UpdateInstanceToMacroStor();
 //    unordered_map<MacroNetlist::Edge*, int> edgeMap;
 
-
     // either Pin*, Inst* -> vertexStor's index.
     unordered_map<void*, int> pinInstVertexMap;
     unordered_map<MacroNetlist::Vertex*, int> vertexPtrMap;
+
+    SMatrix adjMatrix;
+//    SMatrix adjMatrixTwo;
+//    SMatrix adjMatrixFour;
 
     // pair of <StartVertex*, EndVertex*> --> edgeStor's index
     unordered_map< pair<MacroNetlist::Vertex*, MacroNetlist::Vertex*>, 
@@ -333,12 +331,9 @@ class MacroCircuit {
     pair<void*, MacroNetlist::VertexClass> GetPtrClassPair(sta::Pin* pin);
     MacroNetlist::Vertex* GetVertex(sta::Pin* pin); 
 
-
-//    VertexInfo GetAdjVertexList( VertexInfo candiVertex,
-//       unordered_set<MacroNetlist::Vertex*> &vertexVisit );
     int GetPathWeight( MacroNetlist::Vertex* from, MacroNetlist::Vertex* to, int limit );
-
-
+    // Matrix version
+    int GetPathWeightMatrix ( SMatrix& mat, MacroNetlist::Vertex* from, MacroNetlist::Vertex* to );
 };
 
 class CircuitInfo {
