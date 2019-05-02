@@ -237,6 +237,13 @@ class Partition {
       cout << endl;
     }
     void PrintSetFormat(FILE* fp);
+    void PrintParquetFormat(string origName);
+    void WriteBlkFile(string blkName);
+    void WriteNetFile(vector< pair<int, int>> & netStor, string netName);
+    void WriteWtsFile(vector<int>& costStor, string wtsName );
+    void WritePlFile(string plName);
+
+    string GetName(int macroIdx);
 
   private:
     void FillNetlistTableIncr();

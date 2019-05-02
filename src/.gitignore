@@ -1,4 +1,13 @@
+*.wts
+*.png
+*.pl
+*.nets
+*.plt
 *.o
+*.def
+*.sets
+*.blocks
+*.log
 *.sh
 *.slice
 *.txt
