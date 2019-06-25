@@ -10,11 +10,11 @@
 MacroCircuit::MacroCircuit(Circuit::Circuit& ckt, EnvFile& env, CircuitInfo& cinfo) :
 _ckt(ckt), _env(env), _cinfo(cinfo) {
   FillMacroStor(); 
-  FillPinGroup(); 
-  UpdateInstanceToMacroStor();
-  FillVertexEdge();
-  UpdateVertexToMacroStor();
-  FillMacroConnection();
+//  FillPinGroup(); 
+//  UpdateInstanceToMacroStor();
+//  FillVertexEdge();
+//  UpdateVertexToMacroStor();
+//  FillMacroConnection();
 }
 
 //MACRO_NETLIST_NAMESPACE_OPEN
@@ -75,12 +75,30 @@ void MacroCircuit::FillMacroStor() {
     }
 
     // macro cell update
-    macroNameMap[ curComp.id() ] = macroStor.size(); 
-    macroStor.push_back( 
-        MacroNetlist::Macro( curComp.id(), curComp.name(), 
-          1.0*curComp.placementX()/defScale, 
-          1.0*curComp.placementY()/defScale, 
-          curMacro.sizeX(), curMacro.sizeY(), NULL, NULL)); 
+    macroNameMap[ curComp.id() ] = macroStor.size();
+    int macroOrient = curComp.placementOrient();
+    switch( macroOrient ) {
+      case 0:
+      case 2:
+      case 4:
+      case 6: 
+        macroStor.push_back( 
+            MacroNetlist::Macro( curComp.id(), curComp.name(), 
+              1.0*curComp.placementX()/defScale, 
+              1.0*curComp.placementY()/defScale, 
+              curMacro.sizeX(), curMacro.sizeY(), NULL, NULL));
+        break;
+      case 1:
+      case 3:
+      case 5:
+      case 7:
+        macroStor.push_back( 
+            MacroNetlist::Macro( curComp.id(), curComp.name(), 
+              1.0*curComp.placementX()/defScale, 
+              1.0*curComp.placementY()/defScale, 
+              curMacro.sizeY(), curMacro.sizeX(), NULL, NULL));
+        break;
+    } 
 
 //    cout << curComp.id() << " " 
 //      << 1.0*curComp.placementX()/defScale << " " 
@@ -1019,8 +1037,6 @@ void MacroCircuit::StubPlacer(double snapGrid) {
 //  cout << "Macro Legalizing process... ";
   cout << "Macro Stub Placement process... ";
 
-  snapGrid *= 10;
-
   int sizeX = (int)( (_cinfo.ux - _cinfo.lx) / snapGrid + 0.5f);
   int sizeY = (int)( (_cinfo.uy - _cinfo.ly) / snapGrid + 0.5f);
 
@@ -1111,6 +1127,12 @@ void MacroCircuit::StubPlacer(double snapGrid) {
       }
     }
   } while( isOverlap );
+
+  for(auto& curMacro : macroStor) {
+    cout << curMacro.name << " " << curMacro.lx << " " << curMacro.ly ;
+    cout << " " << curMacro.lx + curMacro.w  
+      << " " << curMacro.ly + curMacro.h << endl;
+  }
 
   
 

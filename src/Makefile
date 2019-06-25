@@ -87,7 +87,7 @@ OPENSTASRCROOT 	= ../module/OpenSTA/
 	@echo "  Building... $@"
 	$(CPPC) $(CPPFLAG) $(INCLUDE) -c -o $@ $< 
 
-macro-netlist: $(OBJFILES) $(OPENSTASRCROOT)/app/StaApp_wrap.o \
+stubPlacer: $(OBJFILES) $(OPENSTASRCROOT)/app/StaApp_wrap.o \
 	$(OPENSTASRCROOT)/app/StaMain.o \
 	$(OPENSTASRCROOT)/app/TclInitVar.o
 	@echo " "

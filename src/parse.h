@@ -36,10 +36,9 @@ class EnvFile {
   int searchDepth;
   EnvFile() : def(""), verilog(""), design(""), output(""), sdc(""), searchDepth(INT_MIN) {};
 
-  bool IsFilled() { return design != "" && def != "" && 
-      verilog != "" && output != "" && sdc != "" && 
-      lefStor.size() != 0 && libStor.size() != 0 &&
-      searchDepth!= INT_MIN; };
+  bool IsFilled() { return def != "" && 
+      output != "" &&  
+      lefStor.size() != 0; };
 
   void Print() {
     using std::cout;

@@ -96,7 +96,13 @@ int main(int argc, char** argv) {
 
   Partition layout(ALL, _cinfo.lx, _cinfo.ly, _cinfo.ux-_cinfo.lx, _cinfo.uy-_cinfo.ly);
   layout.macroStor = _mckt.macroStor;
+  
+  // Legalize macro on global Structure
+  double snapGrid = 0.2f;
+  _mckt.StubPlacer(snapGrid);
 
+
+  /*
   TwoPartitions oneLevelPart = GetPart(_cinfo, layout, isHorizontal);
   TwoPartitions eastStor, westStor;
 
@@ -152,9 +158,9 @@ int main(int argc, char** argv) {
           // update macroPartMap
           unordered_map< PartClass, vector<int>, 
             MyHash<PartClass>> macroPartMap;
-          for(auto& curSet: oneSet) {
-            UpdateMacroPartInfo( _mckt, curSet, macroPartMap );
-          }
+//          for(auto& curSet: oneSet) {
+//            UpdateMacroPartInfo( _mckt, curSet, macroPartMap );
+//          }
 
           for(auto& curSet: oneSet) {
             curSet.FillNetlistTable( _mckt, macroPartMap );
@@ -168,8 +174,7 @@ int main(int argc, char** argv) {
   cout << "Total Extracted Sets: " << allSets.size() << endl << endl;
 
 
-  // Legalize macro on global Structure
-  double snapGrid = 0.002f;
+//  srand(_env.seed);
 
   // TopLevel Macro Location Update
   // For each possible full-layout
@@ -183,8 +188,7 @@ int main(int argc, char** argv) {
       _mckt.UpdateMacro(curPart);
     }
       
-    //  StupPlacer for Macro cells
-    _mckt.StubPlacer(snapGrid);
+    // StubPlacer for Macro cells
 
     // update partitons' macro info
     for(auto& curPart : curSet) { 
@@ -199,6 +203,7 @@ int main(int argc, char** argv) {
     break;
   }
   
+  */
   // update _ckt structure
   for(auto& curMacro : _mckt.macroStor) {
     auto cPtr = _ckt.defComponentMap.find( curMacro.name );
@@ -307,15 +312,7 @@ int main(int argc, char** argv) {
 
 bool ParseArgv(int argc, char** argv, EnvFile& _env) {
   for(int i=1; i<argc; i++) {
-    if(STRING_EQUAL("-verilog", argv[i])){
-      i++;
-      _env.verilog = string(argv[i]);
-    }
-    else if (STRING_EQUAL("-lib", argv[i])){
-      i++;
-      _env.libStor.push_back(argv[i]);
-    }
-    else if (STRING_EQUAL("-lef", argv[i])){
+    if (STRING_EQUAL("-lef", argv[i])){
       i++;
       _env.lefStor.push_back(argv[i]);
     }
@@ -323,21 +320,9 @@ bool ParseArgv(int argc, char** argv, EnvFile& _env) {
       i++;
       _env.def = string(argv[i]);
     }
-    else if (STRING_EQUAL("-sdc", argv[i])){
-      i++;
-      _env.sdc= string(argv[i]);
-    }
-    else if (STRING_EQUAL("-design", argv[i])){
-      i++;
-      _env.design= string(argv[i]);
-    }
     else if (STRING_EQUAL("-output", argv[i])){
       i++;
       _env.output = string(argv[i]);
-    }
-    else if (STRING_EQUAL("-depth", argv[i])){
-      i++;
-      _env.searchDepth = atoi(argv[i]);
     }
   }
 
@@ -345,7 +330,7 @@ bool ParseArgv(int argc, char** argv, EnvFile& _env) {
 }
 
 void PrintUsage() {
-  cout << "usage: ./macro-netlist -lib one.lib -lib two.lib ... -verilog netlist.v" << endl;
+  cout << "usage: ./stubPlacer -lef tech.lef -lef ... -def design.def -output output.def" << endl;
 }
 
 
