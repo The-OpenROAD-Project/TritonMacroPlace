@@ -204,6 +204,7 @@ class Partition {
         }
       }
 
+    // assign operator overloading
     Partition& operator= (const Partition& prev) {
       partClass = prev.partClass;
       lx = prev.lx;
@@ -236,7 +237,14 @@ class Partition {
       }
       cout << endl;
     }
+
+    // Call Parquet to have annealing solution
+    void DoAnneal();
+
+    // Writing functions
     void PrintSetFormat(FILE* fp);
+
+    // Parquet print functions
     void PrintParquetFormat(string origName);
     void WriteBlkFile(string blkName);
     void WriteNetFile(vector< pair<int, int>> & netStor, string netName);
@@ -281,13 +289,13 @@ class MacroCircuit {
 
     Circuit::Circuit& _ckt;
     EnvFile& _env;
+    // Timer
     sta::Sta* _sta;
+    // layout information
     CircuitInfo& _cinfo;
 //    using MacroNetlist::Vertex;
 //    using MacroNetlist::Edge;
 //    using MacroNetlist::Macro;
-    // layout information
-    double llx, lly, urx, ury;
     vector<MacroNetlist::Vertex> vertexStor;
     vector<MacroNetlist::Edge> edgeStor;
     
@@ -312,6 +320,12 @@ class MacroCircuit {
     
     // sta::Instance* --> macroStor's index stor
     unordered_map<sta::Instance*, int> macroInstMap;
+
+    // Update Macro Location from Partition info
+    void UpdateMacro(MacroNetlist::Partition& part);
+
+    // snapping Macros
+    void StubPlacer(double snapGrid);
 
   private:
     void FillMacroStor();

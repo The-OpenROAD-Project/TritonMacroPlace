@@ -23,7 +23,6 @@ vector<pair<Partition, Partition>> GetPart (
 void PrintAllSets(FILE* fp, CircuitInfo& cInfo, 
     vector< vector<Partition> >& allSets);
 
-
 typedef vector<pair<Partition, Partition>> TwoPartitions;
     
 // Partition Class --> macroStor's index.
@@ -75,6 +74,7 @@ int main(int argc, char** argv) {
         1.0*points.x[1]/defScale,
         1.0*points.y[1]/defScale,
         siteSizeX, siteSizeY );
+
   
   cout << endl;
   cout << "Layout Information" << endl;
@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
   MacroCircuit _mckt(_ckt, _env, _cinfo);
 //  _mckt.GetMacroStor(_ckt);
 
-//  for(auto& curMacro: macroStor) {
+//  for(auto& curMacro: _mckt.macroStor) {
 //    curMacro.Dump();
 //  }
  
@@ -136,11 +136,13 @@ int main(int argc, char** argv) {
 //        curWestSet.second.PrintSetFormat(stdout);
 //      }
 
+      // for all possible combinations in partitions
       for(int i=0; i<eastStor.size(); i++) {
         for(int j=0; j<westStor.size(); j++) {
 
           vector<Partition> oneSet;
 
+          // one set is composed of four subblocks
           oneSet.push_back( eastStor[i].first );
           oneSet.push_back( eastStor[i].second );
           oneSet.push_back( westStor[j].first );
@@ -158,23 +160,86 @@ int main(int argc, char** argv) {
             curSet.FillNetlistTable( _mckt, macroPartMap );
           }
            
-
           allSets.push_back( oneSet );
         }
       } 
     }
   }
+  cout << "Total Extracted Sets: " << allSets.size() << endl << endl;
 
+
+  // Legalize macro on global Structure
+  double snapGrid = 0.002f;
+
+  // TopLevel Macro Location Update
+  // For each possible full-layout
+  for(auto& curSet: allSets) {
+
+    // For each partitions (four partition)
+    for(auto& curPart : curSet) {
+      // Annealing
+      curPart.DoAnneal();
+      // Update _mckt frequently
+      _mckt.UpdateMacro(curPart);
+    }
+      
+    //  StupPlacer for Macro cells
+    _mckt.StubPlacer(snapGrid);
+
+    // update partitons' macro info
+    for(auto& curPart : curSet) { 
+      for(auto& curMacro : curPart.macroStor) {
+        auto mPtr = _mckt.macroNameMap.find(curMacro.name);
+        int macroIdx = mPtr->second;
+        curMacro.lx = _mckt.macroStor[macroIdx].lx;
+        curMacro.ly = _mckt.macroStor[macroIdx].ly;
+      }
+    }
+
+    break;
+  }
+  
+  // update _ckt structure
+  for(auto& curMacro : _mckt.macroStor) {
+    auto cPtr = _ckt.defComponentMap.find( curMacro.name );
+    if( cPtr == _ckt.defComponentMap.end()) {
+      cout << "ERROR: Cannot find " << curMacro.name << " in defiComponentMap" << endl;
+      exit(1);
+    }
+    int cIdx = cPtr->second;
+    int lx = int(curMacro.lx * defScale + 0.5f);
+    int ly = int(curMacro.ly * defScale + 0.5f);
+
+    _ckt.defComponentStor[cIdx].setPlacementLocation(lx, ly);
+  }
+
+  // top-level layout print
+  FILE* fp = fopen(_env.output.c_str(), "w"); 
+  if( fp == NULL) { 
+    cout << "ERROR: cannot open " << _env.output << " to write output file" << endl;
+    exit(1);
+  }
+  _ckt.WriteDef( fp );
+  fclose(fp);
+
+  /*
+  // Writing functions for Sets file
   FILE* fp = fopen(_env.output.c_str(), "w");
   if( fp == NULL) { 
     cout << "ERROR: cannot open " << _env.output << " to write output file" << endl;
     exit(1);
   } 
 
-  cout << "Total Extracted Sets: " << allSets.size() << endl << endl;
+  // Generate *.sets file
   PrintAllSets(fp, _cinfo, allSets);
-  layout.PrintParquetFormat(_env.output);
   fclose(fp);
+  */
+
+
+
+  // ParquetFormat print
+  // only top-level formats
+//  layout.PrintParquetFormat(_env.output);
 
   cout << "Finished" << endl;
 
@@ -297,19 +362,27 @@ void CutRoundUp( CircuitInfo& cInfo, double& cutLine, bool isHorizontal ) {
   }
 }
 
+// Two partitioning functions:
+// first : lower part
+// second : upper part
+// 
+// cutLine is sweeping from lower to upper coordinates in x / y
 vector<pair<Partition, Partition>> GetPart(
     CircuitInfo &cInfo,  
     Partition& partition, 
     bool isHorizontal ) {
 
+  // Return vector
   vector<pair<Partition, Partition>> ret;
-//  vector<double> eventPoints;
+  
   typedef std::set<int> MacroSetT;
   interval_map<double, MacroSetT> macroMap;
 
   double maxWidth = DBL_MIN;
   double maxHeight = DBL_MIN;
 
+  // in parent partition, traverse macros
+  //
   for(auto& curMacro: partition.macroStor) {
     MacroSetT macroInfo;
     macroInfo.insert( &curMacro - &partition.macroStor[0]);
@@ -347,6 +420,7 @@ vector<pair<Partition, Partition>> GetPart(
     }
   }
   
+  // Macro checker array
   // 0 for uninitialize
   // 1 for lower
   // 2 for upper
@@ -398,11 +472,12 @@ vector<pair<Partition, Partition>> GetPart(
         }
       }
     } 
-    // impossible cuts. 
+    // impossible cuts, then skip 
     if( isImpossible ) {
       continue;
     }
 
+    // Fill in the Partitioning information
     PartClass lClass, uClass;
     if( partition.partClass == ALL ) {
       lClass = (isHorizontal)? W : S;
@@ -444,6 +519,8 @@ vector<pair<Partition, Partition>> GetPart(
 
 
     // cout << it->first << " " << it->second << endl;
+    //
+    // Fill in child partitons' macroStor
     for(auto& curMacro : partition.macroStor) {
       int i=&curMacro - &partition.macroStor[0];
       if( chkArr[i] == 1 ) {
@@ -560,7 +637,8 @@ void Partition::PrintSetFormat(FILE* fp) {
   fprintf(fp,"    WIDTH %f ;\n", width);
   fprintf(fp,"    HEIGHT %f ;\n", height);
   for(auto& curMacro : macroStor) {
-    fprintf(fp,"    MACRO %s %s %f %f %f %f ;\n", curMacro.name.c_str(), curMacro.type.c_str(), 
+    fprintf(fp,"    MACRO %s %s %f %f %f %f ;\n", 
+        curMacro.name.c_str(), curMacro.type.c_str(), 
         curMacro.lx, curMacro.ly, curMacro.w, curMacro.h);
   }
 
@@ -586,6 +664,7 @@ void Partition::PrintSetFormat(FILE* fp) {
   fflush(fp);
 }
 
+//
 void PrintAllSets(FILE* fp, CircuitInfo& cInfo, 
     vector< vector<Partition> >& allSets) {
   cout << "Writing sets file... ";
@@ -1017,6 +1096,10 @@ void Partition::FillNetlistTableDesc() {
     }
   } 
 }
+
+// Call ParquetFP
+void Partition::DoAnneal() {}
+
 
 void UpdateMacroPartInfo( 
     MacroCircuit& _mckt,

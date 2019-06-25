@@ -998,4 +998,123 @@ int MacroCircuit::GetPathWeight(MacroNetlist::Vertex* from, MacroNetlist::Vertex
 }
 
 
+// Update Macro Location
+void MacroCircuit::UpdateMacro( MacroNetlist::Partition& part) {
+  for(auto& curMacro : part.macroStor) {
+    auto mnPtr = macroNameMap.find(curMacro.name);
+    if( mnPtr == macroNameMap.end() ) {
+      cout << "ERROR: Macro not exists in MacroCircuit " << curMacro.name << endl;
+      exit(1);
+    }
+
+    // Update Macro Location
+    int macroIdx = mnPtr->second;
+    macroStor[macroIdx].lx = curMacro.lx;
+    macroStor[macroIdx].ly = curMacro.ly;  
+  }
+}
+
+// Legalizer for macro locations
+void MacroCircuit::StubPlacer(double snapGrid) {
+//  cout << "Macro Legalizing process... ";
+  cout << "Macro Stub Placement process... ";
+
+  snapGrid *= 10;
+
+  int sizeX = (int)( (_cinfo.ux - _cinfo.lx) / snapGrid + 0.5f);
+  int sizeY = (int)( (_cinfo.uy - _cinfo.ly) / snapGrid + 0.5f);
+
+  int** checker = new int* [sizeX];
+  for(int i=0; i<sizeX; i++) {
+    checker[i] = new int [sizeY];
+    for(int j=0; j<sizeY; j++) {
+      checker[i][j] = -1; // uninitialize
+    }
+  }
+  cout << "cinfo: " << _cinfo.ux << " " << _cinfo.uy << endl;
+  cout << "GRID Width: " << sizeX << " Height: " << sizeY << endl;
+
+
+  bool isOverlap = true;
+  do {
+
+    for(auto& curMacro: macroStor) { 
+      // Macro Projection in (llx, lly, urx, ury)
+      if( curMacro.lx < _cinfo.lx ) curMacro.lx = _cinfo.lx;
+      if( curMacro.ly < _cinfo.ly ) curMacro.ly = _cinfo.ly;
+      if( curMacro.lx + curMacro.w > _cinfo.ux ) curMacro.lx = _cinfo.ux - curMacro.w;
+      if( curMacro.ly + curMacro.h > _cinfo.uy ) curMacro.ly = _cinfo.uy - curMacro.h;
+
+      if( curMacro.lx < _cinfo.lx || curMacro.lx + curMacro.w > _cinfo.ux ) {
+        cout << "ERROR: Macro Legalizer detects width is not enough" << endl;
+        exit(1);
+      }
+      if( curMacro.ly < _cinfo.lx || curMacro.ly + curMacro.h > _cinfo.uy ) {
+        cout << "ERROR: Macro Legalizer detects height is not enough" << endl;
+        exit(1);
+      }
+
+      // do random placement
+      int macroWidthGrid = int( curMacro.w / snapGrid + 0.5f);
+      int macroHeightGrid = int( curMacro.h / snapGrid + 0.5f);
+
+      // possible range
+      int macroRangeX = sizeX - macroWidthGrid;
+      int macroRangeY = sizeY - macroHeightGrid;
+
+      // extract random lx, ly location
+      int macroGridLx = rand() % macroRangeX;
+      int macroGridLy = rand() % macroRangeY;
+
+      curMacro.lx = int( macroGridLx * snapGrid +0.5f);
+      curMacro.ly = int( macroGridLy * snapGrid +0.5f); 
+
+      // follow initial placement
+      // curMacro.lx = int( curMacro.lx / snapGrid + 0.5f) * snapGrid;
+      // curMacro.ly = int( curMacro.ly / snapGrid + 0.5f) * snapGrid;
+
+      // Do someth to avoid overlap
+      // ...
+      //    curMacro.Dump();
+
+
+      isOverlap = false;
+      for(int i= macroGridLx ; i <= macroGridLx + macroWidthGrid; i++) {
+        for(int j= macroGridLy ; j <= macroGridLy + macroHeightGrid; j++) {
+          if( checker[i][j] != -1 ) {
+            cout << i << " " << j << " prev: " << checker[i][j] 
+              << " cur: " << &curMacro - &macroStor[0] << endl;
+      
+
+            isOverlap = true; 
+            break;
+          }
+          // insert a macro placer
+          checker[i][j] = &curMacro - &macroStor[0];
+        }
+        if( isOverlap ) {
+          break;
+        }
+      }
+      if( isOverlap ) {
+        break;
+      }
+    }
+
+    if( isOverlap) {
+      cout << "overlap!!" << endl;
+    }
+
+    for(int i=0; i<sizeX; i++) {
+      for(int j=0; j<sizeY; j++) {
+        checker[i][j] = -1;
+      }
+    }
+  } while( isOverlap );
+
+  
+
+  cout << "Done" << endl;
+}
+
 
