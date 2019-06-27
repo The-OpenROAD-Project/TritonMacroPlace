@@ -1,0 +1,13 @@
+[submodule "module/eigen-git-mirror"]
+	path = module/eigen-git-mirror
+  url = https://github.com/eigenteam/eigen-git-mirror.git
+  branch = branches/3.3
+[submodule "module/lef"]
+	path = module/lef
+	url = https://github.com/The-OpenROAD-Project/lef
+[submodule "module/def"]
+	path = module/def
+	url = https://github.com/The-OpenROAD-Project/def
+[submodule "module/OpenSTA"]
+	path = module/OpenSTA
+	url = https://github.com/The-OpenROAD-Project/OpenSTA.git

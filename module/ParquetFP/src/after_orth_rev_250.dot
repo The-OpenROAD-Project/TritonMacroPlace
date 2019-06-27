@@ -1,0 +1,79 @@
+digraph BST {
+  graph [ordering="out"];
+  "0" -> "5";
+  "0" -> null0
+  null0 [shape=point];
+  "1" -> null1
+  null1 [shape=point];
+  "1" -> null2
+  null2 [shape=point];
+  "2" -> "0";
+  "2" -> "19";
+  "3" -> "20";
+  "3" -> null3
+  null3 [shape=point];
+  "4" -> "15";
+  "4" -> null4
+  null4 [shape=point];
+  "5" -> "12";
+  "5" -> null5
+  null5 [shape=point];
+  "6" -> "9";
+  "6" -> null6
+  null6 [shape=point];
+  "7" -> null7
+  null7 [shape=point];
+  "7" -> null8
+  null8 [shape=point];
+  "8" -> "4";
+  "8" -> "16";
+  "9" -> null9
+  null9 [shape=point];
+  "9" -> null10
+  null10 [shape=point];
+  "10" -> null11
+  null11 [shape=point];
+  "10" -> "22";
+  "11" -> null12
+  null12 [shape=point];
+  "11" -> "2";
+  "12" -> null13
+  null13 [shape=point];
+  "12" -> "1";
+  "13" -> null14
+  null14 [shape=point];
+  "13" -> "7";
+  "14" -> null15
+  null15 [shape=point];
+  "14" -> null16
+  null16 [shape=point];
+  "15" -> "13";
+  "15" -> null17
+  null17 [shape=point];
+  "16" -> null18
+  null18 [shape=point];
+  "16" -> "10";
+  "17" -> "24";
+  "17" -> null19
+  null19 [shape=point];
+  "18" -> "21";
+  "18" -> null20
+  null20 [shape=point];
+  "19" -> "17";
+  "19" -> "14";
+  "20" -> "6";
+  "20" -> null21
+  null21 [shape=point];
+  "21" -> null22
+  null22 [shape=point];
+  "21" -> "23";
+  "22" -> "3";
+  "22" -> "11";
+  "23" -> null23
+  null23 [shape=point];
+  "23" -> null24
+  null24 [shape=point];
+  "24" -> null25
+  null25 [shape=point];
+  "24" -> "18";
+}

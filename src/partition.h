@@ -1,0 +1,13 @@
+#ifndef __PARTITION__
+#define __PARTITION__ 0
+
+#include "parse.h"
+
+
+MACRO_NETLIST_NAMESPACE_OPEN 
+
+
+
+MACRO_NETLIST_NAMESPACE_CLOSE
+
+#endif

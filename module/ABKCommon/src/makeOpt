@@ -1,0 +1,2 @@
+#!/bin/sh
+make MAKE="./makeOpt" OPTFLAGS="-O5" SONAMEKEY="-R" LIBBASE="/home/userd/code/lib/O5" $1 $2 $3 $4 $5

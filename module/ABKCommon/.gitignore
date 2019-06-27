@@ -1,0 +1,10 @@
+*.a
+**/*.a
+*.out
+*.log
+
+Makefile
+CMakeCache.txt
+*.cmake
+CMakeFiles
+install_manifest.txt
