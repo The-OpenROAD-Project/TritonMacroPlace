@@ -422,20 +422,33 @@ vector<pair<Partition, Partition>> GetPart(
   double prevPushLimit = DBL_MIN;
   bool isFirst = true;
   vector<double> cutLineStor;
-  for( interval_map<double, MacroSetT>::iterator 
-      it = macroMap.begin();
-      it != macroMap.end(); *it++) {
-    interval<double>::type macroInterval = it->first;
-    MacroSetT result = it->second;
+ 
+  // less than 4
+  if( partition.macroStor.size() <= 4 ) {
+    for( interval_map<double, MacroSetT>::iterator 
+        it = macroMap.begin();
+        it != macroMap.end(); *it++) {
+      interval<double>::type macroInterval = it->first;
+      MacroSetT result = it->second;
 
-    if( isFirst ) {
-      cutLineStor.push_back( macroInterval.lower() );
-      prevPushLimit = macroInterval.lower();
-      isFirst = false;
+      if( isFirst ) {
+        cutLineStor.push_back( macroInterval.lower() );
+        prevPushLimit = macroInterval.lower();
+        isFirst = false;
+      }
+      else if( abs(macroInterval.lower()-prevPushLimit) > cutLineLimit ) {
+        cutLineStor.push_back( macroInterval.lower() );
+        prevPushLimit = macroInterval.lower();
+      }
     }
-    else if( abs(macroInterval.lower()-prevPushLimit) > cutLineLimit ) {
-      cutLineStor.push_back( macroInterval.lower() );
-      prevPushLimit = macroInterval.lower();
+  }
+  // more than 4
+  else {
+    int hardLimit = int( sqrt( 1.0*partition.macroStor.size()/3.0 ) + 0.5f);
+    for(int i=0; i<=hardLimit; i++) {
+      cutLineStor.push_back( (isHorizontal)? 
+          cInfo.lx + 1.0*(cInfo.ux - cInfo.lx)/hardLimit * i :
+          cInfo.ly + 1.0*(cInfo.uy - cInfo.ly)/hardLimit * i );
     }
   }
   
