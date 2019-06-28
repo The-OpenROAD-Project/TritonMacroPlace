@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
     curMacro.Dump();
   }
  
-  bool isHorizontal = true;
+  bool isHorizontal = (_cinfo.ux-_cinfo.lx) > (_cinfo.uy-_cinfo.ly);
 
   Partition layout(ALL, _cinfo.lx, _cinfo.ly, _cinfo.ux-_cinfo.lx, _cinfo.uy-_cinfo.ly);
   layout.macroStor = _mckt.macroStor;
