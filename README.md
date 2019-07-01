@@ -1,10 +1,12 @@
 # TritonMacroPlacer
 
-ParquetFP based macro cell placer for OpenROAD
+ParquetFP based macro cell placer for OpenROAD.
+
+## Flows
+* Input: Initialy placed DEF from globalPlacer (e.g. RePlAce with timing-driven / mixed-height-cell)
+* Output: Multiple DEF files that could be a solution. The maximum number of solutions is restricted by (#macros/3)^(3/2).   
 
 ## Getting Started
-
-
 ### Prerequisite
 * GCC compiler and libstdc++ static library >= 4.8.5
 * boost library >= 1.41
