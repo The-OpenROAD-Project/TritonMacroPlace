@@ -105,7 +105,12 @@ void MacroCircuit::FillMacroStor() {
     }
 
     // macro cell update
-    macroNameMap[ curComp.id() ] = macroStor.size();
+    string macroName = curComp.id();
+//    ReplaceStringInPlace( macroName, "\\[",  "[" );
+//    ReplaceStringInPlace( macroName, "\\]",  "]" );
+//    ReplaceStringInPlace( macroName, "\\/",  "/" );
+
+    macroNameMap[ macroName ] = macroStor.size();
 
 
     int macroOrient = curComp.placementOrient();
@@ -128,7 +133,7 @@ void MacroCircuit::FillMacroStor() {
     }
     
     MacroNetlist::Macro 
-      tmpMacro( curComp.id(), curComp.name(), 
+      tmpMacro( macroName, curComp.name(), 
           1.0*curComp.placementX()/defScale, 
           1.0*curComp.placementY()/defScale,
           realSizeX, realSizeY, 
@@ -248,9 +253,9 @@ pair<void*, VertexClass> MacroCircuit::GetPtrClassPair( sta::Pin* pin ) {
     sta::Instance* inst = _sta->network()->instance(pin);
     string instName = _sta->network()->name(inst);
     
-    ReplaceStringInPlace( instName, "\\[",  "[" );
-    ReplaceStringInPlace( instName, "\\]",  "]" );
-    ReplaceStringInPlace( instName, "\\/",  "/" );
+//    ReplaceStringInPlace( instName, "\\[",  "[" );
+//    ReplaceStringInPlace( instName, "\\]",  "]" );
+//    ReplaceStringInPlace( instName, "\\/",  "/" );
 
     ret.first = (void*) inst;
     ret.second = (macroNameMap.find( instName ) != macroNameMap.end())? 
@@ -306,7 +311,8 @@ void MacroCircuit::FillVertexEdge() {
     // skip for below two cases; non-FF cells
     Instance* inst = _sta->network()->instance(pin);
     LibertyCell* libCell = _sta->network()->libertyCell(inst);
-    if( !libCell -> hasSequentials() && macroInstMap.find(inst) == macroInstMap.end() ) {
+    if( !libCell -> hasSequentials() 
+        && macroInstMap.find(inst) == macroInstMap.end() ) {
       continue;
     }  
     
@@ -328,7 +334,6 @@ void MacroCircuit::FillVertexEdge() {
     }
 
 //    cout << "vert: " << _sta->network()->name(inst) << endl;
-
   }
   
   // VertexPtrMap Initialize
@@ -342,7 +347,6 @@ void MacroCircuit::FillVertexEdge() {
   auto endTime = std::chrono::system_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
   cout << "Vertex Building: " << elapsed.count()<< "s" << endl;
-
 
   
   startTime = std::chrono::system_clock::now();
@@ -785,9 +789,9 @@ void MacroCircuit::UpdateInstanceToMacroStor() {
     sta::Instance* inst = _sta->network()->instance(pin);
     string instName = _sta->network()->name(inst);
 
-    ReplaceStringInPlace(instName, "\\[", "[");
-    ReplaceStringInPlace(instName, "\\]", "]");
-    ReplaceStringInPlace(instName, "\\/", "/");
+//    ReplaceStringInPlace(instName, "\\[", "[");
+//    ReplaceStringInPlace(instName, "\\]", "]");
+//    ReplaceStringInPlace(instName, "\\/", "/");
 
     auto mnPtr = macroNameMap.find(instName); 
     if( mnPtr == macroNameMap.end()) {
@@ -808,9 +812,9 @@ void MacroCircuit::UpdateVertexToMacroStor() {
     }
     string name = _sta->network()->name((sta::Instance*)curVertex.ptr);
 //    cout << "Macro: " << name << endl;
-    ReplaceStringInPlace(name, "\\[", "[");
-    ReplaceStringInPlace(name, "\\]", "]");
-    ReplaceStringInPlace(name, "\\/", "/");
+//    ReplaceStringInPlace(name, "\\[", "[");
+//    ReplaceStringInPlace(name, "\\]", "]");
+//    ReplaceStringInPlace(name, "\\/", "/");
 
     auto mPtr = macroNameMap.find( name );
     if( mPtr == macroNameMap.end() ) {
