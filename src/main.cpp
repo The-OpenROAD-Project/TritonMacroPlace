@@ -217,6 +217,7 @@ int main(int argc, char** argv) {
       int ly = int(curMacro.ly * defScale + 0.5f);
 
       _ckt.defComponentStor[cIdx].setPlacementLocation(lx, ly);
+      _ckt.defComponentStor[cIdx].setPlacementStatus(DEFI_COMPONENT_FIXED);
     }
 
     // top-level layout print
