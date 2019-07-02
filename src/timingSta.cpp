@@ -28,19 +28,14 @@ sta::Sta* GetStaObject(EnvFile& _env ) {
 //  _sta->setThreadCount(8);
 
   // environment settings
-
   string cornerName="wst";
-  //    string cornerNameFF="bst";
 
   StringSet cornerNameSet;
   cornerNameSet.insert(cornerName.c_str());
-  //    cornerNameSet.insert(cornerNameFF.c_str());
 
   //define_corners
   _sta->makeCorners(&cornerNameSet);
   Corner *corner = _sta->findCorner(cornerName.c_str());
-  //    Corner *corner_FF = _sta->findCorner(cornerNameFF.c_str());
-
 
   // read_liberty
   for(auto& libName : _env.libStor) {
@@ -49,22 +44,35 @@ sta::Sta* GetStaObject(EnvFile& _env ) {
 
   //read_netlist
   NetworkReader *network = _sta->networkReader();
-  bool readVerilog = false;
-  if (network) {
-    _sta->readNetlistBefore();       
-    readVerilog = 
-      readVerilogFile(_env.verilog.c_str(), _sta->networkReader());
+  if(!network) {
+    cout << "ERROR: Internal OpenSTA has problem for generating networkReader" << endl;
+    exit(1);
   }
+  _sta->readNetlistBefore();       
+  
+  bool readVerilog = 
+    readVerilogFile(_env.verilog.c_str(), _sta->networkReader());
 
   //link_design
-  bool link = _sta->linkDesign(_env.design.c_str());
+  cout << "Linking in OpenSTA ..." << endl;
+  Tcl_Eval(_interp, string("set link_make_block_boxes 0").c_str());
+  Tcl_Eval(_interp, string("link_design " + _env.design).c_str());
+
   bool isLinked = network->isLinked();
-  if( !isLinked ) {
-    cout << "ERROR on OpenSTA's linking..!" << endl;
+  
+  if( isLinked ) {
+    cout << "Successfully linked: " 
+      << network->cellName(_sta->currentInstance()) << endl;
+  }
+  else {
+    cout << "ERROR:  Linking Failed. Please put correct liberty files ";
+    cout << "to instantiate OpenSTA correctly." << endl;
     exit(1);
   }
 
+  // SDC reading
   Tcl_Eval(_interp, string( "sta::read_sdc " + _env.sdc).c_str() ); 
+
 //  bool parasitics = 
 //    _sta->readParasitics(_env.spef.c_str(), 
 //        _sta->currentInstance(), 
