@@ -6,14 +6,18 @@
 
 #include "lefdefIO.h"
 #include "parse.h"
+#include "circuit.h"
 #include "timingSta.h"
 
 
 
-MacroCircuit::MacroCircuit(Circuit::Circuit& ckt, EnvFile& env, CircuitInfo& cinfo) :
-_ckt(ckt), _env(env), _cinfo(cinfo),
-gHaloX(0), gHaloY(0), 
-gChannelX(0), gChannelY(0) {
+MacroCircuit::MacroCircuit(
+    Circuit::Circuit& ckt, 
+    EnvFile& env, 
+    CircuitInfo& cinfo) :
+  _ckt(ckt), _env(env), _cinfo(cinfo),
+  gHaloX(0), gHaloY(0), 
+  gChannelX(0), gChannelY(0) {
 
   // parsing from cfg file
   // global config
@@ -113,7 +117,9 @@ void MacroCircuit::FillMacroStor() {
     macroNameMap[ macroName ] = macroStor.size();
 
 
-    int macroOrient = curComp.placementOrient();
+    int macroOrient = 
+      (_env.isWestFix)? 1 : curComp.placementOrient();
+
     double realSizeX = 0, realSizeY = 0;
     switch( macroOrient ) {
       case 0:
@@ -840,7 +846,7 @@ void MacroCircuit::FillMacroConnection() {
   cout << "searchVertSize: " << searchVert.size() << endl;
   // macroNetlistWeight Initialize
   macroWeight.resize(searchVert.size());
-  for(int i=0; i<searchVert.size(); i++) {
+  for(size_t i=0; i<searchVert.size(); i++) {
     macroWeight[i] = vector<int> (searchVert.size(), 0);
   }
 
@@ -897,8 +903,8 @@ void MacroCircuit::FillMacroConnection() {
   auto endTime = std::chrono::system_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
   cout << "BFS Search: " << elapsed.count()<< "s" << endl;
-  for(int i=0; i<searchVert.size(); i++) {
-    for(int j=0; j<searchVert.size(); j++) {
+  for(size_t i=0; i<searchVert.size(); i++) {
+    for(size_t j=0; j<searchVert.size(); j++) {
       cout << macroWeight[i][j] << " ";
     }
     cout << endl;
@@ -1029,7 +1035,7 @@ int MacroCircuit::GetPathWeight(MacroNetlist::Vertex* from, MacroNetlist::Vertex
   }
   int ret = 0;
   for(auto& curPath: result) {
-    for(int i=0; i<curPath.size()-1; i++) {
+    for(size_t i=0; i<curPath.size()-1; i++) {
       auto vPtr = vertexPairEdgeMap.find( make_pair(curPath[i], curPath[i+1]) );
       if( vPtr == vertexPairEdgeMap.end() ) {
         vPtr = vertexPairEdgeMap.find( make_pair(curPath[i+1], curPath[i]));

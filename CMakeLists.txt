@@ -62,6 +62,7 @@ set (FPLAN_SRC
   src/main.cpp
   src/parquet.cpp
   src/timingSta.cpp
+  src/partition.cpp
 )
 
 

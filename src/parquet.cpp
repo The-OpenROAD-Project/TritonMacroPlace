@@ -2,7 +2,7 @@
 #include "Parquet.h"
 #include "mixedpackingfromdb.h"
 #include "btreeanneal.h"
-#include "parse.h"
+#include "circuit.h"
 
 using MacroNetlist::Partition;
 

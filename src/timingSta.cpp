@@ -45,7 +45,7 @@ sta::Sta* GetStaObject(EnvFile& _env ) {
   //read_netlist
   NetworkReader *network = _sta->networkReader();
   if(!network) {
-    cout << "ERROR: Internal OpenSTA has problem for generating networkReader" << endl;
+    std::cout << "ERROR: Internal OpenSTA has problem for generating networkReader" << std::endl;
     exit(1);
   }
   _sta->readNetlistBefore();       
@@ -54,19 +54,19 @@ sta::Sta* GetStaObject(EnvFile& _env ) {
     readVerilogFile(_env.verilog.c_str(), _sta->networkReader());
 
   //link_design
-  cout << "Linking in OpenSTA ..." << endl;
+  std::cout << "Linking in OpenSTA ..." << std::endl;
   Tcl_Eval(_interp, string("set link_make_block_boxes 0").c_str());
   Tcl_Eval(_interp, string("link_design " + _env.design).c_str());
 
   bool isLinked = network->isLinked();
   
   if( isLinked ) {
-    cout << "Successfully linked: " 
-      << network->cellName(_sta->currentInstance()) << endl;
+    std::cout << "Successfully linked: " 
+      << network->cellName(_sta->currentInstance()) << std::endl;
   }
   else {
-    cout << "ERROR:  Linking Failed. Please put correct liberty files ";
-    cout << "to instantiate OpenSTA correctly." << endl;
+    std::cout << "ERROR:  Linking Failed. Please put correct liberty files ";
+    std::cout << "to instantiate OpenSTA correctly." << std::endl;
     exit(1);
   }
 
