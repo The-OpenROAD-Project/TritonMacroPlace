@@ -1345,3 +1345,57 @@ void MacroCircuit::ParseLocalConfig(string fileName) {
   }
   cout << "Done!" << endl;
 }
+
+void 
+MacroCircuit::
+Plot(string fileName, vector<MacroNetlist::Partition>& set) {
+  cout<<"OutPut Plot file is "<<fileName<<endl;
+  std::ofstream gpOut(fileName);
+  if (!gpOut.good()) {
+    cout << "Warning: output file " << fileName
+      << " can't be opened" << endl;
+  }
+  //   gpOut <<"set terminal png size 1024,768" << endl;
+
+  gpOut<<"#Use this file as a script for gnuplot"<<endl;
+  gpOut<<"#(See http://www.gnuplot.info/ for details)"<<endl;
+  gpOut << "set nokey"<<endl;
+  
+  gpOut << "set size ratio -1" << endl;
+  gpOut << "set title '' " << endl; 
+
+  gpOut << "set xrange[" << _cinfo.lx << ":" << _cinfo.ux << "]" << endl;
+  gpOut << "set yrange[" << _cinfo.ly << ":" << _cinfo.uy << "]" << endl;
+
+  int objCnt = 0; 
+  for(auto& curMacro : macroStor) {
+    // rect box
+    gpOut << "set object " << ++objCnt
+      << " rect from " << curMacro.lx << "," << curMacro.ly 
+      << " to " << curMacro.lx + curMacro.w << "," 
+      << curMacro.ly + curMacro.h
+      << " fc rgb \"gold\"" << endl;
+
+    // name
+    gpOut<<"set label '"<< curMacro.name 
+      << "(" << &curMacro - &macroStor[0] << ")"
+      << "'noenhanced at "
+      << curMacro.lx + curMacro.w/5<<" , "
+      << curMacro.ly + curMacro.h/4<<endl;
+  }
+
+  // just print boundary for each sets
+  for(auto& curSet : set) {
+    gpOut << "set object " << ++objCnt
+      << " rect from " << curSet.lx << "," << curSet.ly 
+      << " to " << curSet.lx + curSet.width << "," 
+      << curSet.ly + curSet.height
+      << " fc rgb \"#FFFFFFFF\"" << endl;
+  }
+
+  gpOut << "plot '-' w l" << endl;
+  gpOut << "EOF" << endl;
+  gpOut << "pause -1 'Press any key' "<<endl;
+  gpOut.close();
+
+}

@@ -19,12 +19,14 @@ class EnvFile {
   std::vector<std::string> libStor;
   int searchDepth;
   bool isWestFix;
+  bool isPlot;
 
   EnvFile() : def(""), verilog(""), design(""), 
   output(""), sdc(""), 
   globalConfig(""), localConfig(""), 
   searchDepth(INT_MIN),
-  isWestFix(false) {};
+  isWestFix(false),
+  isPlot(false) {};
 
   bool IsFilled() { return design != "" && def != "" && 
       verilog != "" && output != "" && sdc != "" && 

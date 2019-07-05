@@ -212,23 +212,36 @@ int main(int argc, char** argv) {
     for(auto& curMacro : _mckt.macroStor) {
       auto cPtr = _ckt.defComponentMap.find( curMacro.name );
       if( cPtr == _ckt.defComponentMap.end()) {
-        cout << "ERROR: Cannot find " << curMacro.name << " in defiComponentMap" << endl;
+        cout << "ERROR: Cannot find " << curMacro.name 
+          << " in defiComponentMap" << endl;
         exit(1);
       }
       int cIdx = cPtr->second;
       int lx = int(curMacro.lx * defScale + 0.5f);
       int ly = int(curMacro.ly * defScale + 0.5f);
 
-      _ckt.defComponentStor[cIdx].setPlacementLocation(lx, ly, _env.isWestFix? 1 : -1);
-      _ckt.defComponentStor[cIdx].setPlacementStatus(DEFI_COMPONENT_FIXED);
+      _ckt.defComponentStor[cIdx].
+        setPlacementLocation(lx, ly, _env.isWestFix? 1 : -1);
+      
+      _ckt.defComponentStor[cIdx].
+        setPlacementStatus(DEFI_COMPONENT_FIXED);
+    }
+
+    // check plotting
+    if( _env.isPlot ) {
+      _mckt.Plot(_env.output + "_" + std::to_string(setCnt) + ".plt", curSet);
     }
 
     // top-level layout print
-    FILE* fp = fopen(string(_env.output+"_"+std::to_string(setCnt) + ".def").c_str(), "w"); 
+    FILE* fp = 
+      fopen(string(_env.output + "_" 
+            + std::to_string(setCnt) + ".def").c_str(), "w"); 
+
     if( fp == NULL) { 
       cout << "ERROR: cannot open " << _env.output << " to write output file" << endl;
       exit(1);
     }
+
     _ckt.WriteDef( fp );
     fclose(fp);
 
@@ -363,6 +376,9 @@ bool ParseArgv(int argc, char** argv, EnvFile& _env) {
     }
     else if (STRING_EQUAL("-westFix", argv[i])) {
       _env.isWestFix = true;
+    }
+    else if (STRING_EQUAL("-plot", argv[i])) {
+      _env.isPlot = true;
     }
   }
 

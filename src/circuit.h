@@ -35,8 +35,10 @@ class MacroCircuit {
 
     Circuit::Circuit& _ckt;
     EnvFile& _env;
+
     // Timer
     sta::Sta* _sta;
+
     // layout information
     CircuitInfo& _cinfo;
 //    using MacroNetlist::Vertex;
@@ -70,9 +72,6 @@ class MacroCircuit {
     // Update Macro Location from Partition info
     void UpdateMacroLoc(MacroNetlist::Partition& part);
 
-    // snapping Macros
-    void StubPlacer(double snapGrid);
-
     // parsing function
     void ParseGlobalConfig(string fileName);
     void ParseLocalConfig(string fileName);
@@ -84,6 +83,11 @@ class MacroCircuit {
     // save LocalCfg into this structure
     unordered_map< string, MacroLocalInfo > macroLocalMap;
 
+    // plotting 
+    void Plot(string outputFile, vector<MacroNetlist::Partition>& set);
+
+    // 
+    void StubPlacer(double snapGrid);
 
   private:
     void FillMacroStor();
@@ -108,17 +112,22 @@ class MacroCircuit {
       int, MyHash<pair<void*, void*>> > vertexPairEdgeMap;
     
     pair<void*, MacroNetlist::VertexClass> GetPtrClassPair(sta::Pin* pin);
+
     MacroNetlist::Vertex* GetVertex(sta::Pin* pin); 
 
-    int GetPathWeight( MacroNetlist::Vertex* from, MacroNetlist::Vertex* to, int limit );
+    int GetPathWeight( MacroNetlist::Vertex* from, 
+        MacroNetlist::Vertex* to, int limit );
     // Matrix version
-    int GetPathWeightMatrix ( SMatrix& mat, MacroNetlist::Vertex* from, MacroNetlist::Vertex* to );
+    int GetPathWeightMatrix ( SMatrix& mat, 
+        MacroNetlist::Vertex* from, 
+        MacroNetlist::Vertex* to );
 };
 
 class CircuitInfo {
   public:
     double lx, ly, ux, uy;
     double siteSizeX, siteSizeY;
+
     CircuitInfo() : lx(FLT_MIN), ly(FLT_MIN), 
       ux(FLT_MIN), uy(FLT_MIN),
       siteSizeX(FLT_MIN), siteSizeY(FLT_MIN) {};
