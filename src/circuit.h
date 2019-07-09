@@ -86,6 +86,13 @@ class MacroCircuit {
     // plotting 
     void Plot(string outputFile, vector<MacroNetlist::Partition>& set);
 
+    // netlist  
+    void UpdateNetlist(MacroNetlist::Partition& layout);
+
+    // return weighted wire-length to get best solution
+    double GetWeightedWL();
+
+
     // 
     void StubPlacer(double snapGrid);
 
@@ -121,6 +128,8 @@ class MacroCircuit {
     int GetPathWeightMatrix ( SMatrix& mat, 
         MacroNetlist::Vertex* from, 
         MacroNetlist::Vertex* to );
+
+    double* netTable; 
 };
 
 class CircuitInfo {

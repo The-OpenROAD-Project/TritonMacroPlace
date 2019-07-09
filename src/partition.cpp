@@ -83,15 +83,6 @@ void Partition::Dump() {
   cout << endl;
 }
 
-#define EAST_IDX (macroStor.size())
-#define WEST_IDX (macroStor.size()+1)
-#define NORTH_IDX (macroStor.size()+2)
-#define SOUTH_IDX (macroStor.size()+3)
-
-#define GLOBAL_EAST_IDX (_mckt.macroStor.size())
-#define GLOBAL_WEST_IDX (_mckt.macroStor.size()+1)
-#define GLOBAL_NORTH_IDX (_mckt.macroStor.size()+2)
-#define GLOBAL_SOUTH_IDX (_mckt.macroStor.size()+3)
 
 void Partition::PrintParquetFormat(string origName){
   string blkName = origName + ".blocks";
@@ -159,6 +150,16 @@ void Partition::WriteBlkFile( string blkName ) {
   blkFile.close();
   feed.clear();  
 }
+
+#define EAST_IDX (macroStor.size())
+#define WEST_IDX (macroStor.size()+1)
+#define NORTH_IDX (macroStor.size()+2)
+#define SOUTH_IDX (macroStor.size()+3)
+
+#define GLOBAL_EAST_IDX (_mckt.macroStor.size())
+#define GLOBAL_WEST_IDX (_mckt.macroStor.size()+1)
+#define GLOBAL_NORTH_IDX (_mckt.macroStor.size()+2)
+#define GLOBAL_SOUTH_IDX (_mckt.macroStor.size()+3)
 
 string Partition::GetName(int macroIdx ) {
   if( macroIdx < macroStor.size()) {
@@ -558,5 +559,6 @@ void Partition::PrintSetFormat(FILE* fp) {
   fprintf(fp,"  END SLICE ;\n");
   fflush(fp);
 }
+
 
 MACRO_NETLIST_NAMESPACE_CLOSE

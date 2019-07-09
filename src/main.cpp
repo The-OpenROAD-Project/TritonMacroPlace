@@ -179,6 +179,7 @@ int main(int argc, char** argv) {
   // For each possible full-layout
   
   int setCnt = 0;
+  int bestSetCnt = 0;
   for(auto& curSet: allSets) {
 
     // skip for top-layout partition
@@ -379,6 +380,9 @@ bool ParseArgv(int argc, char** argv, EnvFile& _env) {
     }
     else if (STRING_EQUAL("-plot", argv[i])) {
       _env.isPlot = true;
+    }
+    else if (STRING_EQUAL("-getBest", argv[i])) {
+      _env.getBest = true;
     }
   }
 

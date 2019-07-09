@@ -1399,3 +1399,95 @@ Plot(string fileName, vector<MacroNetlist::Partition>& set) {
   gpOut.close();
 
 }
+
+void MacroCircuit::UpdateNetlist(MacroNetlist::Partition& layout) {
+  if( netTable ) {
+    delete[] netTable;
+    netTable = 0;
+  }
+ 
+  assert( layout.macroStor.size() == macroStor.size() );
+  size_t tableSize = (macroStor.size()+4) * (macroStor.size()+4);
+
+  netTable = new double[tableSize];
+  for(size_t i=0; i<tableSize; i++) {
+    netTable[i] = layout.netTable[i];
+  }
+}
+
+#define EAST_IDX (macroStor.size())
+#define WEST_IDX (macroStor.size()+1)
+#define NORTH_IDX (macroStor.size()+2)
+#define SOUTH_IDX (macroStor.size()+3)
+
+#define GLOBAL_EAST_IDX (_mckt.macroStor.size())
+#define GLOBAL_WEST_IDX (_mckt.macroStor.size()+1)
+#define GLOBAL_NORTH_IDX (_mckt.macroStor.size()+2)
+#define GLOBAL_SOUTH_IDX (_mckt.macroStor.size()+3)
+
+double MacroCircuit::GetWeightedWL() {
+  double wwl = 0.0f;
+
+  double lx = _cinfo.lx, ly = _cinfo.ly;
+  double width = _cinfo.ux - _cinfo.lx;
+  double height = _cinfo.uy - _cinfo.ly; 
+
+
+  for(size_t i=0; i<macroStor.size()+4; i++) {
+    for(size_t j=0; j<macroStor.size()+4; j++) {
+      if( j >= i ) {
+        continue;
+      }
+
+      double pointX1 = 0, pointY1 = 0;
+      if( i == EAST_IDX ) {
+        pointX1 = lx;
+        pointY1 = ly + height /2.0;
+      }
+      else if( i == WEST_IDX) {
+        pointX1 = lx + width;
+        pointY1 = ly + height /2.0;
+      }
+      else if( i == NORTH_IDX ) { 
+        pointX1 = lx + width / 2.0;
+        pointY1 = ly + height;
+      }
+      else if( i == SOUTH_IDX ) {
+        pointX1 = lx + width / 2.0;
+        pointY1 = ly;
+      }
+      else {
+        pointX1 = macroStor[i].lx + macroStor[i].w;
+        pointY1 = macroStor[i].ly + macroStor[i].h;
+      }
+
+      double pointX2 = 0, pointY2 = 0;
+      if( j == EAST_IDX ) {
+        pointX2 = lx;
+        pointY2 = ly + height /2.0;
+      }
+      else if( j == WEST_IDX) {
+        pointX2 = lx + width;
+        pointY2 = ly + height /2.0;
+      }
+      else if( j == NORTH_IDX ) { 
+        pointX2 = lx + width / 2.0;
+        pointY2 = ly + height;
+      }
+      else if( j == SOUTH_IDX ) {
+        pointX2 = lx + width / 2.0;
+        pointY2 = ly;
+      }
+      else {
+        pointX2 = macroStor[j].lx + macroStor[j].w;
+        pointY2 = macroStor[j].ly + macroStor[j].h;
+      }
+     
+      wwl += netTable[ i*(macroStor.size())+j ] *
+        sqrt( (pointX1-pointX2)*(pointX1-pointX2) + 
+            (pointY1-pointY2)*(pointY1-pointY2) );
+    }
+  }
+
+  return wwl;
+}

@@ -20,13 +20,15 @@ class EnvFile {
   int searchDepth;
   bool isWestFix;
   bool isPlot;
+  bool getBest;
 
   EnvFile() : def(""), verilog(""), design(""), 
   output(""), sdc(""), 
   globalConfig(""), localConfig(""), 
   searchDepth(INT_MIN),
   isWestFix(false),
-  isPlot(false) {};
+  isPlot(false),
+  getBest(false) {};
 
   bool IsFilled() { return design != "" && def != "" && 
       verilog != "" && output != "" && sdc != "" && 
