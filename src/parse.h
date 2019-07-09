@@ -20,7 +20,7 @@ class EnvFile {
   int searchDepth;
   bool isWestFix;
   bool isPlot;
-  bool getBest;
+  bool generateAll;
 
   EnvFile() : def(""), verilog(""), design(""), 
   output(""), sdc(""), 
@@ -28,7 +28,7 @@ class EnvFile {
   searchDepth(INT_MIN),
   isWestFix(false),
   isPlot(false),
-  getBest(false) {};
+  generateAll(false) {};
 
   bool IsFilled() { return design != "" && def != "" && 
       verilog != "" && output != "" && sdc != "" && 

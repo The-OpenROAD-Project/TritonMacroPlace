@@ -112,6 +112,7 @@ int main(int argc, char** argv) {
     MyHash<PartClass>> globalMacroPartMap;
   UpdateMacroPartInfo( _mckt, layout, globalMacroPartMap );
   layout.FillNetlistTable( _mckt, globalMacroPartMap );
+  _mckt.UpdateNetlist(layout);
  
   // push to the outer vector 
   vector<Partition> layoutSet;
@@ -179,7 +180,8 @@ int main(int argc, char** argv) {
   // For each possible full-layout
   
   int setCnt = 0;
-  int bestSetCnt = 0;
+  int bestSetIdx = 0;
+  double bestWwl = DBL_MIN;
   for(auto& curSet: allSets) {
 
     // skip for top-layout partition
@@ -209,6 +211,66 @@ int main(int argc, char** argv) {
       }
     }
 
+    if( _env.generateAll ) {
+      // update _ckt structure
+      for(auto& curMacro : _mckt.macroStor) {
+        auto cPtr = _ckt.defComponentMap.find( curMacro.name );
+        if( cPtr == _ckt.defComponentMap.end()) {
+          cout << "ERROR: Cannot find " << curMacro.name 
+            << " in defiComponentMap" << endl;
+          exit(1);
+        }
+        int cIdx = cPtr->second;
+        int lx = int(curMacro.lx * defScale + 0.5f);
+        int ly = int(curMacro.ly * defScale + 0.5f);
+
+        _ckt.defComponentStor[cIdx].
+          setPlacementLocation(lx, ly, _env.isWestFix? 1 : -1);
+
+        _ckt.defComponentStor[cIdx].
+          setPlacementStatus(DEFI_COMPONENT_FIXED);
+      }
+
+      // check plotting
+      if( _env.isPlot ) {
+        _mckt.Plot(_env.output + "_" + std::to_string(setCnt) + ".plt", curSet);
+      }
+
+      // top-level layout print
+      FILE* fp = 
+        fopen(string(_env.output + "_" 
+              + std::to_string(setCnt) + ".def").c_str(), "w"); 
+
+      if( fp == NULL) { 
+        cout << "ERROR: cannot open " << _env.output << " to write output file" << endl;
+        exit(1);
+      }
+
+      _ckt.WriteDef( fp );
+      fclose(fp);
+    }
+    else {
+      double curWwl = _mckt.GetWeightedWL();
+      if( curWwl > bestWwl ) {
+        bestWwl = curWwl;
+        bestSetIdx = &curSet - &allSets[0]; 
+      }
+    }
+    setCnt ++;
+  }
+
+  // bestset DEF writing
+  vector<Partition> bestSet = allSets[bestSetIdx];
+  if( !_env.generateAll ) {
+    for(auto& curPart : bestSet) { 
+      for(auto& curMacro : curPart.macroStor) {
+        auto mPtr = _mckt.macroNameMap.find(curMacro.name);
+        int macroIdx = mPtr->second;
+        curMacro.lx = _mckt.macroStor[macroIdx].lx;
+        curMacro.ly = _mckt.macroStor[macroIdx].ly;
+      }
+    }
+      
     // update _ckt structure
     for(auto& curMacro : _mckt.macroStor) {
       auto cPtr = _ckt.defComponentMap.find( curMacro.name );
@@ -223,20 +285,19 @@ int main(int argc, char** argv) {
 
       _ckt.defComponentStor[cIdx].
         setPlacementLocation(lx, ly, _env.isWestFix? 1 : -1);
-      
+
       _ckt.defComponentStor[cIdx].
         setPlacementStatus(DEFI_COMPONENT_FIXED);
     }
 
     // check plotting
     if( _env.isPlot ) {
-      _mckt.Plot(_env.output + "_" + std::to_string(setCnt) + ".plt", curSet);
+      _mckt.Plot(_env.output + "_best.plt", bestSet );
     }
 
     // top-level layout print
     FILE* fp = 
-      fopen(string(_env.output + "_" 
-            + std::to_string(setCnt) + ".def").c_str(), "w"); 
+      fopen(string(_env.output + "_best.def").c_str(), "w"); 
 
     if( fp == NULL) { 
       cout << "ERROR: cannot open " << _env.output << " to write output file" << endl;
@@ -245,9 +306,8 @@ int main(int argc, char** argv) {
 
     _ckt.WriteDef( fp );
     fclose(fp);
-
-    setCnt ++;
   }
+   
   
 
   /*
@@ -381,8 +441,8 @@ bool ParseArgv(int argc, char** argv, EnvFile& _env) {
     else if (STRING_EQUAL("-plot", argv[i])) {
       _env.isPlot = true;
     }
-    else if (STRING_EQUAL("-getBest", argv[i])) {
-      _env.getBest = true;
+    else if (STRING_EQUAL("-generateAll", argv[i])) {
+      _env.generateAll = true;
     }
   }
 

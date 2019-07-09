@@ -17,7 +17,7 @@ MacroCircuit::MacroCircuit(
     CircuitInfo& cinfo) :
   _ckt(ckt), _env(env), _cinfo(cinfo),
   gHaloX(0), gHaloY(0), 
-  gChannelX(0), gChannelY(0) {
+  gChannelX(0), gChannelY(0), netTable(0) {
 
   // parsing from cfg file
   // global config
