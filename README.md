@@ -27,11 +27,14 @@ ParquetFP based macro cell placer for OpenROAD.
 
 ### License
 * BSD-3-clause License [[Link]](LICENSE)
+* Submodule ParquetFP and ABKCommon source files have individual copyright and license declarations at the top of each file.  
 
 ### 3rd Party Module List
 * ParquetFP from UMPack
+* ABKCommon from UMPack
 * Eigen
 * CImg
 * [OpenSTA](https://github.com/abk-openroad/OpenSTA)
 * LEF/DEF Parser (Modified by mgwoo)
+
 
