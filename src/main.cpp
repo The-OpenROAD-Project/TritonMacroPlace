@@ -89,6 +89,15 @@ int main(int argc, char** argv) {
 //  cout << "Original Macro List" << endl;
 
   MacroCircuit _mckt(_ckt, _env, _cinfo);
+    
+  
+  //  RandomPlace for special needs. 
+  //  Really not recommended to execute this functioning 
+  if( _env.isRandomPlace == true ) {
+    double snapGrid = 0.02f;
+    _mckt.StubPlacer(snapGrid);
+  }
+
 
 //  _mckt.GetMacroStor(_ckt);
 
@@ -198,8 +207,6 @@ int main(int argc, char** argv) {
       _mckt.UpdateMacroLoc(curPart);
     }
       
-    //  StupPlacer for Macro cells
-//    _mckt.StubPlacer(snapGrid);
 
     // update partitons' macro info
     for(auto& curPart : curSet) { 
@@ -223,9 +230,24 @@ int main(int argc, char** argv) {
         int cIdx = cPtr->second;
         int lx = int(curMacro.lx * defScale + 0.5f);
         int ly = int(curMacro.ly * defScale + 0.5f);
+        
+        int orient = -1;
+        if( _ckt.defComponentStor[cIdx].placementStatus() != 0 
+            && _ckt.defComponentStor[cIdx].placementStatus() != DEFI_COMPONENT_UNPLACED ) {
+          // Follow original orient 
+          orient = _ckt.defComponentStor[cIdx].placementOrient(); 
+        }
+        else {
+          // Default is North
+          orient = 0;
+        }
+
+        if( _env.isWestFix ) {
+          orient = 1;
+        }
 
         _ckt.defComponentStor[cIdx].
-          setPlacementLocation(lx, ly, _env.isWestFix? 1 : -1);
+          setPlacementLocation(lx, ly, orient);
 
         _ckt.defComponentStor[cIdx].
           setPlacementStatus(DEFI_COMPONENT_FIXED);
@@ -283,8 +305,23 @@ int main(int argc, char** argv) {
       int lx = int(curMacro.lx * defScale + 0.5f);
       int ly = int(curMacro.ly * defScale + 0.5f);
 
+      int orient = -1;
+      if( _ckt.defComponentStor[cIdx].placementStatus() != 0 
+          && _ckt.defComponentStor[cIdx].placementStatus() != DEFI_COMPONENT_UNPLACED ) {
+        // Follow original orient 
+        orient = _ckt.defComponentStor[cIdx].placementOrient(); 
+      }
+      else {
+        // Default is North
+        orient = 0;
+      }
+
+      if( _env.isWestFix ) {
+        orient = 1;
+      }
+
       _ckt.defComponentStor[cIdx].
-        setPlacementLocation(lx, ly, _env.isWestFix? 1 : -1);
+        setPlacementLocation(lx, ly, orient);
 
       _ckt.defComponentStor[cIdx].
         setPlacementStatus(DEFI_COMPONENT_FIXED);
@@ -443,6 +480,9 @@ bool ParseArgv(int argc, char** argv, EnvFile& _env) {
     }
     else if (STRING_EQUAL("-generateAll", argv[i])) {
       _env.generateAll = true;
+    }
+    else if (STRING_EQUAL("-randomPlace", argv[i])) {
+      _env.isRandomPlace= true;
     }
   }
 

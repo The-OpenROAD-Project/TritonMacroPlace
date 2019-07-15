@@ -91,6 +91,17 @@ void MacroCircuit::FillMacroStor() {
         <= std::numeric_limits<double>::epsilon() ) {
       continue;
     }
+  
+    // Error handling with UNPLACED macros 
+    if( _env.isRandomPlace == false && 
+        (curComp.placementStatus() == 0 
+        || curComp.placementStatus() == DEFI_COMPONENT_UNPLACED ) ) {
+      cout << "ERROR:  Macro: " << curComp.id() << " is Unplaced." << endl;
+      cout << "        Please use TD-MS-RePlAce to get a initial solution " << endl;
+      cout << "        before executing TritonMacroPlace" << endl;
+      cout << "        or, you may put -randomPlace command to place macros randomly. (not recommended)" << endl;
+      exit(1);
+    } 
 
     double curHaloX =0, curHaloY = 0, curChannelX = 0, curChannelY = 0;
     auto mlPtr = macroLocalMap.find( curComp.name() );
@@ -137,7 +148,8 @@ void MacroCircuit::FillMacroStor() {
         realSizeY = curMacro.sizeX();
         break;
     }
-    
+   
+
     MacroNetlist::Macro 
       tmpMacro( macroName, curComp.name(), 
           1.0*curComp.placementX()/defScale, 
@@ -148,9 +160,14 @@ void MacroCircuit::FillMacroStor() {
           NULL, NULL );
 
     macroStor.push_back( tmpMacro ); 
+  }
 
+  if( macroStor.size() == 0 ) {
+    cout << "ERROR: Cannot find any macros in this design. " << endl;
+    exit(1);
   }
   cout << "Done!" << endl;
+  cout << "Extracted # Macros: " << macroStor.size() << endl;
 }
 
 void MacroCircuit::FillPinGroup(){

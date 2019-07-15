@@ -14,4 +14,5 @@
 * __-localConfig__ : Specify the Location of IP_local.cfg file. A description is in [here](IP_local.md) (Optional)
 * __-plot__ : Plot the results as gnuplot formats.
 * __-generateAll__ : Generate all of possible solutions. 
+* __-randomPlace__ : Place macros randomly before running TritonMacroPlace (not recommended). 
  

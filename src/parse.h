@@ -21,19 +21,58 @@ class EnvFile {
   bool isWestFix;
   bool isPlot;
   bool generateAll;
+  bool isRandomPlace;
 
   EnvFile() : def(""), verilog(""), design(""), 
   output(""), sdc(""), 
   globalConfig(""), localConfig(""), 
-  searchDepth(INT_MIN),
+  searchDepth(3),
   isWestFix(false),
   isPlot(false),
-  generateAll(false) {};
+  generateAll(false),
+  isRandomPlace(false) {};
 
-  bool IsFilled() { return design != "" && def != "" && 
-      verilog != "" && output != "" && sdc != "" && 
-      lefStor.size() != 0 && libStor.size() != 0 &&
-      searchDepth!= INT_MIN && globalConfig != ""; };
+  void RaiseError(std::string str) {
+    std::cout << "ERROR: " << str << std::endl;
+    exit(1);
+  }
+
+  bool IsFilled() { 
+    if( design == "" ) {
+      RaiseError("Please put input design name with -design option");
+      return false;
+    }
+    else if ( def == "" ) {
+      RaiseError("Please put input def file with -def option");
+      return false;
+    }
+    else if ( lefStor.size() == 0 ) {
+      RaiseError("Please put input lef file with -lef option");
+      return false;
+    }
+    else if ( verilog == "" ) {
+      RaiseError("Please put input verilog file with -verilog option");
+      return false;
+    }
+    else if ( output == "" ) {
+      RaiseError("Please put input def file with -output option");
+      return false;
+    }
+    else if ( sdc == "" ) {
+      RaiseError("Please put input sdc file with -sdc option");
+      return false;
+    }
+    else if ( libStor.size() == 0 ) {
+      RaiseError("Please put input lib file with -lib option");
+      return false;
+    }
+    else if ( globalConfig == "" ) {
+      RaiseError("Please put globalConfig with -globalConfig option");
+      return false;
+    }
+
+    return true;
+  }
 
   void Print() {
     using std::cout;
