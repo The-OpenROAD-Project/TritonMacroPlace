@@ -292,7 +292,9 @@ int main(int argc, char** argv) {
         curMacro.ly = _mckt.macroStor[macroIdx].ly;
       }
     }
-      
+     
+    unordered_set<int> macroIdxMap;
+
     // update _ckt structure
     for(auto& curMacro : _mckt.macroStor) {
       auto cPtr = _ckt.defComponentMap.find( curMacro.name );
@@ -302,6 +304,7 @@ int main(int argc, char** argv) {
         exit(1);
       }
       int cIdx = cPtr->second;
+      macroIdxMap.insert(cIdx);
       int lx = int(curMacro.lx * defScale + 0.5f);
       int ly = int(curMacro.ly * defScale + 0.5f);
 
@@ -325,6 +328,17 @@ int main(int argc, char** argv) {
 
       _ckt.defComponentStor[cIdx].
         setPlacementStatus(DEFI_COMPONENT_FIXED);
+    }
+
+    // reset other cells's location not to have bug in other tools
+    for(size_t i=0; i<_ckt.defComponentStor.size(); i++) {
+      // continue for MacroIndex
+      if( macroIdxMap.find(i) != macroIdxMap.end() ) {
+        continue;
+      }
+      
+      _ckt.defComponentStor[i].setPlacementStatus(0);
+      _ckt.defComponentStor[i].setPlacementLocation(-1,-1,-1);
     }
 
     // check plotting
