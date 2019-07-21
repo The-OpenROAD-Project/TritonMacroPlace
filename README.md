@@ -33,7 +33,6 @@ ParquetFP based macro cell placer for OpenROAD.
 * ParquetFP from UMPack
 * ABKCommon from UMPack
 * Eigen
-* CImg
 * [OpenSTA](https://github.com/abk-openroad/OpenSTA)
 * LEF/DEF Parser (Modified by mgwoo)
 
