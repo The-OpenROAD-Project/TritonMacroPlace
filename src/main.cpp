@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
  
   _env.Print(); 
   
-  cout << "LEF/DEF Parsing... ";
+  cout << "PROC: LEF/DEF Parsing... ";
   Circuit::Circuit _ckt(_env.lefStor, _env.def);
   cout << "Done!" << endl;
 
@@ -101,16 +101,18 @@ int main(int argc, char** argv) {
 
 //  _mckt.GetMacroStor(_ckt);
 
-  for(auto& curMacro: _mckt.macroStor) {
-    curMacro.Dump();
-  }
+//  for(auto& curMacro: _mckt.macroStor) {
+//    curMacro.Dump();
+//  }
  
   bool isHorizontal = (_cinfo.ux-_cinfo.lx) > (_cinfo.uy-_cinfo.ly);
 
   Partition layout(ALL, _cinfo.lx, _cinfo.ly, _cinfo.ux-_cinfo.lx, _cinfo.uy-_cinfo.ly);
   layout.macroStor = _mckt.macroStor;
 
+  cout << "PROC: Begin One Level Partition ... " << endl; 
   TwoPartitions oneLevelPart = GetPart(_cinfo, layout, isHorizontal);
+  cout << "PROC: End One Level Partition" << endl << endl;
   TwoPartitions eastStor, westStor;
 
   vector< vector<Partition> > allSets;
@@ -132,36 +134,28 @@ int main(int argc, char** argv) {
 
   for(auto& curSet : oneLevelPart ) {
     if( isHorizontal ) {
+      cout << "PROC: Begin Horizontal Cuts" << endl;
       CircuitInfo eastInfo(_cinfo, curSet.first);
-//      curSet.first.PrintSetFormat(stdout);
-      TwoPartitions eastStor = GetPart(eastInfo, curSet.first, !isHorizontal);
-
       CircuitInfo westInfo(_cinfo, curSet.second);
+
+      cout << "PROC: Begin 1st Second Level Partition" << endl;
+      TwoPartitions eastStor = GetPart(eastInfo, curSet.first, !isHorizontal);
+      cout << "PROC: End 1st Second Level Partition" << endl << endl;
+
+      cout << "PROC: Begin 2nd Second Level Partition" << endl;
       TwoPartitions westStor = GetPart(westInfo, curSet.second, !isHorizontal);
-//      curSet.second.PrintSetFormat(stdout);
-      
-//      for(auto& curEastSet : eastStor) {
-//        curEastSet.first.PrintSetFormat(stdout);
-//        curEastSet.second.PrintSetFormat(stdout);txt
-//      } 
+      cout << "PROC: End 2nd Second Level Partition" << endl << endl;
 
-//      for(auto& curWestSet : westStor) {
-//        curWestSet.first.PrintSetFormat(stdout);
-//        curWestSet.second.PrintSetFormat(stdout);
-//      }
-
-      // for all possible combinations in partitions
-      for(size_t i=0; i<eastStor.size(); i++) {
-        for(size_t j=0; j<westStor.size(); j++) {
-
+     
+      // Zero case handling when eastStor = 0 
+      if( eastStor.size() == 0 && westStor.size() != 0 ) {
+        for(size_t i=0; i<westStor.size(); i++) {
           vector<Partition> oneSet;
 
-          // one set is composed of four subblocks
-          oneSet.push_back( eastStor[i].first );
-          oneSet.push_back( eastStor[i].second );
-          oneSet.push_back( westStor[j].first );
-          oneSet.push_back( westStor[j].second );
-      
+          // one set is composed of two subblocks
+          oneSet.push_back( westStor[i].first );
+          oneSet.push_back( westStor[i].second );
+
           // Fill Macro Netlist
           // update macroPartMap
           unordered_map< PartClass, vector<int>, 
@@ -173,13 +167,69 @@ int main(int argc, char** argv) {
           for(auto& curSet: oneSet) {
             curSet.FillNetlistTable( _mckt, macroPartMap );
           }
-           
+
           allSets.push_back( oneSet );
+        }
+      }
+      // Zero case handling when westStor = 0 
+      else if( eastStor.size() != 0 && westStor.size() == 0 ) {
+        for(size_t i=0; i<eastStor.size(); i++) {
+          vector<Partition> oneSet;
+
+          // one set is composed of two subblocks
+          oneSet.push_back( eastStor[i].first );
+          oneSet.push_back( eastStor[i].second );
+
+          // Fill Macro Netlist
+          // update macroPartMap
+          unordered_map< PartClass, vector<int>, 
+            MyHash<PartClass>> macroPartMap;
+          for(auto& curSet: oneSet) {
+            UpdateMacroPartInfo( _mckt, curSet, macroPartMap );
+          }
+
+          for(auto& curSet: oneSet) {
+            curSet.FillNetlistTable( _mckt, macroPartMap );
+          }
+
+          allSets.push_back( oneSet );
+        } 
+      }
+      else {
+        // for all possible combinations in partitions
+        for(size_t i=0; i<eastStor.size(); i++) {
+          for(size_t j=0; j<westStor.size(); j++) {
+
+            vector<Partition> oneSet;
+
+            // one set is composed of four subblocks
+            oneSet.push_back( eastStor[i].first );
+            oneSet.push_back( eastStor[i].second );
+            oneSet.push_back( westStor[j].first );
+            oneSet.push_back( westStor[j].second );
+
+            // Fill Macro Netlist
+            // update macroPartMap
+            unordered_map< PartClass, vector<int>, 
+              MyHash<PartClass>> macroPartMap;
+            for(auto& curSet: oneSet) {
+              UpdateMacroPartInfo( _mckt, curSet, macroPartMap );
+            }
+
+            for(auto& curSet: oneSet) {
+              curSet.FillNetlistTable( _mckt, macroPartMap );
+            }
+
+            allSets.push_back( oneSet );
+          }
         }
       } 
     }
+    else {
+      cout << "PROC: Vertical Cuts" << endl;
+    }
   }
-  cout << "Total Extracted Sets: " << allSets.size() << endl << endl;
+  cout << "INFO: Total Extracted Sets = " << allSets.size() << endl << endl;
 
 
   // Legalize macro on global Structure
@@ -380,7 +430,7 @@ int main(int argc, char** argv) {
   // only top-level formats
 //  layout.PrintParquetFormat(_env.output);
 
-  cout << "Finished" << endl;
+  cout << "PROC: End TritonMacroPlacer" << endl;
 
 
   // All Edges... 
@@ -531,6 +581,9 @@ vector<pair<Partition, Partition>> GetPart(
     CircuitInfo &cInfo,  
     Partition& partition, 
     bool isHorizontal ) {
+  cout << "PROC: Begin Partition ... " << endl;
+  cout << "INFO: Partitions' #Macro = " << partition.macroStor.size() << endl;
+
 
   // Return vector
   vector<pair<Partition, Partition>> ret;
@@ -592,6 +645,7 @@ vector<pair<Partition, Partition>> GetPart(
           cInfo.ly + 1.0*(cInfo.uy - cInfo.ly)/hardLimit * i );
     }
   }
+  cout << "INFO: NumCutline = " << cutLineStor.size() << endl;
   
   // Macro checker array
   // 0 for uninitialize
@@ -601,9 +655,9 @@ vector<pair<Partition, Partition>> GetPart(
   int* chkArr = new int[partition.macroStor.size()];
   
   for(auto& cutLine : cutLineStor ) {
-    cout << cutLine << endl;
+    cout << "INFO: CutLine = " << cutLine << endl;
     CutRoundUp(cInfo, cutLine, isHorizontal);
-//    cout << "updated cutLine: " << cutLine << endl;
+    cout << "INFO: Updated CutLine = " << cutLine << endl;
 
    
     // chkArr initialize 
@@ -760,7 +814,7 @@ vector<pair<Partition, Partition>> GetPart(
 //    cout << lowerMacroArea << " " << lowerArea << endl;
     // impossible partitioning
     if( upperMacroArea > upperArea || lowerMacroArea > lowerArea) {
-      cout << "it was impossible partition" << endl;
+      cout << "PROC: Impossible partition, continue" << endl;
       continue;
     }
 
@@ -774,10 +828,16 @@ vector<pair<Partition, Partition>> GetPart(
 //    }
     
     pair<Partition, Partition> curPart( lowerPart, upperPart );
+
+    cout << "INFO: NumMacro in LowerPart[" << ret.size() << "] = " 
+      << lowerPart.macroStor.size() << endl;
+    cout << "INFO: NumMacro in UpperPart[" << ret.size() << "] = " 
+      << upperPart.macroStor.size() << endl;
+    
     ret.push_back( curPart );
-//    cout << endl;
   }
-  delete[] chkArr; 
+  delete[] chkArr;
+  cout << "PROC: End Partition " << endl << endl;
   
   return ret; 
 }
