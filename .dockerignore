@@ -1,0 +1,27 @@
+Dockerfile
+.dockerignore
+.gitignore
+
+# from .gitignore file
+*.log
+*.swo
+*.swd
+*.swp
+*.bak
+*.o
+*.sh
+*.v
+*.tcl
+*/**/*.o
+
+build
+build/*
+
+src/output
+src/output/*
+
+CMakeCache.txt
+CMakeFiles
+install_manifest.txt
+*.cmake
+Makefile
