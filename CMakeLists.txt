@@ -68,10 +68,6 @@ set (FPLAN_SRC
 
 
 set (FPLAN_HEADER
-  src/lefdefIO.h
-  src/parse.h
-  src/plot.h
-  src/timingSta.h
 )
 
 ############################################################
