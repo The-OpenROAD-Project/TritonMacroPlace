@@ -1,8 +1,5 @@
 #ifndef __MACRO_MACRO__
-#define __MACRO_MACRO__ 0
-
-#define MACRO_NETLIST_NAMESPACE_OPEN namespace MacroNetlist {
-#define MACRO_NETLIST_NAMESPACE_CLOSE }
+#define __MACRO_MACRO__ 
 
 #include <iostream>
 
@@ -10,55 +7,39 @@ namespace sta {
 class Instance; 
 }
 
-MACRO_NETLIST_NAMESPACE_OPEN
+namespace MacroNetlist { 
 
 class Vertex;
 class Macro {
   public:
-    string name;
-    string type;  
+    std::string name;
+    std::string type;  
     double lx, ly;
     double w, h;
     double haloX, haloY; 
     double channelX, channelY;
     Vertex* ptr;
     sta::Instance* instPtr;
-    Macro( string _name, string _type, 
+    Macro( std::string _name, std::string _type, 
         double _lx, double _ly, 
         double _w, double _h,
         double _haloX, double _haloY, 
         double _channelX, double _channelY,
-        Vertex* _ptr, sta::Instance* _instPtr) 
-      : name(_name), type(_type), 
-      lx(_lx), ly(_ly), 
-      w(_w), h(_h),
-      haloX(_haloX), haloY(_haloY),
-      channelX(_channelX), channelY(_channelY), 
-      ptr(_ptr), instPtr(_instPtr) {};
-
-    void Dump() {
-      std::cout << "MACRO " << name << " " 
-        << type << " " 
-        << lx << " " << ly << " " 
-        << w << " " << h << std::endl;
-      std::cout << haloX << " " << haloY << " " 
-        << channelX << " " << channelY << std::endl;
-    }
+        Vertex* _ptr, sta::Instance* _instPtr);
+    void Dump(); 
 };
 
-MACRO_NETLIST_NAMESPACE_CLOSE
+}
 
 class MacroLocalInfo {
 private:
   double haloX_, haloY_, channelX_, channelY_;
 public:
-  MacroLocalInfo() : 
-    haloX_(0), haloY_(0), 
-    channelX_(0), channelY_(0) {}
-  void putHaloX(double haloX) {haloX_ = haloX; }
-  void putHaloY(double haloY) {haloY_ = haloY; }
-  void putChannelX(double channelX) {channelX_ = channelX; }
-  void putChannelY(double channelY) {channelY_ = channelY; }
+  MacroLocalInfo(); 
+  void putHaloX(double haloX) { haloX_ = haloX; }
+  void putHaloY(double haloY) { haloY_ = haloY; }
+  void putChannelX(double channelX) { channelX_ = channelX; }
+  void putChannelY(double channelY) { channelY_ = channelY; }
   double GetHaloX() { return haloX_; }
   double GetHaloY() { return haloY_; }
   double GetChannelX() { return channelX_; }

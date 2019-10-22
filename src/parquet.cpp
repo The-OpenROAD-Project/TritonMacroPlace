@@ -5,6 +5,7 @@
 #include "circuit.h"
 
 using MacroNetlist::Partition;
+using namespace std;
 
 // Call ParquetFP
 void Partition::DoAnneal() {

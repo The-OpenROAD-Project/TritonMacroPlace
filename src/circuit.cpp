@@ -9,7 +9,14 @@
 #include "circuit.h"
 #include "timingSta.h"
 
+using std::unordered_map;
+using std::unordered_set;
+using std::vector;
+using std::pair;
 
+using Eigen::VectorXf;
+typedef Eigen::SparseMatrix<int, Eigen::RowMajor> SMatrix;
+typedef Eigen::Triplet<int> T;
 
 MacroCircuit::MacroCircuit(
     Circuit::Circuit& ckt, 
@@ -34,8 +41,6 @@ MacroCircuit::MacroCircuit(
   UpdateVertexToMacroStor();
   FillMacroConnection();
 }
-
-//MACRO_NETLIST_NAMESPACE_OPEN
 
 using namespace sta;
 using MacroNetlist::VertexClass;
@@ -1508,3 +1513,18 @@ double MacroCircuit::GetWeightedWL() {
 
   return wwl;
 }
+
+
+CircuitInfo::CircuitInfo() : lx(FLT_MIN), ly(FLT_MIN), 
+      ux(FLT_MIN), uy(FLT_MIN),
+      siteSizeX(FLT_MIN), siteSizeY(FLT_MIN) {};
+    
+CircuitInfo::CircuitInfo( double _lx, double _ly, double _ux, double _uy, 
+        double _siteSizeX, double _siteSizeY ) :
+      lx(_lx), ly(_ly), ux(_ux), uy(_uy),
+      siteSizeX(_siteSizeX), siteSizeY(_siteSizeY) {};
+
+CircuitInfo::CircuitInfo( CircuitInfo& orig, MacroNetlist::Partition& part ) :
+      lx(part.lx), ly(part.ly), ux(part.lx+part.width), uy(part.ly+part.height),
+      siteSizeX(orig.siteSizeX), siteSizeY(orig.siteSizeY) {};
+

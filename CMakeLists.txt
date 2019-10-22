@@ -64,6 +64,8 @@ set (FPLAN_SRC
   src/timingSta.cpp
   src/partition.cpp
   src/parse.cpp
+  src/graph.cpp
+  src/lefdefIO.cpp
 )
 
 

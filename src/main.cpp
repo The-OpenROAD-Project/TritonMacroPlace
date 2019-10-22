@@ -19,6 +19,13 @@
 using namespace boost::icl;
 using namespace MacroNetlist;
 using MacroNetlist::Partition;
+using std::cout;
+using std::endl;
+using std::vector;
+using std::string;
+using std::pair;
+using std::unordered_map;
+
 vector<pair<Partition, Partition>> GetPart ( 
     CircuitInfo& cInfo,  
     Partition& partition, bool isHorizontal );

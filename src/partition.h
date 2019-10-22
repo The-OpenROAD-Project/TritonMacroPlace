@@ -1,8 +1,6 @@
 #ifndef __MACRO_PARTITION__
 #define __MACRO_PARTITION__ 0
 
-#define MACRO_NETLIST_NAMESPACE_OPEN namespace MacroNetlist {
-#define MACRO_NETLIST_NAMESPACE_CLOSE }
 
 #include <string>
 #include <vector>
@@ -10,16 +8,11 @@
 #include <boost/functional/hash.hpp>
 
 
-using std::string;
-using std::vector;
-using std::unordered_map;
-using std::pair;
-
 template <class T> struct MyHash;
 
 class MacroCircuit;
 
-MACRO_NETLIST_NAMESPACE_OPEN
+namespace MacroNetlist {
 
 enum PartClass {
   S, N, W, E, NW, NE, SW, SE, ALL, None
@@ -32,10 +25,10 @@ class Partition {
     PartClass partClass;
     double lx, ly;
     double width, height;
-    vector<Macro> macroStor;
+    std::vector<Macro> macroStor;
     double* netTable;
     int tableCnt;
-    unordered_map<string, int> macroMap;
+    std::unordered_map<std::string, int> macroMap;
 
 
     Partition();
@@ -52,7 +45,7 @@ class Partition {
     Partition& operator= (const Partition& prev);
 
     void FillNetlistTable(MacroCircuit& _mckt,
-        unordered_map<PartClass, vector<int>, MyHash<PartClass>>& macroPartMap);
+        std::unordered_map<PartClass, std::vector<int>, MyHash<PartClass>>& macroPartMap);
 
     void Dump();
 
@@ -63,20 +56,20 @@ class Partition {
     void PrintSetFormat(FILE* fp);
 
     // Parquet print functions
-    void PrintParquetFormat(string origName);
-    void WriteBlkFile(string blkName);
-    void WriteNetFile(vector< pair<int, int>> & netStor, string netName);
-    void WriteWtsFile(vector<int>& costStor, string wtsName );
-    void WritePlFile(string plName);
+    void PrintParquetFormat(std::string origName);
+    void WriteBlkFile(std::string blkName);
+    void WriteNetFile(std::vector< std::pair<int, int>> & netStor, std::string netName);
+    void WriteWtsFile(std::vector<int>& costStor, std::string wtsName );
+    void WritePlFile(std::string plName);
 
-    string GetName(int macroIdx);
+    std::string GetName(int macroIdx);
 
   private:
     void FillNetlistTableIncr();
     void FillNetlistTableDesc();
 }; 
 
-MACRO_NETLIST_NAMESPACE_CLOSE
+}
 
 template<>
 struct MyHash< MacroNetlist::PartClass > {

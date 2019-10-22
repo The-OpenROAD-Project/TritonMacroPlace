@@ -8,8 +8,12 @@
 
 using std::cout;
 using std::endl;
+using std::string;
+using std::vector;
+using std::pair;
+using std::unordered_map;
 
-MACRO_NETLIST_NAMESPACE_OPEN
+namespace MacroNetlist {
 
 Partition::Partition() 
   : partClass(PartClass::None), 
@@ -576,5 +580,4 @@ void Partition::PrintSetFormat(FILE* fp) {
   fflush(fp);
 }
 
-
-MACRO_NETLIST_NAMESPACE_CLOSE
+}

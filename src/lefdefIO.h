@@ -46,10 +46,7 @@
 ///////////////////////////////////////////////////////
 
 #ifndef __circuit__
-#define __circuit__ 0
-
-#define CIRCUIT_NAMESPACE_OPEN namespace Circuit{
-#define CIRCUIT_NAMESPACE_CLOSE }
+#define __circuit__ 
 
 #ifndef CIRCUIT_FPRINTF
 #define CIRCUIT_FPRINTF(fmt, ...) {if(fmt) { fprintf(fmt, ##__VA_ARGS__); }}
@@ -80,204 +77,171 @@
 
 #define INIT_STR "!@#!@#"
 
-using std::cout;
-using std::endl;
-using std::string;
-using std::vector;
-using std::pair;
-using std::unordered_map;
 
-CIRCUIT_NAMESPACE_OPEN
+namespace Circuit {
+
 class Circuit {
-    public:
-        Circuit()
-        : lefManufacturingGrid(DBL_MIN) {
-        }
+  public:
+    Circuit();
+    // 
+    // LEF/DEF is essential, 
+    // but verilog is optional
+    //
+    Circuit(std::vector<std::string>& lefStor, 
+        std::string defFilename, std::string verilogFilename = "" );
 
-        // 
-        // LEF/DEF is essential, 
-        // but verilog is optional
-        //
-        Circuit(vector<string>& lefStor, 
-                string defFilename, string verilogFilename = "" )
-        : lefManufacturingGrid(DBL_MIN) {
-            Init( lefStor, defFilename, verilogFilename );
-        }
+    void Init( std::vector<std::string>& lefStor, std::string defFilename, 
+        std::string verilogFilename = "" );
+   
+    void WriteLef( FILE* _fout );
+    void WriteDef( FILE* _fout );
 
-        void Init( vector<string>& lefStor, string defFilename, 
-                   string verilogFilename = "" ) {
-            ParseLef(lefStor);
-            ParseDef(defFilename);
-            if( verilogFilename != "" ) {
-                // ParseVerilog(verilogFilename);   
-            }
-        };
+    /////////////////////////////////////////////////////
+    // LEF parsing
+    //
+    double lefVersion;
+    std::string lefDivider;
+    std::string lefBusBitChar;
 
-        void WriteLef( FILE* _fout );
-        void WriteDef( FILE* _fout );
-        
-        /////////////////////////////////////////////////////
-        // LEF parsing
-        //
-        double lefVersion;
-        string lefDivider;
-        string lefBusBitChar;
+    lefiUnits lefUnit;
+    double lefManufacturingGrid;
+    std::vector<lefiMacro> lefMacroStor;
+    std::vector<lefiLayer> lefLayerStor;
+    std::vector<lefiVia> lefViaStor;
+    std::vector<lefiSite> lefSiteStor;
 
-        lefiUnits lefUnit;
-        double lefManufacturingGrid;
-        vector<lefiMacro> lefMacroStor;
-        vector<lefiLayer> lefLayerStor;
-        vector<lefiVia> lefViaStor;
-        vector<lefiSite> lefSiteStor;
+    // Macro, via, Layer's unique name -> index of lefXXXStor.
+    std::unordered_map<std::string, int> lefMacroMap;
+    std::unordered_map<std::string, int> lefViaMap;
+    std::unordered_map<std::string, int> lefLayerMap;
+    std::unordered_map<std::string, int> lefSiteMap;
 
-        // Macro, via, Layer's unique name -> index of lefXXXStor.
-        unordered_map<string, int> lefMacroMap;
-        unordered_map<string, int> lefViaMap;
-        unordered_map<string, int> lefLayerMap;
-        unordered_map<string, int> lefSiteMap;
+    // this will maps 
+    // current lefMacroStor's index
+    // -> lefiPin, lefiObstruction
+    //
+    // below index is same with lefMacroStor
+    std::vector<std::vector<lefiPin>> lefPinStor; // macroIdx -> pinIdx -> pinObj
+    std::vector<std::unordered_map<std::string, int>> lefPinMapStor; // macroIdx -> pinName -> pinIdx
+    std::vector<std::vector<lefiObstruction>> lefObsStor; // macroIdx -> obsIdx -> obsObj
 
-        // this will maps 
-        // current lefMacroStor's index
-        // -> lefiPin, lefiObstruction
-        //
-        // below index is same with lefMacroStor
-        vector<vector<lefiPin>> lefPinStor; // macroIdx -> pinIdx -> pinObj
-        vector<unordered_map<string, int>> lefPinMapStor; // macroIdx -> pinName -> pinIdx
-        vector<vector<lefiObstruction>> lefObsStor; // macroIdx -> obsIdx -> obsObj
-        
-        /////////////////////////////////////////////////////
-        // DEF parsing
-        //
-        string defVersion;
-        string defDividerChar;
-        string defBusBitChar;
-        string defDesignName;
+    /////////////////////////////////////////////////////
+    // DEF parsing
+    //
+    std::string defVersion;
+    std::string defDividerChar;
+    std::string defBusBitChar;
+    std::string defDesignName;
 
-        vector<defiProp> defPropStor;
+    std::vector<defiProp> defPropStor;
 
-        double defUnit;
-        defiBox defDieArea;
-        vector<defiRow> defRowStor;
-        vector<defiTrack> defTrackStor;
-        vector<defiGcellGrid> defGcellGridStor;
-        vector<defiVia> defViaStor;
+    double defUnit;
+    defiBox defDieArea;
+    std::vector<defiRow> defRowStor;
+    std::vector<defiTrack> defTrackStor;
+    std::vector<defiGcellGrid> defGcellGridStor;
+    std::vector<defiVia> defViaStor;
 
-        defiComponentMaskShiftLayer defComponentMaskShiftLayer;
-        vector<defiComponent> defComponentStor;
-        vector<defiPin> defPinStor;
-        vector<defiNet> defNetStor;
-        vector<defiNet> defSpecialNetStor;
+    defiComponentMaskShiftLayer defComponentMaskShiftLayer;
+    std::vector<defiComponent> defComponentStor;
+    std::vector<defiPin> defPinStor;
+    std::vector<defiNet> defNetStor;
+    std::vector<defiNet> defSpecialNetStor;
 
-        // Component's unique name -> index of defComponentStor.
-        unordered_map<string, int> defComponentMap;
-        unordered_map<string, int> defPinMap;
+    // Component's unique name -> index of defComponentStor.
+    std::unordered_map<std::string, int> defComponentMap;
+    std::unordered_map<std::string, int> defPinMap;
 
-        // ROW's Y coordinate --> Orient info
-        unordered_map<int, int> defRowY2OrientMap;
+    // ROW's Y coordinate --> Orient info
+    std::unordered_map<int, int> defRowY2OrientMap;
 
-        // this will maps
-        // current defComponentStor's index + string pin Name
-        // -> defNetStor indexes.
-        //
-        // below index is same with defComponentStor
-        vector<unordered_map<string, int>> defComponentPinToNet;
+    // this will maps
+    // current defComponentStor's index + std::string pin Name
+    // -> defNetStor indexes.
+    //
+    // below index is same with defComponentStor
+    std::vector<std::unordered_map<std::string, int>> defComponentPinToNet;
 
-    private:
-        // Parsing function
-        void ParseLef(vector<string>& lefStor);
-        void ParseDef(string filename);
-        // void ParseVerilog(string filename);
+  private:
+    // Parsing function
+    void ParseLef(std::vector<std::string>& lefStor);
+    void ParseDef(std::string filename);
+    // void ParseVerilog(std::string filename);
 
 
-        /////////////////////////////////////////////////////
-        // LEF Writing 
-        //
+    /////////////////////////////////////////////////////
+    // LEF Writing 
+    //
 
-        // for Dump Lef
-        void DumpLefVersion();
-        void DumpLefDivider();
-        void DumpLefBusBitChar();
+    // for Dump Lef
+    void DumpLefVersion();
+    void DumpLefDivider();
+    void DumpLefBusBitChar();
 
-        void DumpLefUnit();
-        void DumpLefManufacturingGrid();
-        void DumpLefLayer();
-        void DumpLefSite();
-        void DumpLefMacro();
+    void DumpLefUnit();
+    void DumpLefManufacturingGrid();
+    void DumpLefLayer();
+    void DumpLefSite();
+    void DumpLefMacro();
 
-        void DumpLefPin(lefiPin* pin);
-        void DumpLefObs(lefiObstruction* obs);
+    void DumpLefPin(lefiPin* pin);
+    void DumpLefObs(lefiObstruction* obs);
 
-        void DumpLefVia();
-        void DumpLefDone();
-        
+    void DumpLefVia();
+    void DumpLefDone();
 
-        /////////////////////////////////////////////////////
-        // DEF Writing 
-        //
-        
-        void DumpDefVersion();
-        void DumpDefDividerChar();
-        void DumpDefBusBitChar();
-        void DumpDefDesignName();
 
-        void DumpDefProp();
-        void DumpDefUnit();
+    /////////////////////////////////////////////////////
+    // DEF Writing 
+    //
 
-        void DumpDefDieArea(); 
-        void DumpDefRow();
-        void DumpDefTrack();
-        void DumpDefGcellGrid();
-        void DumpDefVia();
+    void DumpDefVersion();
+    void DumpDefDividerChar();
+    void DumpDefBusBitChar();
+    void DumpDefDesignName();
 
-        void DumpDefComponentMaskShiftLayer();
-        void DumpDefComponent();
-        void DumpDefPin();
-        void DumpDefSpecialNet();
-        void DumpDefNet();
-        void DumpDefDone();
+    void DumpDefProp();
+    void DumpDefUnit();
 
-        void DumpDefComponentPinToNet();
+    void DumpDefDieArea(); 
+    void DumpDefRow();
+    void DumpDefTrack();
+    void DumpDefGcellGrid();
+    void DumpDefVia();
+
+    void DumpDefComponentMaskShiftLayer();
+    void DumpDefComponent();
+    void DumpDefPin();
+    void DumpDefSpecialNet();
+    void DumpDefNet();
+    void DumpDefDone();
+
+    void DumpDefComponentPinToNet();
 
 };
 
 // Verilog net Info Storage
 struct NetInfo {
-//    string macroName;
-//    string compName;
-//    string pinName;
-    
-    int macroIdx;
-    int compIdx;
-    int pinIdx;
+  int macroIdx;
+  int compIdx;
+  int pinIdx;
 
-//    NetInfo(char* _macroName, char* _compName, char* _pinName) {
-//        macroName = string(_macroName);
-//        compName = string(_compName);
-//        pinName = string(_pinName);
-//    }
-    NetInfo( int _macroIdx, int _compIdx, int _pinIdx) 
-        : macroIdx(_macroIdx), compIdx(_compIdx), pinIdx(_pinIdx) {};
+  NetInfo( int _macroIdx, int _compIdx, int _pinIdx);
 };
 
 extern Circuit __ckt; 
 
-CIRCUIT_NAMESPACE_CLOSE
+}
 
 struct DieRect {
   int llx, lly, urx, ury;
-  DieRect() : llx(INT_MAX), lly(INT_MAX), urx(INT_MIN), ury(INT_MIN) {};
-  bool isNotInitialize () {
-    return ( llx == INT_MAX || lly == INT_MAX
-        || urx == INT_MIN || ury == INT_MIN) ;
-  }
-  void Dump() {
-    cout << "(" << llx << ", " << lly << ") - (" << urx << ", " << ury << ")" << endl;
-  }
+  DieRect();
+  bool isNotInitialize ();
+  void Dump();
 };
 
 DieRect GetDieFromProperty();
 DieRect GetDieFromDieArea();
-
 
 void ParseInput();
 void ParseLefDef();
@@ -298,4 +262,4 @@ void SetUnitY(float  _unitY);
 void SetUnitY(double _unitY);
 
 #endif
- 
+
