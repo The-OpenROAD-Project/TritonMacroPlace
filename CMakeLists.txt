@@ -14,7 +14,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-set(FPLAN_HOME ${PROJECT_SOURCE_DIR} )
+set(MPLACE_HOME ${PROJECT_SOURCE_DIR} )
 set(DEFLIB_HOME
   ${PROJECT_SOURCE_DIR}/module/def
 )
@@ -55,7 +55,7 @@ find_package(FLEX REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Threads REQUIRED)
 
-set (FPLAN_SRC 
+set (MPLACE_SRC 
   src/circuit.cpp
   src/defParser.cpp
   src/lefParser.cpp
@@ -66,10 +66,14 @@ set (FPLAN_SRC
   src/parse.cpp
   src/graph.cpp
   src/lefdefIO.cpp
+  src/macro.cpp
+  src/mPlace_wrap.cpp
+  src/mPlaceExternal.cpp
+  src/mPlace.cpp
 )
 
 
-set (FPLAN_HEADER
+set (MPLACE_HEADER
 )
 
 ############################################################
@@ -110,30 +114,36 @@ include_directories(
 ############################################################
 # Create a library 
 ############################################################
-add_library( fplanlib STATIC
-  ${FPLAN_SRC}
+add_library( mplacelib STATIC
+  ${MPLACE_SRC}
 )
 
-set_target_properties( fplanlib 
+set_target_properties( mplacelib 
   PROPERTIES OUTPUT_NAME "TritonFPlan"
+)
+
+add_custom_command(OUTPUT ${MPLACE_HOME}/src/mPlace_wrap.cpp
+  COMMAND ${SWIG_EXECUTABLE} -tcl8 -c++ -o ${MPLACE_HOME}/src/mPlace_wrap.cpp ${MPLACE_HOME}/src/mPlace.i   
+  WORKING_DIRECTORY ${MPLACE_HOME}
+  DEPENDS ${MPLACE_SWIG_FILES}
 )
 
 ############################################################
 # Create an executable
 ############################################################
-add_executable( fplan
-  ${FPLAN_SRC}
+add_executable( mplace
+  ${MPLACE_SRC}
 )
 
-add_dependencies( fplan sta )
-add_dependencies( fplan def )
-add_dependencies( fplan lef )
+add_dependencies( mplace sta )
+add_dependencies( mplace def )
+add_dependencies( mplace lef )
 
-add_dependencies( fplanlib sta )
-add_dependencies( fplanlib def )
-add_dependencies( fplanlib lef )
+add_dependencies( mplacelib sta )
+add_dependencies( mplacelib def )
+add_dependencies( mplacelib lef )
 
-target_link_libraries( fplan
+target_link_libraries( mplace
   PUBLIC
   OpenSTA
   def
@@ -158,8 +168,8 @@ target_link_libraries( fplan
 # Install  
 ############################################################
 
-install(FILES ${FPLAN_HEADER} DESTINATION include)
-install(TARGETS fplan DESTINATION bin)
-install(TARGETS fplanlib DESTINATION lib)
+install(FILES ${MPLACE_HEADER} DESTINATION include)
+install(TARGETS mplace DESTINATION bin)
+install(TARGETS mplacelib DESTINATION lib)
 
 

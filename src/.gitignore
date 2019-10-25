@@ -11,6 +11,7 @@
 *.sh
 *.slice
 *.txt
+*_wrap.cpp
 tags
 bench/
 macro-netlist
