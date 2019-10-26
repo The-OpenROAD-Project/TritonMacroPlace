@@ -1,7 +1,7 @@
 #include "parse.h"
 
 EnvFile::EnvFile(): def(""), verilog(""), design(""), 
-  output(""), sdc(""), 
+  sdc(""), 
   globalConfig(""), localConfig(""), 
   searchDepth(3),
   isWestFix(false),
@@ -15,11 +15,7 @@ void EnvFile::RaiseError(std::string str) {
 }
 
 bool EnvFile::IsFilled() { 
-  if( design == "" ) {
-    RaiseError("Please put input design name with -design option");
-    return false;
-  }
-  else if ( def == "" ) {
+  if ( def == "" ) {
     RaiseError("Please put input def file with -def option");
     return false;
   }
@@ -29,10 +25,6 @@ bool EnvFile::IsFilled() {
   }
   else if ( verilog == "" ) {
     RaiseError("Please put input verilog file with -verilog option");
-    return false;
-  }
-  else if ( output == "" ) {
-    RaiseError("Please put input def file with -output option");
     return false;
   }
   else if ( sdc == "" ) {
@@ -55,7 +47,6 @@ void EnvFile::Print() {
   using std::cout;
   using std::endl;
 
-  cout << "Design: " << design << endl << endl;
   cout << "Liberty: " << endl;
   for(auto& curLib: libStor) {
     cout << curLib << endl;
@@ -75,9 +66,6 @@ void EnvFile::Print() {
   cout << endl;
   cout << "Def: " << endl;
   cout << def << endl << endl;
-
-  cout << "Output: " << endl;
-  cout << output << endl << endl;
 
   cout << "Search Depth: " << endl;
   cout << searchDepth << endl << endl;

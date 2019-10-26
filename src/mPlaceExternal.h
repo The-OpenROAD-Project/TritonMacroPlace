@@ -5,6 +5,11 @@
 #include <string>
 #include "parse.h"
 #include "lefdefIO.h"
+#include "circuit.h"
+
+namespace MacroNetlist {
+class Partition;
+}
 
 class mplace_external {
 public:
@@ -31,6 +36,8 @@ public:
 private:
   EnvFile env;
   Circuit::Circuit ckt;
+  MacroCircuit mckt;
+  std::vector< std::vector<MacroNetlist::Partition> > allSets;
 }; 
 
 #endif

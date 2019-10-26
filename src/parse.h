@@ -11,7 +11,6 @@ class EnvFile {
   std::string def;
   std::string verilog;
   std::string design;
-  std::string output;
   std::string sdc;
   std::string globalConfig;
   std::string localConfig; 

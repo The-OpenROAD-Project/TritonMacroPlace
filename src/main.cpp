@@ -76,10 +76,6 @@ bool ParseArgv(int argc, char** argv, EnvFile& _env) {
       i++;
       _env.design= string(argv[i]);
     }
-    else if (STRING_EQUAL("-output", argv[i])){
-      i++;
-      _env.output = string(argv[i]);
-    }
     else if (STRING_EQUAL("-depth", argv[i])){
       i++;
       _env.searchDepth = atoi(argv[i]);
@@ -108,10 +104,4 @@ bool ParseArgv(int argc, char** argv, EnvFile& _env) {
 
   return _env.IsFilled();
 }
-
-//void PrintUsage() {
-//  cout << "macroPlacer" << endl;
-//  cout << "./macroPlacer -lib one.lib -lib two.lib ... -verilog netlist.v" << endl;
-//}
-
 

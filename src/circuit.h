@@ -24,16 +24,10 @@ class CircuitInfo;
 
 class MacroCircuit {
   public:
-    MacroCircuit(Circuit::Circuit& ckt, EnvFile& env, CircuitInfo& cinfo);
-
-    Circuit::Circuit& _ckt;
-    EnvFile& _env;
-
-    // Timer
-    sta::Sta* _sta;
-
-    // layout information
-    CircuitInfo& _cinfo;
+    MacroCircuit();
+    MacroCircuit(Circuit::Circuit* ckt, EnvFile* env, CircuitInfo* cinfo);
+    
+    void Init(Circuit::Circuit* ckt, EnvFile* env, CircuitInfo* cinfo);
     
     std::vector<MacroNetlist::Vertex> vertexStor;
     std::vector<MacroNetlist::Edge> edgeStor;
@@ -88,6 +82,12 @@ class MacroCircuit {
     void StubPlacer(double snapGrid);
 
   private:
+    Circuit::Circuit* _ckt;
+    EnvFile* _env;
+    sta::Sta* _sta;
+
+    double lx, ly, ux, uy;
+
     void FillMacroStor();
     void FillPinGroup();
     void FillVertexEdge();
@@ -140,16 +140,16 @@ void PrintUsage();
 
 // for string escape
 inline bool ReplaceStringInPlace( std::string& subject, 
-        const std::string& search,
-        const std::string& replace) {
-    size_t pos = 0;
-    bool isFound = false;
-    while ((pos = subject.find(search, pos)) != std::string::npos) {
-         subject.replace(pos, search.length(), replace);
-         pos += replace.length();
-         isFound = true; 
-    }
-    return isFound; 
+    const std::string& search,
+    const std::string& replace) {
+  size_t pos = 0;
+  bool isFound = false;
+  while ((pos = subject.find(search, pos)) != std::string::npos) {
+    subject.replace(pos, search.length(), replace);
+    pos += replace.length();
+    isFound = true; 
+  }
+  return isFound; 
 }
 
 #endif

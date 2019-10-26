@@ -24,11 +24,13 @@ void CutRoundUp( CircuitInfo& cInfo, double& cutLine, bool isHorizontal ) {
     int integer = (1.0* cutLine / cInfo.siteSizeX) + 0.5f;
     cutLine = integer * cInfo.siteSizeX;
     cutLine = (cutLine > cInfo.ux)? cInfo.ux : cutLine;
+    cutLine = (cutLine < cInfo.lx)? cInfo.lx : cutLine;
   }
   else {
     int integer = (1.0* cutLine / cInfo.siteSizeY) + 0.5f;
     cutLine = integer * cInfo.siteSizeY;
     cutLine = (cutLine > cInfo.uy)? cInfo.uy : cutLine;
+    cutLine = (cutLine < cInfo.ly)? cInfo.ly : cutLine;
   }
 }
 
@@ -52,7 +54,9 @@ void PrintAllSets(FILE* fp, CircuitInfo& cInfo,
   cout << "Done!" << endl;
 }
 
-void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
+vector< vector<Partition> >
+PlaceMacros(EnvFile& env, Circuit::Circuit& ckt, MacroCircuit& mckt) {
+
   env.Print(); 
 
   cout << "PROC: LEF/DEF Parsing... ";
@@ -82,13 +86,12 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
   double siteSizeX = ckt.lefSiteStor[sitePtr->second].sizeX();
   double siteSizeY = ckt.lefSiteStor[sitePtr->second].sizeY();
 
-  CircuitInfo _cinfo( 1.0*points.x[0]/defScale, 
+  CircuitInfo cInfo( 1.0*points.x[0]/defScale, 
         1.0*points.y[0]/defScale,
         1.0*points.x[1]/defScale,
         1.0*points.y[1]/defScale,
         siteSizeX, siteSizeY );
 
-  
   cout << endl;
 //  cout << "Layout Information" << endl;
 //  for(int i=0; i<points.numPoints; i++) {
@@ -98,8 +101,8 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
 
 //  cout << "Original Macro List" << endl;
 
-  MacroCircuit mckt(ckt, env, _cinfo);
-    
+//  MacroCircuit mckt(ckt, env, cInfo);
+  mckt.Init(&ckt, &env, &cInfo);   
   
   //  RandomPlace for special needs. 
   //  Really not recommended to execute this functioning 
@@ -115,14 +118,14 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
 //    curMacro.Dump();
 //  }
  
-  bool isHorizontal = (_cinfo.ux-_cinfo.lx) > (_cinfo.uy-_cinfo.ly);
+  bool isHorizontal = (cInfo.ux-cInfo.lx) > (cInfo.uy-cInfo.ly);
 
   Partition layout(PartClass::ALL, 
-      _cinfo.lx, _cinfo.ly, _cinfo.ux-_cinfo.lx, _cinfo.uy-_cinfo.ly);
+      cInfo.lx, cInfo.ly, cInfo.ux-cInfo.lx, cInfo.uy-cInfo.ly);
   layout.macroStor = mckt.macroStor;
 
   cout << "PROC: Begin One Level Partition ... " << endl; 
-  TwoPartitions oneLevelPart = GetPart(_cinfo, layout, isHorizontal);
+  TwoPartitions oneLevelPart = GetPart(cInfo, layout, isHorizontal);
   cout << "PROC: End One Level Partition" << endl << endl;
   TwoPartitions eastStor, westStor;
 
@@ -146,8 +149,8 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
   for(auto& curSet : oneLevelPart ) {
     if( isHorizontal ) {
       cout << "PROC: Begin Horizontal Cuts" << endl;
-      CircuitInfo eastInfo(_cinfo, curSet.first);
-      CircuitInfo westInfo(_cinfo, curSet.second);
+      CircuitInfo eastInfo(cInfo, curSet.first);
+      CircuitInfo westInfo(cInfo, curSet.second);
 
       cout << "PROC: Begin 1st Second Level Partition" << endl;
       TwoPartitions eastStor = GetPart(eastInfo, curSet.first, !isHorizontal);
@@ -242,7 +245,7 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
   }
   cout << "INFO: Total Extracted Sets = " << allSets.size() << endl << endl;
 
-  return;
+  return allSets;
 
 
   // Legalize macro on global Structure
@@ -250,7 +253,8 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
 
   // TopLevel Macro Location Update
   // For each possible full-layout
-  
+ 
+  /* 
   int setCnt = 0;
   int bestSetIdx = 0;
   double bestWwl = DBL_MIN;
@@ -277,7 +281,7 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
 
     if( env.generateAll ) {
       // update ckt structure
-      UpdateCircuit(env, mckt, ckt);
+      UpdateCircuitCoordi(env, mckt, ckt);
 
       // check plotting
       if( env.isPlot ) {
@@ -299,6 +303,8 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
     }
     else {
       double curWwl = mckt.GetWeightedWL();
+      cout << "Set " << &curSet - &allSets[0] << ": WWL = " << curWwl << endl;
+      
       if( curWwl > bestWwl ) {
         bestWwl = curWwl;
         bestSetIdx = &curSet - &allSets[0]; 
@@ -314,7 +320,7 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
       curPart.UpdateMacroCoordi(mckt);
     }
     
-    UpdateCircuit(env, mckt, ckt); 
+    UpdateCircuitCoordi(env, mckt, ckt); 
 
     // check plotting
     if( env.isPlot ) {
@@ -333,6 +339,7 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
     ckt.WriteDef( fp );
     fclose(fp);
   }
+   */
    
   
 
@@ -345,7 +352,7 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
   } 
 
   // Generate *.sets file
-  PrintAllSets(fp, _cinfo, allSets);
+  PrintAllSets(fp, cInfo, allSets);
   fclose(fp);
   */
 
@@ -728,7 +735,7 @@ void UpdateMacroPartMap(
 // 
 // update ckt class from mckt, env.
 //
-void UpdateCircuit(EnvFile& env, MacroCircuit& mckt, Circuit::Circuit& ckt) {
+void UpdateCircuitCoordi(EnvFile& env, MacroCircuit& mckt, Circuit::Circuit& ckt) {
   unordered_set<int> macroIdxMap;
   double defScale = ckt.defUnit;
 

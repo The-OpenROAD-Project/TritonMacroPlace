@@ -21,8 +21,10 @@ void UpdateMacroPartMap( MacroCircuit& mckt,
         std::unordered_map< MacroNetlist::PartClass, std::vector<int>,
         MyHash<MacroNetlist::PartClass>>& macroPartMap);
 
-void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt);
-void UpdateCircuit(EnvFile& env, MacroCircuit& mckt, Circuit::Circuit& ckt);
+std::vector< std::vector<MacroNetlist::Partition> > 
+PlaceMacros(EnvFile& env, Circuit::Circuit& ckt, MacroCircuit& mckt);
+
+void UpdateCircuitCoordi(EnvFile& env, MacroCircuit& mckt, Circuit::Circuit& ckt);
 
 
 #endif

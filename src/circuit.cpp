@@ -13,25 +13,50 @@ using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 using std::pair;
+using std::cout;
+using std::endl;
 
 using Eigen::VectorXf;
 typedef Eigen::SparseMatrix<int, Eigen::RowMajor> SMatrix;
 typedef Eigen::Triplet<int> T;
 
+MacroCircuit::MacroCircuit() :
+  _ckt(0), _env(0),
+  lx(0), ly(0), ux(0), uy(0), 
+  gHaloX(0), gHaloY(0), 
+  gChannelX(0), gChannelY(0), netTable(0) {};
+
 MacroCircuit::MacroCircuit(
-    Circuit::Circuit& ckt, 
-    EnvFile& env, 
-    CircuitInfo& cinfo) :
-  _ckt(ckt), _env(env), _cinfo(cinfo),
+    Circuit::Circuit* ckt, 
+    EnvFile* env,
+    CircuitInfo* cinfo) :
+  _ckt(ckt), _env(env),
+  lx(0), ly(0), ux(0), uy(0),
   gHaloX(0), gHaloY(0), 
   gChannelX(0), gChannelY(0), netTable(0) {
 
+  Init(ckt, env, cinfo);
+}
+
+void MacroCircuit::Init( Circuit::Circuit* ckt,
+    EnvFile* env, 
+    CircuitInfo* cinfo) {
+  
+  _ckt = ckt; 
+  _env = env;
+
+  lx = cinfo->lx;
+  ly = cinfo->ly;
+  ux = cinfo->ux;
+  uy = cinfo->uy;
+  
+
   // parsing from cfg file
   // global config
-  ParseGlobalConfig(_env.globalConfig);
+  ParseGlobalConfig(_env->globalConfig);
   // local config (optional)
-  if( _env.localConfig != "" ) {
-    ParseLocalConfig(_env.localConfig);
+  if( _env->localConfig != "" ) {
+    ParseLocalConfig(_env->localConfig);
   }
 
   FillMacroStor(); 
@@ -50,40 +75,41 @@ using std::cout;
 using std::endl;
 using std::make_pair;
 
+
 void MacroCircuit::FillMacroStor() {
   cout << "Extracting Macro Cells... ";
 
   double cellHeight = FLT_MIN;
-  for(auto& curSite : _ckt.lefSiteStor) {
+  for(auto& curSite : _ckt->lefSiteStor) {
     if( strcmp( curSite.siteClass(), "CORE" ) == 0 ) {
       cellHeight = curSite.sizeY();
       break;
     }
   }
-  double defScale = _ckt.defUnit;
+  double defScale = _ckt->defUnit;
 //  cout << "Normal cellHeight: " << cellHeight << endl;
 //  cout << "DEF scale down: " << defScale << endl;
 
-  defiPoints points = _ckt.defDieArea.getPoint();
+  defiPoints points = _ckt->defDieArea.getPoint();
 //  cout << points.numPoints << endl;
 
 //  for(int i=0; i<points.numPoints; i++ ) {
 //    cout << 1.0*points.x[i]/defScale << " " 
 //      << 1.0*points.y[i]/defScale << endl;
 //  }
-  // cout << _ckt.defDieArea.xl() << " " << _ckt.defDieArea.yl() << " "
-  //  << _ckt.defDieArea.xh() << " " << _ckt.defDieArea.yh() << endl;
+  // cout << _ckt->defDieArea.xl() << " " << _ckt->defDieArea.yl() << " "
+  //  << _ckt->defDieArea.xh() << " " << _ckt->defDieArea.yh() << endl;
 
 
-  for(auto& curComp : _ckt.defComponentStor) {
-    auto macroPtr = _ckt.lefMacroMap.find( string(curComp.name()) );
-    if( macroPtr == _ckt.lefMacroMap.end() ) {
+  for(auto& curComp : _ckt->defComponentStor) {
+    auto macroPtr = _ckt->lefMacroMap.find( string(curComp.name()) );
+    if( macroPtr == _ckt->lefMacroMap.end() ) {
       cout << "\n** ERROR : Cannot find MACRO cell in lef files: " 
         << curComp.name() << endl;
       exit(1);
     }
 
-    lefiMacro& curMacro = _ckt.lefMacroStor[ macroPtr->second ];
+    lefiMacro& curMacro = _ckt->lefMacroStor[ macroPtr->second ];
 
     if( !curMacro.hasSize() ) {
       cout << "\n** ERROR : Cannot find MACRO SIZE in lef files: " 
@@ -98,7 +124,7 @@ void MacroCircuit::FillMacroStor() {
     }
   
     // Error handling with UNPLACED macros 
-    if( _env.isRandomPlace == false && 
+    if( _env->isRandomPlace == false && 
         (curComp.placementStatus() == 0 
         || curComp.placementStatus() == DEFI_COMPONENT_UNPLACED ) ) {
       cout << "ERROR:  Macro: " << curComp.id() << " is Unplaced." << endl;
@@ -134,7 +160,7 @@ void MacroCircuit::FillMacroStor() {
 
 
     int macroOrient = 
-      (_env.isWestFix)? 1 : curComp.placementOrient();
+      (_env->isWestFix)? 1 : curComp.placementOrient();
 
     double realSizeX = 0, realSizeY = 0;
     switch( macroOrient ) {
@@ -177,7 +203,7 @@ void MacroCircuit::FillMacroStor() {
 
 void MacroCircuit::FillPinGroup(){
   cout << "OpenSTA Object Starting... ";
-  _sta = GetStaObject( _env );
+  _sta = GetStaObject( *_env );
   cout << "Done!" << endl;
  
   sta::EdgeIndex numEdge = _sta->graph()->edgeCount();
@@ -186,15 +212,15 @@ void MacroCircuit::FillPinGroup(){
   cout << "OpenSTA numEdge: " << numEdge << endl;
   cout << "OpenSTA numVertex: " << numVertex << endl;
 
-  int lx = int(_cinfo.lx*_ckt.defUnit+0.5f);
-  int ly = int(_cinfo.ly*_ckt.defUnit+0.5f);
-  int ux = int(_cinfo.ux*_ckt.defUnit+0.5f);
-  int uy = int(_cinfo.uy*_ckt.defUnit+0.5f);
+  int dbuLx = int(lx*_ckt->defUnit+0.5f);
+  int dbuLy = int(ly*_ckt->defUnit+0.5f);
+  int dbuUx = int(ux*_ckt->defUnit+0.5f);
+  int dbuUy = int(uy*_ckt->defUnit+0.5f);
 
   using MacroNetlist::PinGroupClass;
 
   unordered_map<string, PinGroupClass> pinGroupStrMap;
-  for(auto& curPin: _ckt.defPinStor) {
+  for(auto& curPin: _ckt->defPinStor) {
     if( curPin.hasUse() && 
         (strcmp(curPin.use(), "POWER") == 0 || strcmp(curPin.use(), "GROUND") == 0) ) {
       continue;
@@ -206,21 +232,21 @@ void MacroCircuit::FillPinGroup(){
 
 //    cout << curPin.pinName() << endl;
 //    cout << curPin.placementX() << " " << curPin.placementY() << endl;
-    if( curPin.placementX() == lx ) {
+    if( curPin.placementX() == dbuLx) {
       pinGroupStrMap[ curPin.pinName() ] = PinGroupClass::West; 
     }
-    else if( curPin.placementX() == ux ) {
+    else if( curPin.placementX() == dbuUx ) {
       pinGroupStrMap[ curPin.pinName() ] = PinGroupClass::East; 
     }
-    else if( curPin.placementY() == ly) {
+    else if( curPin.placementY() == dbuLy ) {
       pinGroupStrMap[ curPin.pinName() ] = PinGroupClass::South; 
     }
-    else if( curPin.placementY() == uy) {
+    else if( curPin.placementY() == dbuUy ) {
       pinGroupStrMap[ curPin.pinName() ] = PinGroupClass::North; 
     }
     else {
       cout << "**ERROR: PIN " << curPin.pinName() << " is not PLACED in Border!!" << endl;
-      cout << "INFO: Border Information: " << lx << " " << ly << " " << ux << " " << uy << endl;
+      cout << "INFO: Border Information: " << dbuLx << " " << dbuLy << " " << dbuUx << " " << dbuUy << endl;
       exit(1);
     }
   }
@@ -874,18 +900,18 @@ void MacroCircuit::FillMacroConnection() {
 
 
   SMatrix calMatrix = adjMatrix;
-  if( _env.searchDepth == 2) {
+  if( _env->searchDepth == 2) {
     calMatrix = calMatrix * calMatrix; 
   }
-  else if( _env.searchDepth == 3) {
+  else if( _env->searchDepth == 3) {
     calMatrix = calMatrix * calMatrix; 
     calMatrix = calMatrix * adjMatrix; 
   }
-  else if( _env.searchDepth == 4) {
+  else if( _env->searchDepth == 4) {
     calMatrix = calMatrix * calMatrix; 
     calMatrix = calMatrix * calMatrix; 
   }
-  else if(_env.searchDepth == 5){
+  else if(_env->searchDepth == 5){
     calMatrix = calMatrix * calMatrix; 
     calMatrix = calMatrix * calMatrix; 
     calMatrix = calMatrix * adjMatrix; 
@@ -1107,8 +1133,8 @@ void MacroCircuit::StubPlacer(double snapGrid) {
 
   snapGrid *= 10;
 
-  int sizeX = (int)( (_cinfo.ux - _cinfo.lx) / snapGrid + 0.5f);
-  int sizeY = (int)( (_cinfo.uy - _cinfo.ly) / snapGrid + 0.5f);
+  int sizeX = (int)( (ux - lx) / snapGrid + 0.5f);
+  int sizeY = (int)( (uy - ly) / snapGrid + 0.5f);
 
   int** checker = new int* [sizeX];
   for(int i=0; i<sizeX; i++) {
@@ -1117,7 +1143,7 @@ void MacroCircuit::StubPlacer(double snapGrid) {
       checker[i][j] = -1; // uninitialize
     }
   }
-  cout << "cinfo: " << _cinfo.ux << " " << _cinfo.uy << endl;
+  cout << "cinfo: " << ux << " " << uy << endl;
   cout << "GRID Width: " << sizeX << " Height: " << sizeY << endl;
 
 
@@ -1126,16 +1152,16 @@ void MacroCircuit::StubPlacer(double snapGrid) {
 
     for(auto& curMacro: macroStor) { 
       // Macro Projection in (llx, lly, urx, ury)
-      if( curMacro.lx < _cinfo.lx ) curMacro.lx = _cinfo.lx;
-      if( curMacro.ly < _cinfo.ly ) curMacro.ly = _cinfo.ly;
-      if( curMacro.lx + curMacro.w > _cinfo.ux ) curMacro.lx = _cinfo.ux - curMacro.w;
-      if( curMacro.ly + curMacro.h > _cinfo.uy ) curMacro.ly = _cinfo.uy - curMacro.h;
+      if( curMacro.lx < lx ) curMacro.lx = lx;
+      if( curMacro.ly < ly ) curMacro.ly = ly;
+      if( curMacro.lx + curMacro.w > ux ) curMacro.lx = ux - curMacro.w;
+      if( curMacro.ly + curMacro.h > uy ) curMacro.ly = uy - curMacro.h;
 
-      if( curMacro.lx < _cinfo.lx || curMacro.lx + curMacro.w > _cinfo.ux ) {
+      if( curMacro.lx < lx || curMacro.lx + curMacro.w > ux ) {
         cout << "ERROR: Macro Legalizer detects width is not enough" << endl;
         exit(1);
       }
-      if( curMacro.ly < _cinfo.lx || curMacro.ly + curMacro.h > _cinfo.uy ) {
+      if( curMacro.ly < lx || curMacro.ly + curMacro.h > uy ) {
         cout << "ERROR: Macro Legalizer detects height is not enough" << endl;
         exit(1);
       }
@@ -1386,8 +1412,8 @@ Plot(string fileName, vector<MacroNetlist::Partition>& set) {
   gpOut << "set size ratio -1" << endl;
   gpOut << "set title '' " << endl; 
 
-  gpOut << "set xrange[" << _cinfo.lx << ":" << _cinfo.ux << "]" << endl;
-  gpOut << "set yrange[" << _cinfo.ly << ":" << _cinfo.uy << "]" << endl;
+  gpOut << "set xrange[" << lx << ":" << ux << "]" << endl;
+  gpOut << "set yrange[" << ly << ":" << uy << "]" << endl;
 
   int objCnt = 0; 
   for(auto& curMacro : macroStor) {
@@ -1450,9 +1476,8 @@ void MacroCircuit::UpdateNetlist(MacroNetlist::Partition& layout) {
 double MacroCircuit::GetWeightedWL() {
   double wwl = 0.0f;
 
-  double lx = _cinfo.lx, ly = _cinfo.ly;
-  double width = _cinfo.ux - _cinfo.lx;
-  double height = _cinfo.uy - _cinfo.ly; 
+  double width = ux - lx;
+  double height = uy - ly; 
 
 
   for(size_t i=0; i<macroStor.size()+4; i++) {
