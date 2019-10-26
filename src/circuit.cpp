@@ -268,9 +268,9 @@ void MacroCircuit::FillPinGroup(){
       continue;
     }
     
-    auto pgPtr = pinGroupStrMap.find(_sta->network()->name(pin));
+    auto pgPtr = pinGroupStrMap.find(_sta->network()->pathName(pin));
     if( pgPtr == pinGroupStrMap.end() ) {
-      cout << "**ERROR: PIN " << _sta->network()->name(pin) << " not exist in pinGroupStrMap" << endl;
+      cout << "**ERROR: PIN " << _sta->network()->pathName(pin) << " not exist in pinGroupStrMap" << endl;
       exit(1);
     }
 
@@ -295,7 +295,7 @@ pair<void*, VertexClass> MacroCircuit::GetPtrClassPair( sta::Pin* pin ) {
   if( isTopPin ) {
     auto pgPtr = pinGroupMap.find( pin);
     if( pgPtr == pinGroupMap.end()) {
-      cout << "ERROR: " << _sta->network()->name(pin) << " not exists in PinGroupMap" << endl;
+      cout << "ERROR: " << _sta->network()->pathName(pin) << " not exists in PinGroupMap" << endl;
       exit(1);
     }
 
@@ -305,7 +305,7 @@ pair<void*, VertexClass> MacroCircuit::GetPtrClassPair( sta::Pin* pin ) {
   }
   else {
     sta::Instance* inst = _sta->network()->instance(pin);
-    string instName = _sta->network()->name(inst);
+    string instName = _sta->network()->pathName(inst);
     
 //    ReplaceStringInPlace( instName, "\\[",  "[" );
 //    ReplaceStringInPlace( instName, "\\]",  "]" );
@@ -322,7 +322,7 @@ MacroNetlist::Vertex* MacroCircuit::GetVertex( sta::Pin *pin) {
   pair<void*, VertexClass> vertInfo = GetPtrClassPair( pin);
   auto vertPtr = pinInstVertexMap.find(vertInfo.first);
   if( vertPtr == pinInstVertexMap.end() )  {
-    cout << "WARNING: " << _sta->network()->name(pin) << " not exists in pinInstVertexMap" << endl;
+    cout << "WARNING: " << _sta->network()->pathName(pin) << " not exists in pinInstVertexMap" << endl;
     return NULL;
   }
 //  cout << "GetVertex: " << &vertexStor[vertPtr->second] << endl;;
@@ -354,7 +354,7 @@ void MacroCircuit::FillVertexEdge() {
     Pin* pin = vert->pin();
     
 //    cout << "vert: " << _sta->graph()->name(vert) << endl;
-//    cout << "pin: " << _sta->network()->name(pin) << endl ;
+//    cout << "pin: " << _sta->network()->pathName(pin) << endl ;
 
     bool isTopPin = _sta->network()->isTopLevelPort(pin);
     if( isTopPin ) {
@@ -387,7 +387,7 @@ void MacroCircuit::FillVertexEdge() {
       vertexStor.push_back( MacroNetlist::Vertex(vertex.first, vertex.second)); 
     }
 
-//    cout << "vert: " << _sta->network()->name(inst) << endl;
+//    cout << "vert: " << _sta->network()->pathName(inst) << endl;
   }
   
   // VertexPtrMap Initialize
@@ -422,7 +422,7 @@ void MacroCircuit::FillVertexEdge() {
       Instance* inst = _sta->network()->instance(pin);
       LibertyCell* libCell = _sta->network()->libertyCell(inst);
       if( !libCell -> hasSequentials() && macroInstMap.find(inst) == macroInstMap.end() ) {
-//        cout << "is not: " << _sta->network()->name(pin) << endl; 
+//        cout << "is not: " << _sta->network()->pathName(pin) << endl; 
         continue;
       }
     }
@@ -444,7 +444,7 @@ void MacroCircuit::FillVertexEdge() {
 //     bool thru_constants)
 //{
 
-//    cout << "[" << _sta->network()->name(pin) << "]" << endl;
+//    cout << "[" << _sta->network()->pathName(pin) << "]" << endl;
     
     PinSeq pinStor;
     pinStor.push_back(pin);
@@ -459,7 +459,7 @@ void MacroCircuit::FillVertexEdge() {
           500, 700,
           false, false);
       for(auto& adjPin: *fanout) {
-//        cout << _sta->network()->name(pin) << " -> " << _sta->network()->name(adjPin) << endl;
+//        cout << _sta->network()->pathName(pin) << " -> " << _sta->network()->pathName(adjPin) << endl;
         // Skip For Non-FF Pin 
         if( !_sta->network()->isTopLevelPort(adjPin) ) {
           Instance* inst = _sta->network()->instance(adjPin);
@@ -479,7 +479,7 @@ void MacroCircuit::FillVertexEdge() {
           continue;
         }
 
-//        cout << _sta->network()->name(pin) << " -> " << _sta->network()->name(adjPin) << endl;
+//        cout << _sta->network()->pathName(pin) << " -> " << _sta->network()->pathName(adjPin) << endl;
 
         /*
          * previous
@@ -506,7 +506,7 @@ void MacroCircuit::FillVertexEdge() {
           500, 700,
           false, false);
       for(auto& adjPin: *fanin) {
-//        cout <<  _sta->network()->name(adjPin) << " -> " << _sta->network()->name(pin) << endl;
+//        cout <<  _sta->network()->pathName(adjPin) << " -> " << _sta->network()->pathName(pin) << endl;
         // Skip For Non-FF Pin 
         if( !_sta->network()->isTopLevelPort(adjPin) ) {
           Instance* inst = _sta->network()->instance(adjPin);
@@ -526,7 +526,7 @@ void MacroCircuit::FillVertexEdge() {
           continue;
         }
 
-//        cout << _sta->network()->name(adjPin) << " -> " << _sta->network()->name(pin) << endl;
+//        cout << _sta->network()->pathName(adjPin) << " -> " << _sta->network()->pathName(pin) << endl;
 
         /*
          * previous
@@ -600,13 +600,13 @@ void MacroCircuit::FillVertexEdge() {
     if( _sta->network()->isCheckClk(pin) || _sta->sdc()->isClock(pin) ) {
       continue;
     }
-    if( string(_sta->network()->name(pin)) == "reset_i" ) {
+    if( string(_sta->network()->pathName(pin)) == "reset_i" ) {
       continue;
     }
 
     MacroNetlist::Vertex* mVert = GetVertex(pin);
 
-//    cout << "[" << _sta->network()->name(pin) << "]" << endl;
+//    cout << "[" << _sta->network()->pathName(pin) << "]" << endl;
 
 //  virtual PathEndSeq *findPathEnds(ExceptionFrom *from,
 //           ExceptionThruSeq *thrus,
@@ -717,7 +717,7 @@ void MacroCircuit::FillVertexEdge() {
       Pin* startPin = startVert->pin();
       Pin* endPin = endVert->pin();
 
-//      cout << _sta->network()->name(startPin) << " -> " << _sta->network()->name(endPin) << endl;
+//      cout << _sta->network()->pathName(startPin) << " -> " << _sta->network()->pathName(endPin) << endl;
       MacroNetlist::Vertex* startVertPtr = GetVertex( startPin );
       MacroNetlist::Vertex* endVertPtr = GetVertex( endPin );
 
@@ -822,7 +822,7 @@ void MacroCircuit::FillVertexEdge() {
     
 //    if( _sta->network()->isTopLevelPort(startPin) ||
 //        _sta->network()->isTopLevelPort(endPin)) {
-//      cout << _sta->network()->name(startPin) << " -> " << _sta->network()->name(endPin) << endl; 
+//      cout << _sta->network()->pathName(startPin) << " -> " << _sta->network()->pathName(endPin) << endl; 
 //    } 
   cout << "Sequential Graph Building is Done!" << endl;
   cout << "Vertex: " << vertexStor.size() << endl;
@@ -841,16 +841,20 @@ void MacroCircuit::UpdateInstanceToMacroStor() {
       continue;
     }
     sta::Instance* inst = _sta->network()->instance(pin);
-    string instName = _sta->network()->name(inst);
+    string instName = _sta->network()->pathName(inst);
 
 //    ReplaceStringInPlace(instName, "\\[", "[");
 //    ReplaceStringInPlace(instName, "\\]", "]");
 //    ReplaceStringInPlace(instName, "\\/", "/");
 
+    cout << "Vertex: " << instName << endl;
+
     auto mnPtr = macroNameMap.find(instName); 
     if( mnPtr == macroNameMap.end()) {
       continue; 
     }
+    
+    cout << "Passed: " << instName << endl;
 
     // macro & macroInstMap update
     macroStor[mnPtr->second].instPtr = inst;
@@ -864,7 +868,7 @@ void MacroCircuit::UpdateVertexToMacroStor() {
     if( curVertex.vertexClass != VertexClass::instMacro ) {
       continue;
     }
-    string name = _sta->network()->name((sta::Instance*)curVertex.ptr);
+    string name = _sta->network()->pathName((sta::Instance*)curVertex.ptr);
 //    cout << "Macro: " << name << endl;
 //    ReplaceStringInPlace(name, "\\[", "[");
 //    ReplaceStringInPlace(name, "\\]", "]");
@@ -939,9 +943,9 @@ void MacroCircuit::FillMacroConnection() {
       PinGroup* ptr2 = (PinGroup*)curVertex2->ptr;
 
       string name1 = (curVertex1->vertexClass == VertexClass::pin)? 
-        ptr1->name() : _sta->network()->name((sta::Instance*)curVertex1->ptr);
+        ptr1->name() : _sta->network()->pathName((sta::Instance*)curVertex1->ptr);
       string name2 = (curVertex2->vertexClass == VertexClass::pin)?
-        ptr2->name() : _sta->network()->name((sta::Instance*)curVertex2->ptr);
+        ptr2->name() : _sta->network()->pathName((sta::Instance*)curVertex2->ptr);
       cout << "[ " << name1 << " --> " << name2 << " ]" <<endl;
 
       macroWeight[idx1][idx2] = GetPathWeightMatrix( calMatrix, curVertex1, curVertex2);
@@ -1075,7 +1079,7 @@ int MacroCircuit::GetPathWeight(MacroNetlist::Vertex* from, MacroNetlist::Vertex
 //      MacroNetlist::PinGroup* ptr = (MacroNetlist::PinGroup*) curVert->ptr;
 //      string name = (curVert->vertexClass == VertexClass::pin)?
 //        ptr->name() :
-//        _sta->network()->name((sta::Instance*)curVert->ptr);
+//        _sta->network()->pathName((sta::Instance*)curVert->ptr);
 //      cout << name << " -> ";
 //    }
 //    cout << endl;
@@ -1099,7 +1103,7 @@ int MacroCircuit::GetPathWeight(MacroNetlist::Vertex* from, MacroNetlist::Vertex
       MacroNetlist::PinGroup* ptr = (MacroNetlist::PinGroup*) curVert->ptr;
       string name = (curVert->vertexClass == VertexClass::pin)?
         ptr->name() :
-        _sta->network()->name((sta::Instance*)curVert->ptr);
+        _sta->network()->pathName((sta::Instance*)curVert->ptr);
       cout << name << " -> ";
     }
     cout << endl;
