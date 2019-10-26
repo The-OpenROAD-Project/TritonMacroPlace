@@ -16,12 +16,13 @@ std::vector<std::pair<MacroNetlist::Partition, MacroNetlist::Partition>> GetPart
     MacroNetlist::Partition& partition, bool isHorizontal );
 
 // Partition Class --> macroStor's index.
-void UpdateMacroPartInfo( MacroCircuit& _mckt,
+void UpdateMacroPartMap( MacroCircuit& mckt,
     MacroNetlist::Partition& part, 
         std::unordered_map< MacroNetlist::PartClass, std::vector<int>,
         MyHash<MacroNetlist::PartClass>>& macroPartMap);
 
 void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt);
+void UpdateCircuit(EnvFile& env, MacroCircuit& mckt, Circuit::Circuit& ckt);
 
 
 #endif

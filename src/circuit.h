@@ -61,7 +61,7 @@ class MacroCircuit {
     std::unordered_map<sta::Instance*, int> macroInstMap;
 
     // Update Macro Location from Partition info
-    void UpdateMacroLoc(MacroNetlist::Partition& part);
+    void UpdateMacroCoordi(MacroNetlist::Partition& part);
 
     // parsing function
     void ParseGlobalConfig(std::string fileName);

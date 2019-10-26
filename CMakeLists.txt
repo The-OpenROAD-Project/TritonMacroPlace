@@ -60,7 +60,6 @@ set (MPLACE_SRC
   src/defParser.cpp
   src/lefParser.cpp
   src/main.cpp
-  src/parquet.cpp
   src/timingSta.cpp
   src/partition.cpp
   src/parse.cpp

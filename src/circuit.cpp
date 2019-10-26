@@ -1085,7 +1085,7 @@ int MacroCircuit::GetPathWeight(MacroNetlist::Vertex* from, MacroNetlist::Vertex
 // 
 // Update Macro Location
 // from partition
-void MacroCircuit::UpdateMacroLoc( MacroNetlist::Partition& part) {
+void MacroCircuit::UpdateMacroCoordi( MacroNetlist::Partition& part) {
   for(auto& curMacro : part.macroStor) {
     auto mnPtr = macroNameMap.find(curMacro.name);
     if( mnPtr == macroNameMap.end() ) {

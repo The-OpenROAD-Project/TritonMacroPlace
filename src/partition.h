@@ -52,6 +52,9 @@ class Partition {
     // Call Parquet to have annealing solution
     void DoAnneal();
 
+    // Update Macro location from MacroCircuit
+    void UpdateMacroCoordi(MacroCircuit& mckt);
+
     // Writing functions
     void PrintSetFormat(FILE* fp);
 

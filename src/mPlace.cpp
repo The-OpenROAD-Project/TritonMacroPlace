@@ -54,9 +54,10 @@ void PrintAllSets(FILE* fp, CircuitInfo& cInfo,
 
 void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
   env.Print(); 
-  
+
   cout << "PROC: LEF/DEF Parsing... ";
   ckt.Init(env.lefStor, env.def);
+  env.design = ckt.defDesignName;
   cout << "Done!" << endl;
 
   double defScale = ckt.defUnit;
@@ -97,20 +98,20 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
 
 //  cout << "Original Macro List" << endl;
 
-  MacroCircuit _mckt(ckt, env, _cinfo);
+  MacroCircuit mckt(ckt, env, _cinfo);
     
   
   //  RandomPlace for special needs. 
   //  Really not recommended to execute this functioning 
   if( env.isRandomPlace == true ) {
     double snapGrid = 0.02f;
-    _mckt.StubPlacer(snapGrid);
+    mckt.StubPlacer(snapGrid);
   }
 
 
-//  _mckt.GetMacroStor(ckt);
+//  mckt.GetMacroStor(ckt);
 
-//  for(auto& curMacro: _mckt.macroStor) {
+//  for(auto& curMacro: mckt.macroStor) {
 //    curMacro.Dump();
 //  }
  
@@ -118,7 +119,7 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
 
   Partition layout(PartClass::ALL, 
       _cinfo.lx, _cinfo.ly, _cinfo.ux-_cinfo.lx, _cinfo.uy-_cinfo.ly);
-  layout.macroStor = _mckt.macroStor;
+  layout.macroStor = mckt.macroStor;
 
   cout << "PROC: Begin One Level Partition ... " << endl; 
   TwoPartitions oneLevelPart = GetPart(_cinfo, layout, isHorizontal);
@@ -131,9 +132,9 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
   // Fill the MacroNetlist for ALL circuits
   unordered_map< PartClass, vector<int>, 
     MyHash<PartClass>> globalMacroPartMap;
-  UpdateMacroPartInfo( _mckt, layout, globalMacroPartMap );
-  layout.FillNetlistTable( _mckt, globalMacroPartMap );
-  _mckt.UpdateNetlist(layout);
+  UpdateMacroPartMap( mckt, layout, globalMacroPartMap );
+  layout.FillNetlistTable( mckt, globalMacroPartMap );
+  mckt.UpdateNetlist(layout);
  
   // push to the outer vector 
   vector<Partition> layoutSet;
@@ -171,11 +172,11 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
           unordered_map< PartClass, vector<int>, 
             MyHash<PartClass>> macroPartMap;
           for(auto& curSet: oneSet) {
-            UpdateMacroPartInfo( _mckt, curSet, macroPartMap );
+            UpdateMacroPartMap( mckt, curSet, macroPartMap );
           }
 
           for(auto& curSet: oneSet) {
-            curSet.FillNetlistTable( _mckt, macroPartMap );
+            curSet.FillNetlistTable( mckt, macroPartMap );
           }
 
           allSets.push_back( oneSet );
@@ -195,11 +196,11 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
           unordered_map< PartClass, vector<int>, 
             MyHash<PartClass>> macroPartMap;
           for(auto& curSet: oneSet) {
-            UpdateMacroPartInfo( _mckt, curSet, macroPartMap );
+            UpdateMacroPartMap( mckt, curSet, macroPartMap );
           }
 
           for(auto& curSet: oneSet) {
-            curSet.FillNetlistTable( _mckt, macroPartMap );
+            curSet.FillNetlistTable( mckt, macroPartMap );
           }
 
           allSets.push_back( oneSet );
@@ -223,11 +224,11 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
             unordered_map< PartClass, vector<int>, 
               MyHash<PartClass>> macroPartMap;
             for(auto& curSet: oneSet) {
-              UpdateMacroPartInfo( _mckt, curSet, macroPartMap );
+              UpdateMacroPartMap( mckt, curSet, macroPartMap );
             }
 
             for(auto& curSet: oneSet) {
-              curSet.FillNetlistTable( _mckt, macroPartMap );
+              curSet.FillNetlistTable( mckt, macroPartMap );
             }
 
             allSets.push_back( oneSet );
@@ -240,6 +241,8 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
     }
   }
   cout << "INFO: Total Extracted Sets = " << allSets.size() << endl << endl;
+
+  return;
 
 
   // Legalize macro on global Structure
@@ -263,59 +266,22 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
     for(auto& curPart : curSet) {
       // Annealing based on ParquetFP Engine
       curPart.DoAnneal();
-      // Update _mckt frequently
-      _mckt.UpdateMacroLoc(curPart);
+      // Update mckt frequently
+      mckt.UpdateMacroCoordi(curPart);
     }
-      
 
     // update partitons' macro info
     for(auto& curPart : curSet) { 
-      for(auto& curMacro : curPart.macroStor) {
-        auto mPtr = _mckt.macroNameMap.find(curMacro.name);
-        int macroIdx = mPtr->second;
-        curMacro.lx = _mckt.macroStor[macroIdx].lx;
-        curMacro.ly = _mckt.macroStor[macroIdx].ly;
-      }
+      curPart.UpdateMacroCoordi(mckt);
     }
 
     if( env.generateAll ) {
       // update ckt structure
-      for(auto& curMacro : _mckt.macroStor) {
-        auto cPtr = ckt.defComponentMap.find( curMacro.name );
-        if( cPtr == ckt.defComponentMap.end()) {
-          cout << "ERROR: Cannot find " << curMacro.name 
-            << " in defiComponentMap" << endl;
-          exit(1);
-        }
-        int cIdx = cPtr->second;
-        int lx = int(curMacro.lx * defScale + 0.5f);
-        int ly = int(curMacro.ly * defScale + 0.5f);
-        
-        int orient = -1;
-        if( ckt.defComponentStor[cIdx].placementStatus() != 0 
-            && ckt.defComponentStor[cIdx].placementStatus() != DEFI_COMPONENT_UNPLACED ) {
-          // Follow original orient 
-          orient = ckt.defComponentStor[cIdx].placementOrient(); 
-        }
-        else {
-          // Default is North
-          orient = 0;
-        }
-
-        if( env.isWestFix ) {
-          orient = 1;
-        }
-
-        ckt.defComponentStor[cIdx].
-          setPlacementLocation(lx, ly, orient);
-
-        ckt.defComponentStor[cIdx].
-          setPlacementStatus(DEFI_COMPONENT_FIXED);
-      }
+      UpdateCircuit(env, mckt, ckt);
 
       // check plotting
       if( env.isPlot ) {
-        _mckt.Plot(env.output + "_" + std::to_string(setCnt) + ".plt", curSet);
+        mckt.Plot(env.output + "_" + std::to_string(setCnt) + ".plt", curSet);
       }
 
       // top-level layout print
@@ -332,7 +298,7 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
       fclose(fp);
     }
     else {
-      double curWwl = _mckt.GetWeightedWL();
+      double curWwl = mckt.GetWeightedWL();
       if( curWwl > bestWwl ) {
         bestWwl = curWwl;
         bestSetIdx = &curSet - &allSets[0]; 
@@ -345,65 +311,14 @@ void PlaceMacros(EnvFile& env, Circuit::Circuit& ckt) {
   vector<Partition> bestSet = allSets[bestSetIdx];
   if( !env.generateAll ) {
     for(auto& curPart : bestSet) { 
-      for(auto& curMacro : curPart.macroStor) {
-        auto mPtr = _mckt.macroNameMap.find(curMacro.name);
-        int macroIdx = mPtr->second;
-        curMacro.lx = _mckt.macroStor[macroIdx].lx;
-        curMacro.ly = _mckt.macroStor[macroIdx].ly;
-      }
+      curPart.UpdateMacroCoordi(mckt);
     }
-     
-    unordered_set<int> macroIdxMap;
-
-    // update ckt structure
-    for(auto& curMacro : _mckt.macroStor) {
-      auto cPtr = ckt.defComponentMap.find( curMacro.name );
-      if( cPtr == ckt.defComponentMap.end()) {
-        cout << "ERROR: Cannot find " << curMacro.name 
-          << " in defiComponentMap" << endl;
-        exit(1);
-      }
-      int cIdx = cPtr->second;
-      macroIdxMap.insert(cIdx);
-      int lx = int(curMacro.lx * defScale + 0.5f);
-      int ly = int(curMacro.ly * defScale + 0.5f);
-
-      int orient = -1;
-      if( ckt.defComponentStor[cIdx].placementStatus() != 0 
-          && ckt.defComponentStor[cIdx].placementStatus() != DEFI_COMPONENT_UNPLACED ) {
-        // Follow original orient 
-        orient = ckt.defComponentStor[cIdx].placementOrient(); 
-      }
-      else {
-        // Default is North
-        orient = 0;
-      }
-
-      if( env.isWestFix ) {
-        orient = 1;
-      }
-
-      ckt.defComponentStor[cIdx].
-        setPlacementLocation(lx, ly, orient);
-
-      ckt.defComponentStor[cIdx].
-        setPlacementStatus(DEFI_COMPONENT_FIXED);
-    }
-
-    // reset other cells's location not to have bug in other tools
-    for(size_t i=0; i<ckt.defComponentStor.size(); i++) {
-      // continue for MacroIndex
-      if( macroIdxMap.find(i) != macroIdxMap.end() ) {
-        continue;
-      }
-      
-      ckt.defComponentStor[i].setPlacementStatus(0);
-      ckt.defComponentStor[i].setPlacementLocation(-1,-1,-1);
-    }
+    
+    UpdateCircuit(env, mckt, ckt); 
 
     // check plotting
     if( env.isPlot ) {
-      _mckt.Plot(env.output + "_best.plt", bestSet );
+      mckt.Plot(env.output + "_best.plt", bestSet );
     }
 
     // top-level layout print
@@ -774,8 +689,16 @@ vector<pair<Partition, Partition>> GetPart(
   return ret; 
 }
 
-void UpdateMacroPartInfo( 
-    MacroCircuit& _mckt,
+
+// using mckt.macroInstMap and partition, 
+// fill in macroPartMap
+//
+// macroPartMap will contain 
+// 
+// first: macro partition class info 
+// second: macro candidates.
+void UpdateMacroPartMap( 
+    MacroCircuit& mckt,
     MacroNetlist::Partition& part, 
     unordered_map<MacroNetlist::PartClass, vector<int>, 
     MyHash<MacroNetlist::PartClass>>& macroPartMap ) {
@@ -785,8 +708,8 @@ void UpdateMacroPartInfo(
     vector<int> curMacroStor;
     // convert macro Information into macroIdx
     for(auto& curMacro: part.macroStor) {
-      auto miPtr = _mckt.macroInstMap.find( curMacro.instPtr );
-      if( miPtr == _mckt.macroInstMap.end() ) {
+      auto miPtr = mckt.macroInstMap.find( curMacro.instPtr );
+      if( miPtr == mckt.macroInstMap.end() ) {
         cout << "ERROR: macro " << curMacro.name 
           << " not exists in macroInstMap: " << curMacro.instPtr << endl;
         exit(1);
@@ -797,7 +720,61 @@ void UpdateMacroPartInfo(
   }
   else {
     cout << "ERROR: Partition- " << part.partClass 
-      << " already updated (UpdateMacroPartInfo)" << endl; 
+      << " already updated (UpdateMacroPartMap)" << endl; 
     exit(1);
+  }
+}
+
+// 
+// update ckt class from mckt, env.
+//
+void UpdateCircuit(EnvFile& env, MacroCircuit& mckt, Circuit::Circuit& ckt) {
+  unordered_set<int> macroIdxMap;
+  double defScale = ckt.defUnit;
+
+  // update ckt structure
+  for(auto& curMacro : mckt.macroStor) {
+    auto cPtr = ckt.defComponentMap.find( curMacro.name );
+    if( cPtr == ckt.defComponentMap.end()) {
+      cout << "ERROR: Cannot find " << curMacro.name 
+        << " in defiComponentMap" << endl;
+      exit(1);
+    }
+    int cIdx = cPtr->second;
+    macroIdxMap.insert(cIdx);
+    int lx = int(curMacro.lx * defScale + 0.5f);
+    int ly = int(curMacro.ly * defScale + 0.5f);
+
+    int orient = -1;
+    if( ckt.defComponentStor[cIdx].placementStatus() != 0 
+        && ckt.defComponentStor[cIdx].placementStatus() != DEFI_COMPONENT_UNPLACED ) {
+      // Follow original orient 
+      orient = ckt.defComponentStor[cIdx].placementOrient(); 
+    }
+    else {
+      // Default is North
+      orient = 0;
+    }
+
+    if( env.isWestFix ) {
+      orient = 1;
+    }
+
+    ckt.defComponentStor[cIdx].
+      setPlacementLocation(lx, ly, orient);
+
+    ckt.defComponentStor[cIdx].
+      setPlacementStatus(DEFI_COMPONENT_FIXED);
+  }
+
+  // reset other cells's location not to have bug in other tools
+  for(size_t i=0; i<ckt.defComponentStor.size(); i++) {
+    // continue for MacroIndex
+    if( macroIdxMap.find(i) != macroIdxMap.end() ) {
+      continue;
+    }
+
+    ckt.defComponentStor[i].setPlacementStatus(0);
+    ckt.defComponentStor[i].setPlacementLocation(-1,-1,-1);
   }
 }
