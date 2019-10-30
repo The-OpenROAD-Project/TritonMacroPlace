@@ -559,8 +559,6 @@ void Partition::DoAnneal() {
   }
 
   using namespace parquetfp;
-  using uofm::string;
-  using uofm::vector;
 
   // Populating DB structure
   // Instantiate Parquet DB structure
@@ -578,7 +576,7 @@ void Partition::DoAnneal() {
 //    cout << curMacro.w << " -> " << padMacroWidth << endl;
 //    exit(1);
 
-    Node tmpMacro ( curMacro.name.c_str() , padMacroWidth * padMacroHeight, 
+    Node tmpMacro ( uofm::string(curMacro.name.c_str()) , padMacroWidth * padMacroHeight, 
         padMacroWidth/padMacroHeight, padMacroWidth/padMacroHeight,
         &curMacro - &macroStor[0], false);
 
@@ -594,7 +592,7 @@ void Partition::DoAnneal() {
 
   // Feed node structure: terminal Info
   int indexTerm = 0;
-  string pinNames[4] = {"West", "East", "North", "South"};
+  uofm::string pinNames[4] = {"West", "East", "North", "South"};
   double posX[4] = {0.0,         width,      width/2.0,  width/2.0};
   double posY[4] = {height/2.0,  height/2.0, height,     0.0f };
   for(int i=0; i<4; i++) {

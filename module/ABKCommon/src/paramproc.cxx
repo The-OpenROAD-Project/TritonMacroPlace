@@ -94,7 +94,7 @@ Param::Param (const char * key, Type pt,int argc, const char * const argv[])
          else
             _on=true;  
 
-         if (strcasecmp(start,_key)==0)
+         if (abk_strcasecmp(start,_key)==0)
          {
               _b=true;
               if (n+1 < argc)

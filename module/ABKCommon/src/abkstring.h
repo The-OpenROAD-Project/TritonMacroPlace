@@ -123,4 +123,6 @@ extern char *rindex();
 
 #endif /* defined(WIN32)*/
 
+int abk_strcasecmp(const char* a, const char* b);
+
 #endif	/* _STRINGS_H */

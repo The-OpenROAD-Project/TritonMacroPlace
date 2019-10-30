@@ -177,12 +177,12 @@ istream& impl_needcaseword(istream& in,const char* word, int lineNo=-1)
    if (lineNo>0)
    {
       sprintf(errMess," '%s' expected near line %d. Got %s ",word,lineNo, buffer);
-      abkfatal2(strcasecmp(buffer,word)==0,errMess,lineNo);
+      abkfatal2(abk_strcasecmp(buffer,word)==0,errMess,lineNo);
    }
    else
    {
        sprintf(errMess," '%s' expected. Got %s ",word, buffer);
-       abkfatal(strcasecmp(buffer,word)==0,errMess);
+       abkfatal(abk_strcasecmp(buffer,word)==0,errMess);
    }                
    return in;
 }

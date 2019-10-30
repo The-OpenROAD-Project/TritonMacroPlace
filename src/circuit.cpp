@@ -904,6 +904,7 @@ void MacroCircuit::FillMacroConnection() {
     macroWeight[i] = vector<int> (searchVert.size(), 0);
   }
 
+  auto startTime = std::chrono::system_clock::now();
 
   SMatrix calMatrix = adjMatrix;
   if( _env->searchDepth == 2) {
@@ -923,9 +924,12 @@ void MacroCircuit::FillMacroConnection() {
     calMatrix = calMatrix * adjMatrix; 
   }
   cout << "SMatrix calculation Done!!" << endl;
+  auto endTime = std::chrono::system_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
+  
+  cout << "SMatrix calculation runtime: " << elapsed.count() << "s" << endl;
 
-
-  auto startTime = std::chrono::system_clock::now();
+  startTime = std::chrono::system_clock::now();
   for(auto& curVertex1: searchVert) {
     int idx1 = &curVertex1 - &searchVert[0];
     for(auto& curVertex2: searchVert) {
@@ -955,8 +959,8 @@ void MacroCircuit::FillMacroConnection() {
 //      cout << GetPathWeight( curVertex1, curVertex2, 3) << endl;
     }
   }
-  auto endTime = std::chrono::system_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
+  endTime = std::chrono::system_clock::now();
+  elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
   cout << "BFS Search: " << elapsed.count()<< "s" << endl;
   for(size_t i=0; i<searchVert.size(); i++) {
     for(size_t j=0; j<searchVert.size(); j++) {

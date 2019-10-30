@@ -80,7 +80,7 @@ ostream& operator<<(ostream& os, const Verbosity& verbsty)
 void Verbosity::_ctructFromString(const char* levels)
 {
    if (levels==NULL || 
-       !strcmp(levels,"0") || !strcasecmp(levels,"silent"))
+       !strcmp(levels,"0") || !abk_strcasecmp(levels,"silent"))
    {
       _levels.erase(_levels.begin()+3,_levels.end());
       return;

@@ -45,6 +45,7 @@
 // that are part of the system in UNIX.
 
 #include "abkstring.h"
+#include <ctype.h>
 
 #ifdef WIN32
 char *ulltostr(unsigned value,char *ptr)
@@ -78,3 +79,15 @@ char *lltostr(int value,char *ptr)
     }
 
 #endif
+
+
+int abk_strcasecmp(const char *a, const char *b) {
+  int ca, cb;
+  do {
+     ca = (unsigned char) *a++;
+     cb = (unsigned char) *b++;
+     ca = tolower(toupper(ca));
+     cb = tolower(toupper(cb));
+   } while (ca == cb && ca != '\0');
+   return ca - cb;
+}
