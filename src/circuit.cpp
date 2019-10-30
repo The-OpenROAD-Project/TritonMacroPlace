@@ -499,6 +499,7 @@ void MacroCircuit::FillVertexEdge() {
         tripletList.push_back(T(vertexPtrMap[curVertex], vertexPtrMap[adjVertex], 1));
         
       }
+      delete fanout;
     }
     else {
 //      cout << "FanIn!" << endl;
@@ -546,6 +547,7 @@ void MacroCircuit::FillVertexEdge() {
 
         tripletList.push_back(T(vertexPtrMap[curVertex], vertexPtrMap[adjVertex], 1));
       }
+      delete fanin;
     }
   }
   endTime = std::chrono::system_clock::now();
@@ -847,14 +849,14 @@ void MacroCircuit::UpdateInstanceToMacroStor() {
 //    ReplaceStringInPlace(instName, "\\]", "]");
 //    ReplaceStringInPlace(instName, "\\/", "/");
 
-    cout << "Vertex: " << instName << endl;
+//    cout << "Vertex: " << instName << endl;
 
     auto mnPtr = macroNameMap.find(instName); 
     if( mnPtr == macroNameMap.end()) {
       continue; 
     }
     
-    cout << "Passed: " << instName << endl;
+//    cout << "Passed: " << instName << endl;
 
     // macro & macroInstMap update
     macroStor[mnPtr->second].instPtr = inst;
@@ -920,6 +922,7 @@ void MacroCircuit::FillMacroConnection() {
     calMatrix = calMatrix * calMatrix; 
     calMatrix = calMatrix * adjMatrix; 
   }
+  cout << "SMatrix calculation Done!!" << endl;
 
 
   auto startTime = std::chrono::system_clock::now();
