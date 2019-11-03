@@ -1026,7 +1026,7 @@ bool BTreeAreaWireAnnealer::anneal()
 //      cout << "iter: " << iter << " size: " << 4*size << " bTime: " << budgetTime << endl;
     }
 //    while (iter < 4*size || budgetTime);
-    while (iter < 10*size || budgetTime);
+    while (iter < 7*size || budgetTime);
 
 //    cout << "whileBreak Iter: " << iter << endl;
     // finish the loop under constant temperature

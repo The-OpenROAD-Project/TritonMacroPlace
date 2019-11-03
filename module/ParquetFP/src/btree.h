@@ -315,7 +315,6 @@ inline void BTree::clean_contour(uofm::vector<ContourNode>& oContour)
 inline void BTree::rotate(int index,
                           int newOrient)
 {
-   std::cout << "this rotate? " << std::endl;
    in_tree[index].orient = newOrient;
    contour_evaluate();
 }

@@ -84,10 +84,11 @@ Skyline *findSkyline(
 
   if (l == h) { 
     Skyline *res = new Skyline(2); 
-    res->append(new Strip(arr[l].left, arr[l].height, 
-          arr[l].idx)); 
-    res->append(new Strip(arr[l].right, 0, 
-          arr[l].idx));
+    Strip left(arr[l].left, arr[l].height, arr[l].idx);
+    Strip right(arr[l].right, 0, arr[l].idx);
+
+    res->append(&left); 
+    res->append(&right);
 //    cout << "recursive End: " << endl;
 //    res->print(); 
     return res; 
@@ -148,9 +149,9 @@ Skyline *Skyline::Merge(Skyline *other) {
 //      cout << "i-j: " << i << " " << j << endl;
 //      cout << "h1-h2: " << h1 << " " << h2 << " " << endl;
 //      cout << "idx1-idx2: " << idx1 << " " << idx2 << endl << endl; 
-     
-      res->append(new Strip(x1, maxh, 
-            (h1 > h2)? idx1 : idx2));
+      
+      Strip curStrip(x1, maxh, (h1 > h2)? idx1 : idx2);
+      res->append(&curStrip);
       i++; 
     } 
     else if (this->arr[i].left > other->arr[j].left )
@@ -166,8 +167,8 @@ Skyline *Skyline::Merge(Skyline *other) {
 //      cout << "h1-h2: " << h1 << " " << h2 << endl; 
 //      cout << "idx1-idx2: " << idx1 << " " << idx2 << endl << endl; 
       
-      res->append(new Strip(x2, maxh, 
-            (h1 > h2)? idx1 : idx2));
+      Strip curStrip(x2, maxh, (h1 > h2)? idx1 : idx2);
+      res->append(&curStrip);
       j++; 
     }
     // below x1 and x2 is same cases
@@ -183,9 +184,8 @@ Skyline *Skyline::Merge(Skyline *other) {
       float maxh = fmax(h1, h2);
 
       // here x1 and x2 is same
-      res->append(new Strip(x1, maxh, 
-            (h1 > h2)? idx1 : idx2));
-
+      Strip curStrip(x1, maxh, (h1 > h2)? idx1 : idx2);
+      res->append(&curStrip);
       i++;
       j++;
     } 

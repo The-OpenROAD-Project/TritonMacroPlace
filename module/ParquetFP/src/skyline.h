@@ -35,17 +35,17 @@ class Skyline {
   int n;   // Actual number of strips in array
 
   public:
+  // Constructor 
   Skyline();
   Skyline( const Skyline & prev ); 
+  Skyline(int cap); 
   ~Skyline();
+
   int count()  { return n;   } 
 
   // A function to merge another skyline 
   // to this skyline 
   Skyline* Merge(Skyline *other); 
-
-  // Constructor 
-  Skyline(int cap); 
 
   // Function to add a strip 'st' to array 
   void append(Strip *st);

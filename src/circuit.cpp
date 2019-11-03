@@ -64,6 +64,9 @@ void MacroCircuit::Init( Circuit::Circuit* ckt,
   UpdateInstanceToMacroStor();
   FillVertexEdge();
   UpdateVertexToMacroStor();
+  
+//  CheckGraphInfo();
+  FillMacroPinAdjMatrix();
   FillMacroConnection();
 }
 
@@ -285,48 +288,6 @@ void MacroCircuit::FillPinGroup(){
   cout << "North: " << pinGroupStor[(int)PinGroupClass::North].pins.size() << endl;
   cout << "South: " << pinGroupStor[(int)PinGroupClass::South].pins.size() << endl;
   
-}
-
-pair<void*, VertexClass> MacroCircuit::GetPtrClassPair( sta::Pin* pin ) {
-  pair<void*, VertexClass> ret;
-  bool isTopPin = _sta->network()->isTopLevelPort(pin);
-
-  // toplevel pin
-  if( isTopPin ) {
-    auto pgPtr = pinGroupMap.find( pin);
-    if( pgPtr == pinGroupMap.end()) {
-      cout << "ERROR: " << _sta->network()->pathName(pin) << " not exists in PinGroupMap" << endl;
-      exit(1);
-    }
-
-    // pinGroupPointer
-    ret.first = (void*) &pinGroupStor[pgPtr->second];
-    ret.second = VertexClass::pin; 
-  }
-  else {
-    sta::Instance* inst = _sta->network()->instance(pin);
-    string instName = _sta->network()->pathName(inst);
-    
-//    ReplaceStringInPlace( instName, "\\[",  "[" );
-//    ReplaceStringInPlace( instName, "\\]",  "]" );
-//    ReplaceStringInPlace( instName, "\\/",  "/" );
-
-    ret.first = (void*) inst;
-    ret.second = (macroNameMap.find( instName ) != macroNameMap.end())? 
-      VertexClass::instMacro : VertexClass::instOther;
-  }
-  return ret;
-}
-
-MacroNetlist::Vertex* MacroCircuit::GetVertex( sta::Pin *pin) {
-  pair<void*, VertexClass> vertInfo = GetPtrClassPair( pin);
-  auto vertPtr = pinInstVertexMap.find(vertInfo.first);
-  if( vertPtr == pinInstVertexMap.end() )  {
-    cout << "WARNING: " << _sta->network()->pathName(pin) << " not exists in pinInstVertexMap" << endl;
-    return NULL;
-  }
-//  cout << "GetVertex: " << &vertexStor[vertPtr->second] << endl;;
-  return &vertexStor[vertPtr->second];
 }
 
 void MacroCircuit::FillVertexEdge() {
@@ -619,7 +580,7 @@ void MacroCircuit::FillVertexEdge() {
 //           // max for setup checks.
 //           // min for hold checks.
 //           // min_max for setup and hold checks.
-//           const MinMaxAll *min_max,
+//           const MinMadjMacroPinMatrixaxAll *min_max,
 //           // Number of path ends to report in
 //           // each group.
 //           int group_count,
@@ -832,6 +793,298 @@ void MacroCircuit::FillVertexEdge() {
   cout << "Edge: " << adjMatrix.nonZeros() << endl;
 }
 
+void MacroCircuit::CheckGraphInfo() {
+  
+  vector<MacroNetlist::Vertex*> searchVert;
+  for(auto& curMacro: macroStor) {
+    searchVert.push_back( curMacro.ptr );
+  }
+
+  for(int i=0; i<4; i++) {
+    searchVert.push_back( &vertexStor[i] );
+  }
+  
+#define CHECK_LEVEL_MAX 3
+
+  
+  vector<int> vertexCover(vertexStor.size(), -1);
+  for(int i=0; i<4; i++) {
+    vertexCover[i] = 0;
+  }
+  for(auto& curMacro: macroStor) {
+    auto vpPtr = vertexPtrMap.find(curMacro.ptr);
+    vertexCover[vpPtr->second] = 0;
+  }
+
+
+  for(int level = 1; level <= CHECK_LEVEL_MAX;  level++) {
+    vector<MacroNetlist::Vertex*> newVertex;
+
+    for(auto& curVertex1: searchVert) {
+      int idx1 = &curVertex1 - &searchVert[0];
+
+      // for all other vertex
+      for(auto& curVertex2: vertexStor) {
+        int idx2 = &curVertex2 - &vertexStor[0];
+
+        // skip for same pointer
+        if( curVertex1->ptr == &curVertex2) {
+          continue;
+        }
+
+        if( vertexCover[idx2] == -1 && 
+            GetPathWeightMatrix(adjMatrix, curVertex1, idx2) ) {
+          vertexCover[idx2] = level;
+          newVertex.push_back( &vertexStor[idx2]);
+        }
+      }
+    }
+    newVertex.swap(searchVert);
+  }
+
+  int sumArr[CHECK_LEVEL_MAX+1] = {0, };
+  for(int i=0; i<vertexStor.size(); i++) {
+    if( vertexCover[i] != -1 ) {
+      sumArr[ vertexCover[i] ] ++;
+    }
+  }
+
+  for(int i=0; i<=CHECK_LEVEL_MAX; i++) {
+    cout << "level " << i << " " << sumArr[i] << endl;
+  }
+}
+
+void MacroCircuit::FillMacroPinAdjMatrix() {
+
+  macroPinAdjMatrixMap.resize(vertexStor.size(), -1);
+  int macroPinAdjIdx = 0;
+
+  vector<int> searchVertIdx;
+  // 
+  // for each pin vertex
+  //
+  // macroPinAdjMatrix's 0, 1, 2, 3 is equal to original adjMatrix' index.
+  // e.g. pin index is the exactly same.
+  //
+  for(int i=0; i<4; i++) {
+    searchVertIdx.push_back(i);
+    macroPinAdjMatrixMap[i] = macroPinAdjIdx++;
+  }
+  
+  // 
+  // for each macro vertex
+  //
+  // Update macroPinAdjMatrixMap 
+  // to have macroIdx --> updated macroPinAdjMatrix's index.
+  //
+  for(auto& curMacro: macroStor) {
+    auto vpPtr = vertexPtrMap.find(curMacro.ptr);
+    int macroVertIdx = vpPtr->second;
+    searchVertIdx.push_back( macroVertIdx );
+    macroPinAdjMatrixMap[macroVertIdx] = macroPinAdjIdx++;
+  }
+
+  // Do BFS search by LEVEL 3
+#define MPLACE_BFS_MAX_LEVEL 3
+
+  const int EmptyVert = -1, SearchVert = -2;
+
+  // return adjMatrix triplet candidates.
+  vector< T > tripletList;
+
+  // for each macro/pin vertex 
+  for(auto& startVertIdx: searchVertIdx) {
+   
+    // initial starting points 
+    vector<int> candiVert;
+    candiVert.push_back(startVertIdx);
+
+    // initialize vertexWeight and vertexCover.
+    vector<int> vertexWeight(vertexStor.size(), 0);
+    vector<int> vertexCover(vertexStor.size(), EmptyVert);
+
+    for(auto& curVertIdx : searchVertIdx) {
+      vertexCover[curVertIdx] = SearchVert; 
+    }
+    vertexWeight[startVertIdx] = 1;
+    
+
+    // BFS search up to MPLACE_BFS_MAX_LEVEL  
+    for(int level = 1; level <= MPLACE_BFS_MAX_LEVEL; level++) {
+      vector<int> nextCandiVert;
+
+      for(auto& idx1: candiVert) {
+
+        // for all other vertex
+        for(auto& curVertex2: vertexStor) {
+          int idx2 = &curVertex2 - &vertexStor[0];
+
+          // skip for same vertex
+          if( idx1 == idx2 ) {
+            continue;
+          }
+
+          // if( vertexCover[idx2] == -1 && 
+          // GetPathWeightMatrix(adjMatrix, idx1, idx2) ) 
+          if(vertexCover[idx2] == EmptyVert || vertexCover[idx2] == SearchVert) {
+            int pathWeight = GetPathWeightMatrix(adjMatrix, idx1, idx2);
+            if( pathWeight == 0 ) { 
+              continue;
+            }
+            vertexWeight[idx2] += pathWeight * vertexWeight[idx1];
+//            vertexWeight[idx2] += vertexWeight[idx1];
+
+            // update vertexCover only when vertex is FFs.
+            if( vertexCover[idx2] == EmptyVert ) { 
+              vertexCover[idx2] = level;
+            }
+
+            // prevent multi-search for vertex itself
+            if( vertexCover[idx2] != SearchVert ) {
+              nextCandiVert.push_back( idx2 );
+            }
+          }
+        }
+      }
+      // for next level search,
+      nextCandiVert.swap(candiVert);
+    }
+    
+    for(auto& curCandiVert: searchVertIdx) {
+      if( curCandiVert == startVertIdx ) {
+        continue;
+      }
+      tripletList.push_back( 
+          T(macroPinAdjMatrixMap[startVertIdx], 
+            macroPinAdjMatrixMap[curCandiVert], 
+            vertexWeight[curCandiVert]));
+//      cout << startVertIdx << " -> " << curCandiVert << " : " 
+//        << vertexWeight[curCandiVert] << endl;
+    }
+  } 
+
+  // Fill in all of vertex weights into compacted adjMatrix
+  macroPinAdjMatrix.resize( searchVertIdx.size(), searchVertIdx.size() );
+  macroPinAdjMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
+}
+
+void MacroCircuit::FillMacroConnection() {
+  
+  vector<int> searchVertIdx;
+  for(int i=0; i<4; i++) {
+    searchVertIdx.push_back( i );
+  }
+
+  for(auto& curMacro: macroStor) {
+    auto vpPtr = vertexPtrMap.find(curMacro.ptr);
+    int macroVertIdx = vpPtr->second;
+    searchVertIdx.push_back( macroVertIdx );
+  }
+
+
+  cout << "searchVertSize: " << searchVertIdx.size() << endl;
+  // macroNetlistWeight Initialize
+  macroWeight.resize(searchVertIdx.size());
+  for(size_t i=0; i<searchVertIdx.size(); i++) {
+    macroWeight[i] = vector<int> (searchVertIdx.size(), 0);
+  }
+
+  /*
+  auto startTime = std::chrono::system_clock::now();
+
+  SMatrix calMatrix = adjMatrix;
+  if( _env->searchDepth == 2) {
+    calMatrix = calMatrix * calMatrix; 
+  }
+  else if( _env->searchDepth == 3) {
+    calMatrix = calMatrix * calMatrix; 
+    calMatrix = calMatrix * adjMatrix; 
+  }
+  else if( _env->searchDepth == 4) {
+    calMatrix = calMatrix * calMatrix; 
+    calMatrix = calMatrix * calMatrix; 
+  }
+  else if(_env->searchDepth == 5){
+    calMatrix = calMatrix * calMatrix; 
+    calMatrix = calMatrix * calMatrix; 
+    calMatrix = calMatrix * adjMatrix; 
+  }
+  cout << "SMatrix calculation Done!!" << endl;
+  auto endTime = std::chrono::system_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
+  
+  cout << "SMatrix calculation runtime: " << elapsed.count() << "s" << endl;
+*/
+
+  auto startTime = std::chrono::system_clock::now();
+  for(auto& curVertex1: searchVertIdx) {
+    for(auto& curVertex2: searchVertIdx) {
+      if( curVertex1 == curVertex2 ) { 
+        continue;
+      }
+
+      VertexClass class1 = vertexStor[curVertex1].vertexClass;
+      VertexClass class2 = vertexStor[curVertex2].vertexClass;
+
+      // no need to fill in PIN -> PIN connections
+      if( class1 == VertexClass::pin&& class2 == VertexClass::pin) {
+        continue;
+      }
+     
+//      cout << "[ " << curMacro1.name << " --> " << curMacro2.name << " ]" <<endl; 
+//      cout << "[ " << curMacro1.ptr << " --> " << curMacro2.ptr << " ]" <<endl;
+    
+
+      void* ptr1 = vertexStor[curVertex1].ptr;
+      void* ptr2 = vertexStor[curVertex2].ptr;
+
+      string name1 = (class1 == VertexClass::pin)? 
+        ((PinGroup*)ptr1)->name() : _sta->network()->pathName((sta::Instance*)ptr1);
+      string name2 = (class2 == VertexClass::pin)?
+        ((PinGroup*)ptr2)->name() : _sta->network()->pathName((sta::Instance*)ptr2);
+      cout << "[ " << name1 << " --> " << name2 << " ]" <<endl;
+
+      macroWeight[macroPinAdjMatrixMap[curVertex1]][macroPinAdjMatrixMap[curVertex2]] 
+        = GetPathWeightMatrix( 
+            macroPinAdjMatrix, 
+            macroPinAdjMatrixMap[curVertex1], 
+            macroPinAdjMatrixMap[curVertex2]);
+//      cout << GetPathWeight( curVertex1, curVertex2, 3) << endl;
+    }
+  }
+  auto endTime = std::chrono::system_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
+  cout << "Macro Weight Assign: " << elapsed.count()<< "s" << endl;
+  for(size_t i=0; i<searchVertIdx.size(); i++) {
+    for(size_t j=0; j<searchVertIdx.size(); j++) {
+      cout << macroWeight[i][j] << " ";
+    }
+    cout << endl;
+  }
+
+}
+
+// macroStor Update
+void MacroCircuit::UpdateVertexToMacroStor() {
+  for(auto& curVertex: vertexStor) {
+    if( curVertex.vertexClass != VertexClass::instMacro ) {
+      continue;
+    }
+    string name = _sta->network()->pathName((sta::Instance*)curVertex.ptr);
+//    cout << "Macro: " << name << endl;
+//    ReplaceStringInPlace(name, "\\[", "[");
+//    ReplaceStringInPlace(name, "\\]", "]");
+//    ReplaceStringInPlace(name, "\\/", "/");
+
+    auto mPtr = macroNameMap.find( name );
+    if( mPtr == macroNameMap.end() ) {
+      cout << "**ERROR: The Macro Name must be in macro NameMap: " << name << endl;
+      exit(1);
+    } 
+
+    macroStor[mPtr->second].ptr = &curVertex;
+  }
+}
 
 // macroStr & macroInstMap update
 void MacroCircuit::UpdateInstanceToMacroStor() {
@@ -864,114 +1117,48 @@ void MacroCircuit::UpdateInstanceToMacroStor() {
   }
 }
 
-// macroStor Update
-void MacroCircuit::UpdateVertexToMacroStor() {
-  for(auto& curVertex: vertexStor) {
-    if( curVertex.vertexClass != VertexClass::instMacro ) {
-      continue;
-    }
-    string name = _sta->network()->pathName((sta::Instance*)curVertex.ptr);
-//    cout << "Macro: " << name << endl;
-//    ReplaceStringInPlace(name, "\\[", "[");
-//    ReplaceStringInPlace(name, "\\]", "]");
-//    ReplaceStringInPlace(name, "\\/", "/");
+pair<void*, VertexClass> MacroCircuit::GetPtrClassPair( sta::Pin* pin ) {
+  pair<void*, VertexClass> ret;
+  bool isTopPin = _sta->network()->isTopLevelPort(pin);
 
-    auto mPtr = macroNameMap.find( name );
-    if( mPtr == macroNameMap.end() ) {
-      cout << "**ERROR: The Macro Name must be in macro NameMap: " << name << endl;
+  // toplevel pin
+  if( isTopPin ) {
+    auto pgPtr = pinGroupMap.find( pin);
+    if( pgPtr == pinGroupMap.end()) {
+      cout << "ERROR: " << _sta->network()->pathName(pin) << " not exists in PinGroupMap" << endl;
       exit(1);
-    } 
+    }
 
-    macroStor[mPtr->second].ptr = &curVertex;
+    // pinGroupPointer
+    ret.first = (void*) &pinGroupStor[pgPtr->second];
+    ret.second = VertexClass::pin; 
   }
+  else {
+    sta::Instance* inst = _sta->network()->instance(pin);
+    string instName = _sta->network()->pathName(inst);
+    
+//    ReplaceStringInPlace( instName, "\\[",  "[" );
+//    ReplaceStringInPlace( instName, "\\]",  "]" );
+//    ReplaceStringInPlace( instName, "\\/",  "/" );
+
+    ret.first = (void*) inst;
+    ret.second = (macroNameMap.find( instName ) != macroNameMap.end())? 
+      VertexClass::instMacro : VertexClass::instOther;
+  }
+  return ret;
 }
 
-void MacroCircuit::FillMacroConnection() {
-
-  vector<MacroNetlist::Vertex*> searchVert;
-  for(auto& curMacro: macroStor) {
-    searchVert.push_back( curMacro.ptr );
+MacroNetlist::Vertex* MacroCircuit::GetVertex( sta::Pin *pin) {
+  pair<void*, VertexClass> vertInfo = GetPtrClassPair( pin);
+  auto vertPtr = pinInstVertexMap.find(vertInfo.first);
+  if( vertPtr == pinInstVertexMap.end() )  {
+    cout << "WARNING: " << _sta->network()->pathName(pin) << " not exists in pinInstVertexMap" << endl;
+    return NULL;
   }
-
-  for(int i=0; i<4; i++) {
-    searchVert.push_back( &vertexStor[i] );
-  }
-
-  cout << "searchVertSize: " << searchVert.size() << endl;
-  // macroNetlistWeight Initialize
-  macroWeight.resize(searchVert.size());
-  for(size_t i=0; i<searchVert.size(); i++) {
-    macroWeight[i] = vector<int> (searchVert.size(), 0);
-  }
-
-  auto startTime = std::chrono::system_clock::now();
-
-  SMatrix calMatrix = adjMatrix;
-  if( _env->searchDepth == 2) {
-    calMatrix = calMatrix * calMatrix; 
-  }
-  else if( _env->searchDepth == 3) {
-    calMatrix = calMatrix * calMatrix; 
-    calMatrix = calMatrix * adjMatrix; 
-  }
-  else if( _env->searchDepth == 4) {
-    calMatrix = calMatrix * calMatrix; 
-    calMatrix = calMatrix * calMatrix; 
-  }
-  else if(_env->searchDepth == 5){
-    calMatrix = calMatrix * calMatrix; 
-    calMatrix = calMatrix * calMatrix; 
-    calMatrix = calMatrix * adjMatrix; 
-  }
-  cout << "SMatrix calculation Done!!" << endl;
-  auto endTime = std::chrono::system_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
-  
-  cout << "SMatrix calculation runtime: " << elapsed.count() << "s" << endl;
-
-  startTime = std::chrono::system_clock::now();
-  for(auto& curVertex1: searchVert) {
-    int idx1 = &curVertex1 - &searchVert[0];
-    for(auto& curVertex2: searchVert) {
-      int idx2 = &curVertex2 - &searchVert[0];
-      if( idx1 == idx2 ) { 
-        continue;
-      }
-
-      if( curVertex1->vertexClass == VertexClass::pin 
-          && curVertex2->vertexClass == VertexClass::pin) {
-        continue;
-      }
-     
-//      cout << "[ " << curMacro1.name << " --> " << curMacro2.name << " ]" <<endl; 
-//      cout << "[ " << curMacro1.ptr << " --> " << curMacro2.ptr << " ]" <<endl;
-     
-      PinGroup* ptr1 = (PinGroup*)curVertex1->ptr;
-      PinGroup* ptr2 = (PinGroup*)curVertex2->ptr;
-
-      string name1 = (curVertex1->vertexClass == VertexClass::pin)? 
-        ptr1->name() : _sta->network()->pathName((sta::Instance*)curVertex1->ptr);
-      string name2 = (curVertex2->vertexClass == VertexClass::pin)?
-        ptr2->name() : _sta->network()->pathName((sta::Instance*)curVertex2->ptr);
-      cout << "[ " << name1 << " --> " << name2 << " ]" <<endl;
-
-      macroWeight[idx1][idx2] = GetPathWeightMatrix( calMatrix, curVertex1, curVertex2);
-//      cout << GetPathWeight( curVertex1, curVertex2, 3) << endl;
-    }
-  }
-  endTime = std::chrono::system_clock::now();
-  elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
-  cout << "BFS Search: " << elapsed.count()<< "s" << endl;
-  for(size_t i=0; i<searchVert.size(); i++) {
-    for(size_t j=0; j<searchVert.size(); j++) {
-      cout << macroWeight[i][j] << " ";
-    }
-    cout << endl;
-  }
-
+//  cout << "GetVertex: " << &vertexStor[vertPtr->second] << endl;;
+  return &vertexStor[vertPtr->second];
 }
 
-using std::queue;
 
 bool isNotVisited(MacroNetlist::Vertex* vert, vector<MacroNetlist::Vertex*> &path) {
   for(auto& curVert: path) {
@@ -989,25 +1176,8 @@ bool isTerminal(MacroNetlist::Vertex* vert,
       vert->vertexClass == VertexClass::instMacro) );
 }
 
-int MacroCircuit::GetPathWeightMatrix(
-    SMatrix& mat, MacroNetlist::Vertex* from, MacroNetlist::Vertex* to) {
-  auto vpPtr = vertexPtrMap.find(from);
-  if( vpPtr == vertexPtrMap.end()) {
-    exit(1);
-  }
-  int idx1 = vpPtr->second;
-  
-  auto vpPtr2 = vertexPtrMap.find(to);
-  if( vpPtr2 == vertexPtrMap.end()) {
-    exit(1);
-  }
-  int idx2 = vpPtr2->second;
-
-  return mat.coeff(idx1, idx2);
-}
-
 int MacroCircuit::GetPathWeight(MacroNetlist::Vertex* from, MacroNetlist::Vertex* to, int limit ) {
-  queue< vector<MacroNetlist::Vertex*> > q;
+  std::queue< vector<MacroNetlist::Vertex*> > q;
   vector<MacroNetlist::Vertex*> path;
   path.reserve(limit+2);
   path.push_back(from);
@@ -1116,6 +1286,38 @@ int MacroCircuit::GetPathWeight(MacroNetlist::Vertex* from, MacroNetlist::Vertex
     cout << endl;
   }
   return ret;
+}
+
+int MacroCircuit::GetPathWeightMatrix(
+    SMatrix& mat, MacroNetlist::Vertex* from, MacroNetlist::Vertex* to) {
+  auto vpPtr = vertexPtrMap.find(from);
+  if( vpPtr == vertexPtrMap.end()) {
+    exit(1);
+  }
+  int idx1 = vpPtr->second;
+  
+  auto vpPtr2 = vertexPtrMap.find(to);
+  if( vpPtr2 == vertexPtrMap.end()) {
+    exit(1);
+  }
+  int idx2 = vpPtr2->second;
+
+  return mat.coeff(idx1, idx2);
+}
+
+int MacroCircuit::GetPathWeightMatrix(
+    SMatrix& mat, MacroNetlist::Vertex* from, int toIdx) {
+  auto vpPtr = vertexPtrMap.find(from);
+  if( vpPtr == vertexPtrMap.end()) {
+    exit(1);
+  }
+  int idx1 = vpPtr->second;
+  return mat.coeff(idx1, toIdx);
+}
+
+int MacroCircuit::GetPathWeightMatrix(
+    SMatrix& mat, int fromIdx, int toIdx) {
+  return mat.coeff(fromIdx, toIdx);
 }
 
 

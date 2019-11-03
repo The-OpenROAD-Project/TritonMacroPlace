@@ -91,6 +91,8 @@ class MacroCircuit {
     void FillMacroStor();
     void FillPinGroup();
     void FillVertexEdge();
+    void CheckGraphInfo();
+    void FillMacroPinAdjMatrix();
     void FillMacroConnection();
     
     void UpdateVertexToMacroStor();
@@ -101,7 +103,14 @@ class MacroCircuit {
     std::unordered_map<void*, int> pinInstVertexMap;
     std::unordered_map<MacroNetlist::Vertex*, int> vertexPtrMap;
 
+    // adjacency matrix for whole(macro/pins/FFs) graph
     Eigen::SparseMatrix<int, Eigen::RowMajor> adjMatrix;
+   
+    // vertex idx --> macroPinAdjMatrix idx. 
+    std::vector< int > macroPinAdjMatrixMap;
+
+    // adjacency matrix for macro/pins graph
+    Eigen::SparseMatrix<int, Eigen::RowMajor> macroPinAdjMatrix;
     
     // pair of <StartVertex*, EndVertex*> --> edgeStor's index
     std::unordered_map< std::pair<MacroNetlist::Vertex*, MacroNetlist::Vertex*>, 
@@ -117,6 +126,15 @@ class MacroCircuit {
     int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
         MacroNetlist::Vertex* from, 
         MacroNetlist::Vertex* to );
+    
+    // Matrix version
+    int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
+        MacroNetlist::Vertex* from, 
+        int toIdx );
+    
+    // Matrix version
+    int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
+        int fromIdx, int toIdx );
 
     double* netTable; 
 };
