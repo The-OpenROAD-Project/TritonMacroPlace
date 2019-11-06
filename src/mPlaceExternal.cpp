@@ -142,6 +142,9 @@ void mplace_external::import_global_config(const char* global_config) {
 void mplace_external::import_local_config(const char* local_config) {
   env.localConfig = local_config;
 }
+void mplace_external::set_plot_enable(bool mode) {
+  env.isPlot = mode;
+}
 
 bool mplace_external::place_macros() {
   allSets = PlaceMacros(env, ckt, mckt);

@@ -22,7 +22,6 @@ public:
   void import_def(const char* def);
   void export_def(const char* def);
   void export_all_def(const char* location);
-//  void set_output(const char* output);
   
   void import_sdc(const char* sdc);
   void import_verilog(const char* verilog);
@@ -31,6 +30,7 @@ public:
   void import_global_config(const char* global_config);
   void import_local_config(const char* local_config);
   
+  void set_plot_enable(bool mode);
   bool place_macros();
 
 private:
