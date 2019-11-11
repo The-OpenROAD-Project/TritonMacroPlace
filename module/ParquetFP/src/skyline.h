@@ -81,12 +81,12 @@ class SkylineContour {
       float height;
   };
   private: 
+//    Strip strips_[5000];
     Skyline* skyline_;
     float width_;
     float height_;
 
     // contourInfo_ is updated from skyline_
-    uofm::vector<ContourNode> contourInfo_;
     uofm::vector<BTreeNode> bTreeInfo_; 
 
   public:
@@ -107,7 +107,6 @@ class SkylineContour {
     float GetHeight(float left, float right);
     float GetContourArea(); 
     std::pair<float, int> GetHeightWithIdx(float left, float right);
-    uofm::vector<ContourNode>& ContourInfo() { return contourInfo_; };
   
 };
 #endif

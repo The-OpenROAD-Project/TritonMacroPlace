@@ -510,8 +510,18 @@ bool BTreeAreaWireAnnealer::anneal()
 #else
   float currHPWL = _db->evalHPWL(useWts,_params->scaleTerms);
 #endif
+
+  // calculate wastedArea 
+  SkylineContour mapX(in_curr_solution), mapY(in_curr_solution, true);
+  float currWastedContArea 
+        = mapX.GetContourArea() 
+        + mapY.GetContourArea() 
+        - 2.0 * in_curr_solution.blockArea();
+
   float bestHPWL = currHPWL;
   float bestArea = std::numeric_limits<float>::max();
+  float bestWastedContArea = std::numeric_limits<float>::max();
+
   while(currTime > _params->timeCool || budgetTime)
   {
     brokeFromLoop = false;
@@ -581,27 +591,11 @@ bool BTreeAreaWireAnnealer::anneal()
       // -----------------------
 
       // current solution, "currHPWL" updated only when necessary
+      // "currWastedArea" also updated only when necessary
       float currArea = in_curr_solution.totalArea();
       float currHeight = in_curr_solution.totalHeight();
       float currWidth = in_curr_solution.totalWidth();
       float currAR = currWidth / currHeight;
-
-      // Wasted ContArea calculation
-      SkylineContour mapX(in_curr_solution), mapY(in_curr_solution, true);
-//      cout << "contour map building" << endl;
-
-      float currWastedContArea 
-        = mapX.GetContourArea() 
-        + mapY.GetContourArea() 
-        - 2.0 * in_curr_solution.blockArea();
-      
-//      cout << "currWastedContArea: (" 
-//        << mapX.GetContourArea() << " " 
-//        << mapY.GetContourArea() << " " 
-//        << in_curr_solution.blockArea() << " " 
-//        << currWastedContArea << endl;
-    
-
 
       ++count; 
       ++iter;
@@ -809,7 +803,7 @@ bool BTreeAreaWireAnnealer::anneal()
 //          delta = 0.2 * deltaHPWL +
 //                  0.6 * deltaWastedContArea;        
           delta = 0.2 * deltaHPWL + 
-            0.6 * deltaWastedContArea + 0.2 * deltaAR;        
+            0.4 * deltaWastedContArea + 0.4 * deltaAR;        
         }
         else
           delta = ((areaWeight + wireWeight/2.0) * deltaArea + 
@@ -853,6 +847,7 @@ bool BTreeAreaWireAnnealer::anneal()
 //        cout << "Move Accepted!!" << endl;
         in_curr_solution = in_next_solution;
         currHPWL = tempHPWL;
+        currWastedContArea = tempWastedContArea;
       }
 
       // -----additional book-keeping for special moves-----
@@ -887,6 +882,7 @@ bool BTreeAreaWireAnnealer::anneal()
         }
       }
 
+      // check the best updates
       bool updateBest = false;
       if (_params->reqdAR != FREE_OUTLINE)
       {
@@ -894,7 +890,8 @@ bool BTreeAreaWireAnnealer::anneal()
         {
           updateBest = (currWidth <= real_reqdWidth &&
               currHeight <= real_reqdHeight &&
-              currHPWL < bestHPWL);
+              currHPWL < bestHPWL &&
+              currWastedContArea < bestWastedContArea );
 //          cout << "HPWL: " << currHPWL << " " << bestHPWL << endl;
         }
         else
@@ -921,6 +918,7 @@ bool BTreeAreaWireAnnealer::anneal()
         saved_best=true;
         bestHPWL = currHPWL;
         bestArea = currArea;
+        bestWastedContArea = currWastedContArea;
         in_best_solution = in_curr_solution;
       }
       //}

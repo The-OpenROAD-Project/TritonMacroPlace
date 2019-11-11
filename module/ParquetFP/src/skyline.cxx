@@ -225,7 +225,6 @@ SkylineContour::SkylineContour(int capacity)
 
 SkylineContour::SkylineContour(const SkylineContour& prev) 
   : width_(prev.width_), height_(prev.height_), 
-  contourInfo_(prev.contourInfo_),
   bTreeInfo_(prev.bTreeInfo_) {
   if( prev.skyline_ ) {
     skyline_ = prev.skyline_->copy();
@@ -239,6 +238,8 @@ SkylineContour::SkylineContour(const SkylineContour& prev)
 // consider rotation of macro cells. 
 SkylineContour::SkylineContour(const BTree& bTree, bool isRotate) 
   : skyline_(0), width_(FLT_MIN), height_(FLT_MIN) {
+
+  bTreeInfo_.reserve(bTree.NUM_BLOCKS);
   for(int i=0; i<bTree.NUM_BLOCKS; i++) {
     // left, right, height, index
 
@@ -262,7 +263,6 @@ SkylineContour::SkylineContour(const BTree& bTree, bool isRotate)
 bool SkylineContour::operator=(const SkylineContour& prev) {
   width_ = prev.width_;
   height_ = prev.height_;
-  contourInfo_ = prev.contourInfo_;
   bTreeInfo_ = prev.bTreeInfo_;
   if( prev.skyline_ ) {
     skyline_ = prev.skyline_->copy();
@@ -282,7 +282,6 @@ void SkylineContour::Clear() {
     skyline_ = 0;
   }
   width_ = height_ = 0;
-  uofm::vector<ContourNode>().swap(contourInfo_);
   uofm::vector<BTreeNode>().swap(bTreeInfo_);
 }
 
