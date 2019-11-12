@@ -32,10 +32,10 @@ set( PARQUET_SRC
   src/DB.cxx
 #  src/debug.cxx
   src/FPcommon.cxx
-  src/FPEvalTest1.cxx
-  src/FPEvalTest2.cxx
-  src/FPEvalTest3.cxx
-  src/FPEvalTest4.cxx
+  #  src/FPEvalTest1.cxx
+  #  src/FPEvalTest2.cxx
+  #  src/FPEvalTest3.cxx
+  #  src/FPEvalTest4.cxx
   src/mixedpacking.cxx
   src/mixedpackingfromdb.cxx
   src/Net.cxx
@@ -94,6 +94,10 @@ set ( PARQUET_HEADER
 )
 
 add_library( ParquetFP STATIC ${PARQUET_SRC} )
+add_executable( ParquetFPexe 
+  ${PARQUET_SRC} 
+  )
+
 
 set_target_properties( ParquetFP
   PROPERTIES
@@ -108,6 +112,17 @@ target_include_directories( ParquetFP
   ${ABKCOMMON_HOME}
   ${PARQUET_HOME}
   src/
+  )
+
+target_include_directories( ParquetFPexe
+  PUBLIC
+  ${ABKCOMMON_HOME}
+  ${PARQUET_HOME}
+  src/
+  )
+
+target_link_libraries( ParquetFPexe 
+  ${ABKCOMMON_HOME}/lib/libABKCommon.a 
   )
 
 # add_dependencies( cParquetFPzlib cParquetFP )

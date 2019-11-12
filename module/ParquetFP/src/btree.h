@@ -271,6 +271,9 @@ inline float BTree::totalWidth() const
 inline float BTree::totalHeight() const
 {  return in_totalHeight; }
 // --------------------------------------------------------
+inline float BTree::totalContourArea() const
+{  return in_totalContourArea; }
+// --------------------------------------------------------
 inline float BTree::getDistance(float x, float y) const
 {  
   float retVal = 0.0f;
