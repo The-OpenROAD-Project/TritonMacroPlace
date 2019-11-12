@@ -531,10 +531,11 @@ void Partition::UpdateMacroCoordi(MacroCircuit& mckt) {
 }
 
 // Call ParquetFP
-void Partition::DoAnneal() {
+bool Partition::DoAnneal() {
+  
   // No macro, no need to execute
   if( macroStor.size() == 0 ) {
-    return;
+    return true;
   }
   
   cout << "Parquet is starting... " << endl;
@@ -557,7 +558,7 @@ void Partition::DoAnneal() {
       }
     }
   }
-
+  
   using namespace parquetfp;
 
   // Populating DB structure
@@ -648,6 +649,13 @@ void Partition::DoAnneal() {
     new BTreeAreaWireAnnealer(*blockInfo, const_cast<Command_Line*>(&param), &db);
 
   annealer->go();
+
+  const BTree& sol = annealer->currSolution();
+  // Failed annealing
+  if( sol.totalWidth() > width ||
+      sol.totalHeight() > height ) {
+    return false;
+  }
   delete annealer;
 
   // 
@@ -695,6 +703,7 @@ void Partition::DoAnneal() {
 //      0, 0, width, height);
 
   cout << "Done" << endl; 
+  return true;
 
 }
 

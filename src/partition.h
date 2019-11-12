@@ -50,7 +50,7 @@ class Partition {
     void Dump();
 
     // Call Parquet to have annealing solution
-    void DoAnneal();
+    bool DoAnneal();
 
     // Update Macro location from MacroCircuit
     void UpdateMacroCoordi(MacroCircuit& mckt);

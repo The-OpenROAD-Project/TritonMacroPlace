@@ -29,12 +29,18 @@ void mplace_external::export_def(const char* def) {
     }
     // For each partitions (four partition)
     //
-    // cout << "curSet.size: " << curSet.size() << endl;
+    bool isFailed = false;
     for(auto& curPart : curSet) {
       // Annealing based on ParquetFP Engine
-      curPart.DoAnneal();
+      if( !curPart.DoAnneal() ) {
+        isFailed = true;
+        break;
+      }
       // Update mckt frequently
       mckt.UpdateMacroCoordi(curPart);
+    }
+    if( isFailed ) {
+      continue;
     }
 
     // update partitons' macro info
@@ -82,13 +88,20 @@ void mplace_external::export_all_def(const char* location) {
       continue;
     }
 
+    bool isFailed = false;
     // For each partitions (four partition)
-//    cout << "curSet.size: " << curSet.size() << endl;
     for(auto& curPart : curSet) {
       // Annealing based on ParquetFP Engine
-      curPart.DoAnneal();
+      if( !curPart.DoAnneal() ) {
+        isFailed = true;
+        break;
+      }
       // Update mckt frequently
       mckt.UpdateMacroCoordi(curPart);
+    }
+    
+    if( isFailed ) {
+      continue;
     }
 
     // update partitons' macro info
