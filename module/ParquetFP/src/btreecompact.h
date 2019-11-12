@@ -52,6 +52,10 @@ public:
    
    const uofm::vector<BTreeNode>& orth_tree;
 
+   void out_orth_dot(const uofm::string& file) const;
+   void out_orth_plot(const uofm::string& file) const;
+
+
 private:
    uofm::vector<BTreeNode> in_orth_tree; // [NUM_BLOCKS] ~ in_tree[NUM_BLOCKS+1]
                                    // [NUM_BLOCKS+1] ~ in_tree[NUM_BLOCKS]
@@ -128,6 +132,14 @@ inline int BTreeCompactor::compact()
    build_orth_tree();
    swap_ranges(in_tree.begin(), in_tree.end(),
               in_orth_tree.begin());
+
+ 
+//   save_dot("compact-1_orig.dot");
+//   save_plot("compact-1_orig.plot");
+//   out_orth_dot("compact-1_orth.dot");
+//   out_orth_plot("compact-1_orth.plot"); 
+
+
 //    cout << "-----here1: after build_orth_tree()-----" << endl;
 //    cout << "in_tree: " << endl;
 //    OutputBTree(cout, in_tree);
@@ -139,6 +151,11 @@ inline int BTreeCompactor::compact()
    build_orth_tree();
    swap_ranges(in_tree.begin(), in_tree.end(),
               in_orth_tree.begin());
+   
+//   save_dot("compact-2_orig.dot");
+//   save_plot("compact-2_orig.plot");
+//   out_orth_dot("compact-2_orth.dot");
+//   out_orth_plot("compact-2_orth.plot"); 
 //    cout << "-----here2: after build_orth_tree()-----" << endl;
 //    cout << "in_tree: " << endl;
 //    OutputBTree(cout, in_tree);
@@ -155,6 +172,13 @@ inline int BTreeCompactor::compact()
 //    outfile.close();
 
    build_orth_tree();
+   
+//   save_dot("compact-3_orig.dot");
+//   save_plot("compact-3_orig.plot");
+//   out_orth_dot("compact-3_orth.dot");
+//   out_orth_plot("compact-3_orth.plot"); 
+
+//     exit(1);
 
    int count = 0;
    for (int i = 0; i < NUM_BLOCKS; i++)

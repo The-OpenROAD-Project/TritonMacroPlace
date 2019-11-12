@@ -472,6 +472,9 @@ bool BTreeAreaWireAnnealer::anneal()
   const float real_reqdArea = blocksArea * (1+(_params->maxWS/100.0));
   const float real_reqdWidth = sqrt(real_reqdArea*reqdAR);
   const float real_reqdHeight = real_reqdWidth / reqdAR;
+  const float maxDist = sqrt(real_reqdWidth * real_reqdWidth * 
+      real_reqdHeight * real_reqdHeight);
+  
 
   // save attributes of the best solution
   // float bestArea = FLT_MAX;
@@ -511,16 +514,21 @@ bool BTreeAreaWireAnnealer::anneal()
   float currHPWL = _db->evalHPWL(useWts,_params->scaleTerms);
 #endif
 
+  float currDist = in_curr_solution.getDistance(real_reqdWidth, real_reqdHeight);
+
+
+
   // calculate wastedArea 
-  SkylineContour mapX(in_curr_solution), mapY(in_curr_solution, true);
-  float currWastedContArea 
-        = mapX.GetContourArea() 
-        + mapY.GetContourArea() 
-        - 2.0 * in_curr_solution.blockArea();
+//  SkylineContour mapX(in_curr_solution), mapY(in_curr_solution, true);
+//  float currWastedContArea 
+//        = mapX.GetContourArea() 
+//        + mapY.GetContourArea() 
+//        - 2.0 * in_curr_solution.blockArea();
+
 
   float bestHPWL = currHPWL;
   float bestArea = std::numeric_limits<float>::max();
-  float bestWastedContArea = std::numeric_limits<float>::max();
+  float bestDist = std::numeric_limits<float>::min();
 
   while(currTime > _params->timeCool || budgetTime)
   {
@@ -692,14 +700,8 @@ bool BTreeAreaWireAnnealer::anneal()
       float tempArea = in_next_solution.totalArea();
       float tempAR = tempWidth / tempHeight;
       float tempHPWL = UNINITIALIZED;
+      float tempDist = in_next_solution.getDistance( real_reqdWidth, real_reqdHeight);
       
-      
-      SkylineContour newMapX(in_next_solution), 
-                    newMapY(in_next_solution, true); 
-      float tempWastedContArea = 
-        newMapX.GetContourArea() 
-        + newMapY.GetContourArea() 
-        - 2.0 * in_next_solution.blockArea();
 
       // -----------------------------------------------------
       // evaulate the temporary solution and calculate "delta"
@@ -709,13 +711,16 @@ bool BTreeAreaWireAnnealer::anneal()
       float deltaHPWL = 0;  
       float deltaAR = UNINITIALIZED;
       float delta = UNINITIALIZED;
-      float deltaWastedContArea = UNINITIALIZED;
+      float deltaDist = UNINITIALIZED;
 
       /* area objective */
       if (currTime > 30)
         deltaArea = ((tempArea-currArea)*1.2*_params->timeInit) / blocksArea;
       else
         deltaArea = ((tempArea-currArea)*1.5*_params->timeInit) / blocksArea;
+
+      
+      deltaDist = -1 * ((tempDist-currDist) * _params->timeInit) / maxDist;
 
       /* HPWL objective if applicable */ 
       if (minWL)
@@ -745,15 +750,6 @@ bool BTreeAreaWireAnnealer::anneal()
           else
             deltaHPWL = ((tempHPWL-currHPWL)*1.5*_params->timeInit)/currHPWL; // 1.5
         }
-      }
-
-      if( currTime > 30 ) {
-        deltaWastedContArea = 
-          ((tempWastedContArea-currWastedContArea)*1.2*_params->timeInit)/blocksArea;
-      }
-      else {
-        deltaWastedContArea = 
-          ((tempWastedContArea-currWastedContArea)*1.5*_params->timeInit)/blocksArea;
       }
 
       //          if (_isFixedOutline)
@@ -802,8 +798,11 @@ bool BTreeAreaWireAnnealer::anneal()
 //              ARWeight * deltaAR);
 //          delta = 0.2 * deltaHPWL +
 //                  0.6 * deltaWastedContArea;        
-          delta = 0.2 * deltaHPWL + 
-            0.4 * deltaWastedContArea + 0.4 * deltaAR;        
+          delta = 0.2 * deltaHPWL + 0.4 * deltaAR + 0.4 * deltaDist;
+//          delta = deltaDist;
+          cout << "c: " << count << " dHpwl: " << deltaHPWL 
+            << " dAR:" << deltaAR << " dDist:" << deltaDist << endl;
+  
         }
         else
           delta = ((areaWeight + wireWeight/2.0) * deltaArea + 
@@ -847,7 +846,7 @@ bool BTreeAreaWireAnnealer::anneal()
 //        cout << "Move Accepted!!" << endl;
         in_curr_solution = in_next_solution;
         currHPWL = tempHPWL;
-        currWastedContArea = tempWastedContArea;
+        currDist = tempDist;
       }
 
       // -----additional book-keeping for special moves-----
@@ -891,7 +890,7 @@ bool BTreeAreaWireAnnealer::anneal()
           updateBest = (currWidth <= real_reqdWidth &&
               currHeight <= real_reqdHeight &&
               currHPWL < bestHPWL &&
-              currWastedContArea < bestWastedContArea );
+              currDist > bestDist);
 //          cout << "HPWL: " << currHPWL << " " << bestHPWL << endl;
         }
         else
@@ -918,7 +917,7 @@ bool BTreeAreaWireAnnealer::anneal()
         saved_best=true;
         bestHPWL = currHPWL;
         bestArea = currArea;
-        bestWastedContArea = currWastedContArea;
+        bestDist = currDist;
         in_best_solution = in_curr_solution;
       }
       //}
@@ -1024,7 +1023,7 @@ bool BTreeAreaWireAnnealer::anneal()
 //      cout << "iter: " << iter << " size: " << 4*size << " bTime: " << budgetTime << endl;
     }
 //    while (iter < 4*size || budgetTime);
-    while (iter < 7*size || budgetTime);
+    while (iter < 10*size || budgetTime);
 
 //    cout << "whileBreak Iter: " << iter << endl;
     // finish the loop under constant temperature

@@ -1616,7 +1616,7 @@ Plot(string fileName, vector<MacroNetlist::Partition>& set) {
     cout << "Warning: output file " << fileName
       << " can't be opened" << endl;
   }
-  //   gpOut <<"set terminal png size 1024,768" << endl;
+  gpOut <<"set terminal png size 1024,768" << endl;
 
   gpOut<<"#Use this file as a script for gnuplot"<<endl;
   gpOut<<"#(See http://www.gnuplot.info/ for details)"<<endl;
@@ -1656,7 +1656,6 @@ Plot(string fileName, vector<MacroNetlist::Partition>& set) {
 
   gpOut << "plot '-' w l" << endl;
   gpOut << "EOF" << endl;
-  gpOut << "pause -1 'Press any key' "<<endl;
   gpOut.close();
 
 }

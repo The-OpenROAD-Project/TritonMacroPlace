@@ -37,6 +37,8 @@
 #include "basepacking.h"
 
 #include <string>
+#include <fstream>
+#include <cmath>
 
 // --------------------------------------------------------
 class BTree
@@ -70,6 +72,7 @@ public:
    inline float totalWidth() const;
    inline float totalHeight() const;
    inline float totalContourArea() const;
+   inline float getDistance(float x, float y) const;
 
    inline void setTree(const uofm::vector<BTreeNode>& ntree);
    void evaluate(const uofm::vector<BTreeNode>& ntree); 
@@ -117,6 +120,8 @@ public:
 
    // -----output functions-----
    void save_bbb(const uofm::string& filename) const;
+   void save_dot(const uofm::string& filename) const;
+   void save_plot(const uofm::string& filename) const;
    
 protected:
    const HardBlockInfoType& in_blockinfo;
@@ -266,8 +271,18 @@ inline float BTree::totalWidth() const
 inline float BTree::totalHeight() const
 {  return in_totalHeight; }
 // --------------------------------------------------------
-inline float BTree::totalContourArea() const
-{  return in_totalContourArea; }
+inline float BTree::getDistance(float x, float y) const
+{  
+  float retVal = 0.0f;
+  for(int i=0; i<NUM_BLOCKS; i++) {
+//    float urx = in_xloc[i] + in_width[i];
+//    float ury = in_yloc[i] + in_height[i];
+    float urx = in_xloc[i] + in_width[i] / 2.0;
+    float ury = in_yloc[i] + in_height[i] / 2.0;
+    retVal += sqrt((x - urx) * (x - urx) * (y - ury) * (y - ury));
+  }
+  return retVal;
+}
 // --------------------------------------------------------
 inline void BTree::setTree(const uofm::vector<BTreeNode>& ntree)
 {   in_tree = ntree; }

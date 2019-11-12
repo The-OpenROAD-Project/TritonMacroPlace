@@ -173,3 +173,70 @@ void BTreeCompactor::build_orth_tree_add_block(int tree_ptr)
    }
 }
 // --------------------------------------------------------
+
+void BTreeCompactor::out_orth_dot(const uofm::string& file) const {
+  std::filebuf fb;
+  fb.open( file.c_str(), std::ios::out );
+  std::ostream outs (&fb);
+
+  outs << "digraph BST {" << std::endl;
+  outs << "  graph [ordering=\"out\"];" << std::endl;
+
+  int nullPtrCnt = 0; 
+  for(int i=0; i< NUM_BLOCKS; i++) {
+    outs << "  \"" << i << "\" -> ";
+    if( in_orth_tree[i].left != Undefined) {
+      outs << "\"" << in_orth_tree[i].left << "\";" << std::endl;
+    }
+    else {
+      outs << "null" << std::to_string(nullPtrCnt) << std::endl;
+      outs << "  null" << std::to_string(nullPtrCnt++) << " [shape=point];" << std::endl;
+    } 
+
+    outs << "  \"" << i << "\" -> ";
+    if( in_orth_tree[i].right!= Undefined) {
+      outs << "\"" << in_orth_tree[i].right<< "\";" << std::endl;
+    }
+    else {
+      outs << "null" << std::to_string(nullPtrCnt) << std::endl;
+      outs << "  null" << std::to_string(nullPtrCnt++) << " [shape=point];" << std::endl;
+    } 
+  } 
+  outs << "}" << std::endl;
+  fb.close();
+}
+void BTreeCompactor::out_orth_plot(const uofm::string& file) const {
+  using std::endl;
+  std::filebuf fb;
+  fb.open( file.c_str(), std::ios::out );
+  std::ostream outs (&fb);
+  
+  outs<<"#Use this file as a script for gnuplot"<<endl;
+  outs<<"#(See http://www.gnuplot.info/ for details)"<<endl;
+  outs << "set nokey"<<endl;
+
+  outs << "set size ratio -1" << endl;
+  outs << "set title ' " << file << endl << endl;
+  
+  outs <<"set terminal png size 1024,768" << endl;
+
+  outs << "set xrange[" << 0 << ":" << in_totalWidth << "]" << endl;
+  outs << "set yrange[" << 0 << ":" << in_totalHeight << "]" << endl;
+
+  int objCnt = 0;
+  float x = 0, y = 0, w = 0, h = 0;
+  for(int i=0; i<NUM_BLOCKS; i++) {
+    x = in_xloc[i];
+    y = in_yloc[i];
+    w = in_width[i];
+    h = in_height[i];
+    outs << "set object " << ++objCnt
+      << " rect from " << x << "," << y << " to " << x+w << "," << y+h 
+      << " fc rgb \"gold\"" << endl;
+  }
+  outs << "plot '-' w l" << endl;
+  outs << "EOF"<<endl<<endl; 
+  outs << "pause -1 'Press any key' "<<endl;
+  fb.close();
+
+}
