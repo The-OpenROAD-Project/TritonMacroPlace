@@ -32,12 +32,14 @@ public:
   
   void set_plot_enable(bool mode);
   bool place_macros();
+  int get_solution_count();
 
 private:
   EnvFile env;
   Circuit::Circuit ckt;
   MacroCircuit mckt;
   std::vector< std::vector<MacroNetlist::Partition> > allSets;
+  int solCount;
 }; 
 
 #endif

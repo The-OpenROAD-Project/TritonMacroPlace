@@ -6,7 +6,7 @@ using std::cout;
 using std::endl;
 using std::to_string; 
 
-mplace_external::mplace_external() {}; 
+mplace_external::mplace_external() : solCount(0) {}; 
 mplace_external::~mplace_external() {};
 
 void mplace_external::help() {};
@@ -19,7 +19,7 @@ void mplace_external::import_def(const char* def) {
 }
 
 void mplace_external::export_def(const char* def) { 
-  int setCnt = 0;
+  solCount = 0;
   int bestSetIdx = 0;
   double bestWwl = DBL_MIN;
   for(auto& curSet: allSets) {
@@ -55,7 +55,7 @@ void mplace_external::export_def(const char* def) {
       bestWwl = curWwl;
       bestSetIdx = &curSet - &allSets[0]; 
     }
-    setCnt ++;
+    solCount++;
   }
   
   // bestset DEF writing
@@ -81,7 +81,7 @@ void mplace_external::export_def(const char* def) {
 }
 
 void mplace_external::export_all_def(const char* location) { 
-  int setCnt = 0;
+  solCount = 0;
   for(auto& curSet: allSets) {
     // skip for top-layout partition
     if( curSet.size() == 1) {
@@ -114,11 +114,11 @@ void mplace_external::export_all_def(const char* location) {
 
     // check plotting
     if( env.isPlot ) {
-      mckt.Plot(string(location) + "_" + std::to_string(setCnt) + ".plt", curSet);
+      mckt.Plot(string(location) + "_" + std::to_string(solCount) + ".plt", curSet);
     }
 
     string fileName = string(string(location) + "_" 
-            + std::to_string(setCnt) + ".def");
+            + std::to_string(solCount) + ".def");
 
     // top-level layout print
     FILE* fp = fopen(fileName.c_str(), "w"); 
@@ -132,7 +132,7 @@ void mplace_external::export_all_def(const char* location) {
     fclose(fp);
     
     cout << "INFO: " << fileName << " has beed exported!" << endl;
-    setCnt++;
+    solCount++;
   }
 }
 
@@ -162,4 +162,8 @@ void mplace_external::set_plot_enable(bool mode) {
 bool mplace_external::place_macros() {
   allSets = PlaceMacros(env, ckt, mckt);
   return true;
+}
+
+int mplace_external::get_solution_count() {
+  return solCount;
 }
