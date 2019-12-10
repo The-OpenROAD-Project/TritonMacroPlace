@@ -27,7 +27,7 @@ set(OPENSTA_HOME
   ${PROJECT_SOURCE_DIR}/module/OpenSTA
 )
 set(EIGEN_HOME
-  ${PROJECT_SOURCE_DIR}/module/eigen-git-mirror 
+  ${PROJECT_SOURCE_DIR}/module/eigen 
 )
 set(ABKCOMMON_HOME
   ${PROJECT_SOURCE_DIR}/module/ABKCommon 
@@ -89,13 +89,9 @@ include_directories(
 
   ${DEFLIB_HOME}/def
   ${DEFLIB_HOME}/defzlib
-  ${DEFLIB_HOME}/cdef
-  ${DEFLIB_HOME}/cdefzlib
 
   ${LEFLIB_HOME}/lef
   ${LEFLIB_HOME}/lefzlib
-  ${LEFLIB_HOME}/clef
-  ${LEFLIB_HOME}/clefzlib
 
   ${OPENSTA_HOME}/app
   ${OPENSTA_HOME}/dcalc
@@ -149,12 +145,8 @@ target_link_libraries( mplace
   OpenSTA
   def
   defzlib
-  cdef
-  cdefzlib
   lef
   lefzlib
-  clef
-  clefzlib
 
   ParquetFP
   ABKCommon

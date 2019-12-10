@@ -209,8 +209,8 @@ void MacroCircuit::FillPinGroup(){
   _sta = GetStaObject( *_env );
   cout << "Done!" << endl;
  
-  sta::EdgeIndex numEdge = _sta->graph()->edgeCount();
-  sta::VertexIndex numVertex = _sta->graph()->vertexCount();
+  int numEdge = _sta->graph()->edgeCount();
+  int numVertex = _sta->graph()->vertexCount();
 
   cout << "OpenSTA numEdge: " << numEdge << endl;
   cout << "OpenSTA numVertex: " << numVertex << endl;
@@ -293,8 +293,8 @@ void MacroCircuit::FillPinGroup(){
 void MacroCircuit::FillVertexEdge() {
 
   cout << "Generating Sequantial Graph..." << endl; 
-  sta::EdgeIndex numEdge = _sta->graph()->edgeCount();
-  sta::VertexIndex numVertex = _sta->graph()->vertexCount();
+  int numEdge = _sta->graph()->edgeCount();
+  int numVertex = _sta->graph()->vertexCount();
 
   Eigen::setNbThreads(8);
 
@@ -618,7 +618,7 @@ void MacroCircuit::FillVertexEdge() {
 //  ExceptionFrom(PinSet *pins,
 //    ClockSet *clks,
 //    InstanceSet *insts,
-//    const TransRiseFallBoth *tr,
+//    const RiseFallBoth *tr,
 //    bool own_pts);
     
     // Get Pin direction
@@ -626,12 +626,12 @@ void MacroCircuit::FillVertexEdge() {
 
     ExceptionFrom* from = (!dir->isAnyOutput())? 
       _sta->sdc()->makeExceptionFrom(pSet, NULL, NULL, 
-        TransRiseFallBoth::riseFall()) : NULL;
+        RiseFallBoth::riseFall()) : NULL;
 
     ExceptionTo* to = (dir->isAnyOutput())? 
       _sta->sdc()->makeExceptionTo(pSet, NULL, NULL, 
-        TransRiseFallBoth::riseFall(), 
-        TransRiseFallBoth::riseFall()) : NULL;
+        RiseFallBoth::riseFall(), 
+        RiseFallBoth::riseFall()) : NULL;
 
     PathEndSeq *ends = _sta->findPathEnds(from, NULL, to, //from, thru, to
         false,
@@ -1088,7 +1088,7 @@ void MacroCircuit::UpdateVertexToMacroStor() {
 
 // macroStr & macroInstMap update
 void MacroCircuit::UpdateInstanceToMacroStor() {
-  sta::VertexIndex numVertex = _sta->graph()->vertexCount();
+  sta::VertexId numVertex = _sta->graph()->vertexCount();
   for(int i=1; i<=numVertex; i++) {
     sta::Vertex* vert = _sta->graph()->vertex(i);
     sta::Pin* pin = vert->pin();
