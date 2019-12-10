@@ -153,6 +153,7 @@ target_link_libraries( mplace
 
   ${ZLIB_LIBRARIES}
   ${TCL_LIB}
+  Threads::Threads
   )
 
 ############################################################
