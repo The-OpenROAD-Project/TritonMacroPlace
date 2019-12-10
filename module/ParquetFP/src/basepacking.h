@@ -45,17 +45,17 @@
 class BasePacking
 {
 public:
-   uofm::vector<float> xloc;
-   uofm::vector<float> yloc;
-   uofm::vector<float> width;
-   uofm::vector<float> height;
+   std::vector<float> xloc;
+   std::vector<float> yloc;
+   std::vector<float> width;
+   std::vector<float> height;
 };
 // --------------------------------------------------------
 class OrientedPacking : public BasePacking
 {
 public:
    enum ORIENT {N, E, S, W, FN, FE, FS, FW, OrientUndefined = -1};
-   uofm::vector<ORIENT> orient;
+   std::vector<ORIENT> orient;
 
    inline static ORIENT toOrient(char* orient);
    inline static const char* toChar(ORIENT orient);
@@ -71,14 +71,14 @@ namespace basepacking_h
    class Dimension
    {
    public:
-      uofm::vector<float> width;
-      uofm::vector<float> height;
+      std::vector<float> width;
+      std::vector<float> height;
       
       // Grid Snapping
-      uofm::vector<float> snapX, snapY;
+      std::vector<float> snapX, snapY;
       // Macro Halo Information
-      uofm::vector<float> haloX, haloY;
-      uofm::vector<float> channelX, channelY;
+      std::vector<float> haloX, haloY;
+      std::vector<float> channelX, channelY;
       
       static const float Infty; // = 1e100;
       static const float Epsilon_Accuracy; // = 1e10;
@@ -91,9 +91,9 @@ class HardBlockInfoType
 {
 public:
    HardBlockInfoType(std::ifstream& ins,         // formats:
-                     const uofm::string& format); // "txt" or "blocks"
-   const uofm::vector<basepacking_h::Dimension>& blocks;
-   const uofm::vector<uofm::string>& block_names;
+                     const std::string& format); // "txt" or "blocks"
+   const std::vector<basepacking_h::Dimension>& blocks;
+   const std::vector<std::string>& block_names;
    inline const basepacking_h::Dimension& operator [](int index) const;
    inline int blocknum() const;
    inline float blockArea() const;
@@ -104,8 +104,8 @@ public:
    friend class MixedBlockInfoTypeFromDB;
    
 protected:
-   uofm::vector<basepacking_h::Dimension> in_blocks;   // store the left & bottom edges at the back
-   uofm::vector<uofm::string> in_block_names; // parallel array with in_blocks
+   std::vector<basepacking_h::Dimension> in_blocks;   // store the left & bottom edges at the back
+   std::vector<std::string> in_block_names; // parallel array with in_blocks
 
    // support
    void set_dimensions(int i, float w, float h, 

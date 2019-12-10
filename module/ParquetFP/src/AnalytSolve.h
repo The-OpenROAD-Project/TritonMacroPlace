@@ -46,22 +46,22 @@ namespace parquetfp
       Command_Line* _params;
       DB* _db;
 
-      uofm::vector<float> _xloc;
-      uofm::vector<float> _yloc;
+      std::vector<float> _xloc;
+      std::vector<float> _yloc;
 
    public:
       AnalytSolve(){}
       AnalytSolve(Command_Line* params, DB* db);
       ~AnalytSolve(){}
 
-      Point getOptLoc(int index, uofm::vector<float>& xloc, uofm::vector<float>& yloc);
+      Point getOptLoc(int index, std::vector<float>& xloc, std::vector<float>& yloc);
       //location of cells passed
       Point getDesignOptLoc();  //get the optimum location of the entire placement
 
-      uofm::vector<float>& getXLocs()
+      std::vector<float>& getXLocs()
          { return _xloc; }
   
-      uofm::vector<float>& getYLocs()
+      std::vector<float>& getYLocs()
          { return _yloc; }
 
       void solveSOR();  //uses the DB placements as initial solution

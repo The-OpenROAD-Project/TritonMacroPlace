@@ -46,7 +46,7 @@
 
 using std::cout;
 using std::endl;
-using uofm::string;
+using std::string;
 
 
 MMapStreamBuf::MMapStreamBuf(const char *inputFileName)

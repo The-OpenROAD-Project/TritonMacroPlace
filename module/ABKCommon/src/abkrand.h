@@ -375,7 +375,7 @@ template <class RK> class RandomRawUnsignedT
 {
 
     RandomRawUnsignedT_impl<RK> *_impl;
-    uofm::string _locIdent;
+    std::string _locIdent;
     unsigned _seedN, _counterOverride;
     Verbosity _verb;
     bool _haveLoc;
@@ -556,35 +556,35 @@ template <class RK> class RandomNormCorrTuplesT
         // i.e. _rho_ij[i][j] is not really rho_ij but
         // rather rho_{i,i+j+1}
         //return value is success
-        bool _findBasis(const uofm::vector<uofm::vector<double> > &_rho_ij,
-            uofm::vector<uofm::vector<double> > &_v_ij);
+        bool _findBasis(const std::vector<std::vector<double> > &_rho_ij,
+            std::vector<std::vector<double> > &_v_ij);
 
         const unsigned _n; //number of variates
-        uofm::vector<RandomNormalT<RK>*> _norm_j;
-        uofm::vector<double> _y_j; //scratch space; fill with normal values
+        std::vector<RandomNormalT<RK>*> _norm_j;
+        std::vector<double> _y_j; //scratch space; fill with normal values
                              //then transform with _v_ij
-        const uofm::vector<double> _mu_i;
-        const uofm::vector<double> _sigma_i;
-        uofm::vector<uofm::vector<double> > _v_ij;
+        const std::vector<double> _mu_i;
+        const std::vector<double> _sigma_i;
+        std::vector<std::vector<double> > _v_ij;
 
         bool _bad; //will be set if _findBasis() fails
 
     public:
-        RandomNormCorrTuplesT<RK>(const uofm::vector<double> &means,
-                                  const uofm::vector<double> &stdDevs,
+        RandomNormCorrTuplesT<RK>(const std::vector<double> &means,
+                                  const std::vector<double> &stdDevs,
 
                                   //Note:  corrs[i][j] is the desired
                                   //correlation between X_i and
                                   //X_{i+j+1} (i.e. only upper-triangular
                                   //elements are included
-                                  const uofm::vector<uofm::vector<double> > &corrs,
+                                  const std::vector<std::vector<double> > &corrs,
                                   const char *locIdent,
                                   unsigned counterOverride=UINT_MAX,
                                   Verbosity verb=Verbosity("silent"));
 
         ~RandomNormCorrTuplesT();
 
-        void getTuple(uofm::vector<double> &tuple);
+        void getTuple(std::vector<double> &tuple);
         bool bad() const {return _bad;}
 };
 /* -------------------------   IMPLEMENTATIONS  ----------------------- */

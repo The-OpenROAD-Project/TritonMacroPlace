@@ -66,7 +66,7 @@ using std::endl;
 using std::min;
 using std::max;
 using std::cin;
-using uofm::vector;
+using std::vector;
 
 
 #if defined(sun)

@@ -87,7 +87,7 @@ class SkylineContour {
     float height_;
 
     // contourInfo_ is updated from skyline_
-    uofm::vector<BTreeNode> bTreeInfo_; 
+    std::vector<BTreeNode> bTreeInfo_; 
 
   public:
     SkylineContour();

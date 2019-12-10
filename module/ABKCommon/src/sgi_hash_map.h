@@ -52,9 +52,9 @@
         using __gnu_cxx::hash;
         namespace __gnu_cxx 
         {
-           template<> struct hash< uofm::string > 
+           template<> struct hash< std::string > 
            {
-             size_t operator()( const uofm::string& x ) const
+             size_t operator()( const std::string& x ) const
              {
                 return hash< const char* >()( x.c_str() );
              }
@@ -75,9 +75,9 @@
     #else
       #include <hash_map>
       #include "uofm_alloc.h"
-      template<> struct hash< uofm::string > 
+      template<> struct hash< std::string > 
       {
-        size_t operator()( const uofm::string& x ) const
+        size_t operator()( const std::string& x ) const
         {
           return hash< const char* >()( x.c_str() );
         }

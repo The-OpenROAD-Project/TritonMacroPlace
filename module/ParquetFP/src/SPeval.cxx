@@ -40,7 +40,7 @@
 using std::cout;
 using std::endl;
 using std::map;
-using uofm::vector;
+using std::vector;
 
 using namespace parquetfp;
 

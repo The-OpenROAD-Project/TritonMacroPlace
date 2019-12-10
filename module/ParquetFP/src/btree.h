@@ -57,11 +57,11 @@ public:
 
    class BTreeNode;
    class ContourNode;
-   const uofm::vector<BTreeNode>& tree;
-   const uofm::vector<ContourNode>& contour;
+   const std::vector<BTreeNode>& tree;
+   const std::vector<ContourNode>& contour;
 
-   inline const uofm::vector<float>& xloc() const;
-   inline const uofm::vector<float>& yloc() const;
+   inline const std::vector<float>& xloc() const;
+   inline const std::vector<float>& yloc() const;
    inline float xloc(int index) const;
    inline float yloc(int index) const;
    inline float width(int index) const;
@@ -74,17 +74,17 @@ public:
    inline float totalContourArea() const;
    inline float getDistance(float x, float y) const;
 
-   inline void setTree(const uofm::vector<BTreeNode>& ntree);
-   void evaluate(const uofm::vector<BTreeNode>& ntree); 
-   void evaluate(const uofm::vector<int>& tree_bits,    // assume the lengths of
-                 const uofm::vector<int>& perm,         // these 3 are compatible 
-                 const uofm::vector<int>& orient);      // with size of old tree
-   static void bits2tree(const uofm::vector<int>& tree_bits, // assume lengths of 
-                         const uofm::vector<int>& perm,      // these 3 compatible
-                         const uofm::vector<int>& orient,
-                         uofm::vector<BTreeNode>& ntree);
-   inline static void clean_tree(uofm::vector<BTreeNode>& otree);
-   inline void clean_contour(uofm::vector<ContourNode>& oContour);
+   inline void setTree(const std::vector<BTreeNode>& ntree);
+   void evaluate(const std::vector<BTreeNode>& ntree); 
+   void evaluate(const std::vector<int>& tree_bits,    // assume the lengths of
+                 const std::vector<int>& perm,         // these 3 are compatible 
+                 const std::vector<int>& orient);      // with size of old tree
+   static void bits2tree(const std::vector<int>& tree_bits, // assume lengths of 
+                         const std::vector<int>& perm,      // these 3 compatible
+                         const std::vector<int>& orient,
+                         std::vector<BTreeNode>& ntree);
+   inline static void clean_tree(std::vector<BTreeNode>& otree);
+   inline void clean_contour(std::vector<ContourNode>& oContour);
 
    // perturb the tree, evaluate contour from scratch
    enum MoveType {SWAP, ROTATE, MOVE};
@@ -119,29 +119,29 @@ public:
    };
 
    // -----output functions-----
-   void save_bbb(const uofm::string& filename) const;
-   void save_dot(const uofm::string& filename) const;
-   void save_plot(const uofm::string& filename) const;
+   void save_bbb(const std::string& filename) const;
+   void save_dot(const std::string& filename) const;
+   void save_plot(const std::string& filename) const;
    
 protected:
    const HardBlockInfoType& in_blockinfo;
-   uofm::vector<BTreeNode> in_tree;
-   uofm::vector<ContourNode> in_contour;
+   std::vector<BTreeNode> in_tree;
+   std::vector<ContourNode> in_contour;
 
    // <aaronnn> obstacle handling
    BasePacking in_obstacles;
    float in_obstacleframe[2]; // 0=width, 1=height
-   uofm::vector<bool> seen_obstacles; // track obstacles that have been consumed during contour_evaluate
+   std::vector<bool> seen_obstacles; // track obstacles that have been consumed during contour_evaluate
    float new_block_x_shift; // x shift for avoiding obstacles when adding new block 
    float new_block_y_shift; // y shift for avoiding obstacles when adding new block
    void transform_bbox_wrt_pack_origin(BTree::PackOrigin packOrigin, 
       float frameWidth, float frameHeight, float &xMin, float &yMin, float &xMax, float &yMax);
 
    // blah[i] refers the attribute of in_tree[i].
-   uofm::vector<float> in_xloc;
-   uofm::vector<float> in_yloc;
-   uofm::vector<float> in_width;
-   uofm::vector<float> in_height;
+   std::vector<float> in_xloc;
+   std::vector<float> in_yloc;
+   std::vector<float> in_width;
+   std::vector<float> in_height;
 
    float in_blockArea;
    float in_totalArea;
@@ -241,10 +241,10 @@ inline bool BTree::operator =(const BTree& newBtree)
       return false;
 }
 // --------------------------------------------------------
-inline const uofm::vector<float>& BTree::xloc() const
+inline const std::vector<float>& BTree::xloc() const
 {  return in_xloc; }
 // --------------------------------------------------------
-inline const uofm::vector<float>& BTree::yloc() const
+inline const std::vector<float>& BTree::yloc() const
 {  return in_yloc; }
 // --------------------------------------------------------
 inline float BTree::xloc(int index) const
@@ -287,10 +287,10 @@ inline float BTree::getDistance(float x, float y) const
   return retVal;
 }
 // --------------------------------------------------------
-inline void BTree::setTree(const uofm::vector<BTreeNode>& ntree)
+inline void BTree::setTree(const std::vector<BTreeNode>& ntree)
 {   in_tree = ntree; }
 // --------------------------------------------------------
-inline void BTree::clean_tree(uofm::vector<BTreeNode>& otree)
+inline void BTree::clean_tree(std::vector<BTreeNode>& otree)
 {
    int vec_size = otree.size();
    for (int i = 0; i < vec_size; i++)
@@ -306,7 +306,7 @@ inline void BTree::clean_tree(uofm::vector<BTreeNode>& otree)
    otree[vec_size-1].orient = Undefined;
 }
 // --------------------------------------------------------
-inline void BTree::clean_contour(uofm::vector<ContourNode>& oContour)
+inline void BTree::clean_contour(std::vector<ContourNode>& oContour)
 {
    int vec_size = oContour.size();
    int Ledge = vec_size-2;

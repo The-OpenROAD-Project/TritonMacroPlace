@@ -36,7 +36,7 @@
 
 #include <algorithm>
 
-using uofm::vector;
+using std::vector;
 
 // ---------------------------------------------------------
 const vector<float>& BTreeSlackEval::evaluateXSlacks(const BTree& orig_btree)

@@ -43,10 +43,10 @@ using std::min;
 using std::max;
 using std::ifstream;
 using std::ofstream;
-using uofm::string;
+using std::string;
 using std::cout;
 using std::endl;
-using uofm::vector;
+using std::vector;
 
 // --------------------------------------------------------
 float NetType::getHPWL(const OrientedPacking& pk) const

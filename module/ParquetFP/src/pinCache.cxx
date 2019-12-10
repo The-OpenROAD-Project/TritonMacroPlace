@@ -2,7 +2,7 @@
 #include "Nets.h"
 #include "Nodes.h"
 #include <sstream>
-using uofm::stringstream;
+using std::stringstream;
 
 namespace parquetfp
 {

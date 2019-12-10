@@ -40,7 +40,7 @@
 using parquetfp::Node;
 using parquetfp::Nodes;
 using parquetfp::DB;
-using uofm::vector;
+using std::vector;
 
 // --------------------------------------------------------
 MixedBlockInfoTypeFromDB::MixedBlockInfoTypeFromDB(const DB& db)

@@ -50,14 +50,14 @@ public:
    inline int compact();
    void build_orth_tree();
    
-   const uofm::vector<BTreeNode>& orth_tree;
+   const std::vector<BTreeNode>& orth_tree;
 
-   void out_orth_dot(const uofm::string& file) const;
-   void out_orth_plot(const uofm::string& file) const;
+   void out_orth_dot(const std::string& file) const;
+   void out_orth_plot(const std::string& file) const;
 
 
 private:
-   uofm::vector<BTreeNode> in_orth_tree; // [NUM_BLOCKS] ~ in_tree[NUM_BLOCKS+1]
+   std::vector<BTreeNode> in_orth_tree; // [NUM_BLOCKS] ~ in_tree[NUM_BLOCKS+1]
                                    // [NUM_BLOCKS+1] ~ in_tree[NUM_BLOCKS]
 
    void build_orth_tree_add_block(int treePtr);
@@ -65,7 +65,7 @@ private:
    // (a) swap NUM_BLK vs. NUM_BLK+1
    // (b) fix parent of BL-block
    // used by build_orth_tree() only!!!
-   inline static void fix_orth_tree(uofm::vector<BTreeNode>& orth_tree);
+   inline static void fix_orth_tree(std::vector<BTreeNode>& orth_tree);
 };
 // --------------------------------------------------------
 
@@ -126,8 +126,8 @@ inline int BTreeCompactor::compact()
 		return 0;
 	}
 
-   uofm::vector<float> orig_xloc(in_xloc);
-   uofm::vector<float> orig_yloc(in_yloc);
+   std::vector<float> orig_xloc(in_xloc);
+   std::vector<float> orig_yloc(in_yloc);
 
    build_orth_tree();
    swap_ranges(in_tree.begin(), in_tree.end(),
@@ -190,7 +190,7 @@ inline int BTreeCompactor::compact()
    return count;
 }
 // --------------------------------------------------------
-inline void BTreeCompactor::fix_orth_tree(uofm::vector<BTree::BTreeNode>& orth_tree)
+inline void BTreeCompactor::fix_orth_tree(std::vector<BTree::BTreeNode>& orth_tree)
 {   
    // fix the tree s.t. in_tree[NUM_BLOCKS] corresponds to the root
    const int NUM_BLOCKS = orth_tree.size() - 2;

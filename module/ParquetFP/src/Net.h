@@ -45,8 +45,8 @@ namespace parquetfp
 {
 
    class pin;
-   typedef uofm::vector<pin>::iterator itPin;
-   typedef uofm::vector<pin>::const_iterator itPinConst;
+   typedef std::vector<pin>::iterator itPin;
+   typedef std::vector<pin>::const_iterator itPinConst;
 
 
 //this class holds the pin offsets and pinindex on a particular node
@@ -56,14 +56,14 @@ namespace parquetfp
       Point _origOffset;    //original offset wrt center. In relative terms
       Point _offset;  //offsets during iteration. to account for orientation changes
       ORIENT _orient;       //keeps track of orientation of the node
-      uofm::string _name;
+      std::string _name;
       bool _type;
       int _nodeIndex;       //index of the node in which the pin is located
       int _netIndex;        //index of net to which pin is attached
   
    public:
   
-      pin(const uofm::string name, bool type, float xoffset, float yoffset, int netIndex)
+      pin(const std::string name, bool type, float xoffset, float yoffset, int netIndex)
          :_type(type)
          {
 	   //strncpy(_name,name,199);
@@ -82,7 +82,7 @@ namespace parquetfp
 
       bool getType() const
          { return _type;}
-      const uofm::string getName(void) const
+      const std::string getName(void) const
          {return _name;}
       int getNodeIndex() const
          {return _nodeIndex;}
@@ -117,11 +117,11 @@ namespace parquetfp
    {
 
    public:
-      uofm::vector<pin> _pins;
+      std::vector<pin> _pins;
  
    private: 
       int _index;
-      uofm::string _name;
+      std::string _name;
       float _weight;
 
    public:
@@ -130,7 +130,7 @@ namespace parquetfp
             _weight = 1.0;
          }
 
-      void putName(const uofm::string name)
+      void putName(const std::string name)
          { 
 	   _name = name;
          }
@@ -174,7 +174,7 @@ namespace parquetfp
          {
             _weight = netWeight;
          }
-      const uofm::string getName(void) const
+      const std::string getName(void) const
          { return _name; }
 
       unsigned getDegree(void) const

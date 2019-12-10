@@ -37,7 +37,7 @@
 #include <cfloat>
 #include <algorithm>
 
-using uofm::vector;
+using std::vector;
 
 const float PlSP2BTree::Infty = basepacking_h::Dimension::Infty;
 const int PlSP2BTree::Undefined = BTree::Undefined;

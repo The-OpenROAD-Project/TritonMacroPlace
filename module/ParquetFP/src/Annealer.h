@@ -60,8 +60,8 @@ namespace parquetfp
       SPeval *const _spEval;
       MaxMem *_maxMem;
   
-      uofm::vector<Point> sortedXSlacks;
-      uofm::vector<Point> sortedYSlacks;
+      std::vector<Point> sortedXSlacks;
+      std::vector<Point> sortedYSlacks;
 
       Annealer()
          : BaseAnnealer(), _sp(NULL), _spEval(NULL), _maxMem(NULL) {}
@@ -88,32 +88,32 @@ namespace parquetfp
                                        // compaction and set up required data
                                        // structures and values
 
-      int makeMove(uofm::vector<unsigned>& tempX,
-                   uofm::vector<unsigned>& tempY);
-      int makeMoveSlacks(uofm::vector<unsigned>& tempX,
-                         uofm::vector<unsigned>& tempY);
-      int makeMoveSlacksOrient(uofm::vector<unsigned>& A, uofm::vector<unsigned>& B,
+      int makeMove(std::vector<unsigned>& tempX,
+                   std::vector<unsigned>& tempY);
+      int makeMoveSlacks(std::vector<unsigned>& tempX,
+                         std::vector<unsigned>& tempY);
+      int makeMoveSlacksOrient(std::vector<unsigned>& A, std::vector<unsigned>& B,
                                unsigned& index,               
                                parquetfp::ORIENT& oldOrient,  
                                parquetfp::ORIENT& newOrient); 
       int makeMoveOrient(unsigned& index,
                          parquetfp::ORIENT& oldOrient,
                          parquetfp::ORIENT& newOrient);
-      int makeARMove(uofm::vector<unsigned>& A, uofm::vector<unsigned>& B,
+      int makeARMove(std::vector<unsigned>& A, std::vector<unsigned>& B,
                      float currAR);
-      int makeSoftBlMove(const uofm::vector<unsigned>& A, const uofm::vector<unsigned>& B,
+      int makeSoftBlMove(const std::vector<unsigned>& A, const std::vector<unsigned>& B,
                          unsigned &index,
                          float &newWidth, float &newHeight);
-      int makeIndexSoftBlMove(const uofm::vector<unsigned>& A, const uofm::vector<unsigned>& B,
+      int makeIndexSoftBlMove(const std::vector<unsigned>& A, const std::vector<unsigned>& B,
                               unsigned index,
                               float &newWidth, float &newHeight);
 
-      int makeHPWLMove(uofm::vector<unsigned>& tempX, uofm::vector<unsigned>& tempY);
-      int makeARWLMove(uofm::vector<unsigned>& tempX, uofm::vector<unsigned>& tempY, 
+      int makeHPWLMove(std::vector<unsigned>& tempX, std::vector<unsigned>& tempY);
+      int makeARWLMove(std::vector<unsigned>& tempX, std::vector<unsigned>& tempY, 
                        float currAR);
 
-      void sortSlacks(uofm::vector<Point>& sortedXSlacks,
-                      uofm::vector<Point>& sortedYSlacks);
+      void sortSlacks(std::vector<Point>& sortedXSlacks,
+                      std::vector<Point>& sortedYSlacks);
 
       float getXSize(); // requires that spEvaluations be done earlier
       float getYSize(); // requires that spEvaluations be done earlier

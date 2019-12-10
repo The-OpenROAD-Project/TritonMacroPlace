@@ -45,32 +45,32 @@ public:
    inline BTreeSlackEval(const BTree& newBTree);
 
    inline void evaluateSlacks(const BTree& newBTree);
-   const uofm::vector<float>& evaluateXSlacks(const BTree& orig_btree);
-   const uofm::vector<float>& evaluateYSlacks(const BTree& orig_btree);
+   const std::vector<float>& evaluateXSlacks(const BTree& orig_btree);
+   const std::vector<float>& evaluateYSlacks(const BTree& orig_btree);
 
-   inline const uofm::vector<float>& xSlack() const;
-   inline const uofm::vector<float>& ySlack() const;
+   inline const std::vector<float>& xSlack() const;
+   inline const std::vector<float>& ySlack() const;
 
-   inline const uofm::vector<float>& xlocRight() const; // xloc from Right 
-   inline const uofm::vector<float>& ylocTop() const;   // yloc from Top
+   inline const std::vector<float>& xlocRight() const; // xloc from Right 
+   inline const std::vector<float>& ylocTop() const;   // yloc from Top
    
    inline const BTreeCompactor& btree() const;
-   inline const uofm::vector<BTree::BTreeNode>& rev_tree() const;
-   inline const uofm::vector<BTree::BTreeNode>& rev_orth_tree() const;
+   inline const std::vector<BTree::BTreeNode>& rev_tree() const;
+   inline const std::vector<BTree::BTreeNode>& rev_orth_tree() const;
 
-   static void reverse_tree(const uofm::vector<BTree::BTreeNode>& tree,
-                            uofm::vector<BTree::BTreeNode>& rev_tree);   
+   static void reverse_tree(const std::vector<BTree::BTreeNode>& tree,
+                            std::vector<BTree::BTreeNode>& rev_tree);   
 
 private:
    BTreeCompactor _btree;
-   uofm::vector<float> _xSlack;
-   uofm::vector<float> _ySlack;
+   std::vector<float> _xSlack;
+   std::vector<float> _ySlack;
 
-   uofm::vector<float> _xlocRight;
-   uofm::vector<float> _ylocTop;
+   std::vector<float> _xlocRight;
+   std::vector<float> _ylocTop;
    
-   uofm::vector<BTree::BTreeNode> _rev_tree;
-   uofm::vector<BTree::BTreeNode> _rev_orth_tree;
+   std::vector<BTree::BTreeNode> _rev_tree;
+   std::vector<BTree::BTreeNode> _rev_orth_tree;
 
    BTreeSlackEval(const BTreeSlackEval&); // copy forbidden
 };
@@ -99,19 +99,19 @@ void BTreeSlackEval::evaluateSlacks(const BTree& newBTree)
    evaluateYSlacks(newBTree);
 }
 // --------------------------------------------------------
-const uofm::vector<float>& BTreeSlackEval::xSlack() const
+const std::vector<float>& BTreeSlackEval::xSlack() const
 {   return _xSlack; }
 // --------------------------------------------------------
-const uofm::vector<float>& BTreeSlackEval::ySlack() const
+const std::vector<float>& BTreeSlackEval::ySlack() const
 {   return _ySlack; }
 // --------------------------------------------------------
 const BTreeCompactor& BTreeSlackEval::btree() const
 {   return _btree; }
 // --------------------------------------------------------
-const uofm::vector<BTree::BTreeNode>& BTreeSlackEval::rev_tree() const
+const std::vector<BTree::BTreeNode>& BTreeSlackEval::rev_tree() const
 {   return _rev_tree; }
 // --------------------------------------------------------
-const uofm::vector<BTree::BTreeNode>& BTreeSlackEval::rev_orth_tree() const
+const std::vector<BTree::BTreeNode>& BTreeSlackEval::rev_orth_tree() const
 {   return _rev_orth_tree; }
 // --------------------------------------------------------
 

@@ -148,7 +148,7 @@ _levels(3,1)
 {
 }
 
-Verbosity::Verbosity(const uofm::vector<unsigned>& levels):
+Verbosity::Verbosity(const std::vector<unsigned>& levels):
 _levels(levels)
 {
    abkfatal(levels.size()>=3,

@@ -88,7 +88,7 @@
 //   (e.g. for each type)
 class Verbosity 
 {
-   uofm::vector<unsigned>  _levels;
+   std::vector<unsigned>  _levels;
 
    void _ctructFromString(const char* levels);
 
@@ -103,7 +103,7 @@ class Verbosity
     //  catches -verb 
     Verbosity(unsigned numArgs, unsigned forActions, 
               unsigned forSysRes, unsigned forMajStats, ...);
-    Verbosity(const uofm::vector<unsigned>&);
+    Verbosity(const std::vector<unsigned>&);
 
     Verbosity(const Verbosity& v):_levels(v._levels) {}
   

@@ -46,7 +46,7 @@ using namespace parquetfp;
 using std::cout;
 using std::endl;
 using std::numeric_limits;
-using uofm::vector;
+using std::vector;
 
 SolveMulti::SolveMulti(DB * db, Command_Line* params, MaxMem *maxMem):_newDB(0),_maxMem(maxMem)
 {

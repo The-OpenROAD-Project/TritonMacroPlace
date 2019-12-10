@@ -64,7 +64,7 @@ namespace parquetfp
            BBox termBBox;
            void buildTermBBox(void);
 
-           uofm::vector<Point> _scaledLocs;
+           std::vector<Point> _scaledLocs;
            void scaleTerminals(void);
 
            inline float getScaledX(const Node& node) const
@@ -79,8 +79,8 @@ namespace parquetfp
 
        public:
            bool successAR;
-           DB(const uofm::string &baseName);
-	   DB(DB* db, uofm::vector<int>& subBlocksIndices, Point& dbLoc, float reqdAR);
+           DB(const std::string &baseName);
+	   DB(DB* db, std::vector<int>& subBlocksIndices, Point& dbLoc, float reqdAR);
            DB();
 
            //makes a copy of db2. compresses multiple 2-pin nets
@@ -102,10 +102,10 @@ namespace parquetfp
            unsigned getNumObstacles(void) const;
            void addObstacles(Nodes *obstacles, float obstacleFrame[2]);
 
-           uofm::vector<float> getNodeWidths() const;
-           uofm::vector<float> getNodeHeights() const;
-           uofm::vector<float> getXLocs() const;
-           uofm::vector<float> getYLocs() const;
+           std::vector<float> getNodeWidths() const;
+           std::vector<float> getNodeHeights() const;
+           std::vector<float> getXLocs() const;
+           std::vector<float> getYLocs() const;
 
            // hhchan: more efficient (safer) getters 
            inline float getNodeArea(unsigned index) const;
@@ -146,9 +146,9 @@ namespace parquetfp
            enum Corner {BOTTOM, TOP, LEFT, RIGHT,
                         BOTTOM_LEFT, BOTTOM_RIGHT, TOP_LEFT, TOP_RIGHT,
                         LEFT_BOTTOM, RIGHT_BOTTOM, LEFT_TOP, RIGHT_TOP, NUM_CORNERS};
-           inline static uofm::string toString(Corner corner);
-           void packToCorner(uofm::vector< uofm::vector<float> >& xlocsAt,
-                   uofm::vector< uofm::vector<float> >& ylocsAt) const;
+           inline static std::string toString(Corner corner);
+           void packToCorner(std::vector< std::vector<float> >& xlocsAt,
+                   std::vector< std::vector<float> >& ylocsAt) const;
 
            // optimize HPWL by the corner
 #ifdef USEFLUTE
@@ -174,11 +174,11 @@ namespace parquetfp
            inline bool updateNodeDimensions(int index,
                    float width, float height);
 
-           void updatePlacement(const uofm::vector<float>& xloc,
-                   const uofm::vector<float>& yloc);
+           void updatePlacement(const std::vector<float>& xloc,
+                   const std::vector<float>& yloc);
            void initPlacement(const Point& loc);      
-           void updateSlacks(const uofm::vector<float>& xSlack,
-                   const uofm::vector<float>& ySlack);
+           void updateSlacks(const std::vector<float>& xSlack,
+                   const std::vector<float>& ySlack);
 
            // plot in gnuplot format
            void plot(const char* fileName, float area, float whitespace, float aspectRatio,
@@ -378,7 +378,7 @@ namespace parquetfp
          return false;
    }
    // -----------------------------------------------------
-   uofm::string DB::toString(DB::Corner corner)
+   std::string DB::toString(DB::Corner corner)
    {
       switch (corner)
       {

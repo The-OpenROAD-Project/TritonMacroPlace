@@ -176,7 +176,7 @@ double MaxMem::getPeak() const
   return _peak;
 }
 
-const uofm::string &MaxMem::getMessage() const
+const std::string &MaxMem::getMessage() const
 {
   return _message;
 }

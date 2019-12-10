@@ -45,8 +45,8 @@ class NetType
 public:
    class PinType;
    class PadType;
-   NetType(const uofm::vector<PinType>& newPins,
-           const uofm::vector<PadType>& newPads)
+   NetType(const std::vector<PinType>& newPins,
+           const std::vector<PadType>& newPads)
       : pins(in_pins),
         pads(in_pads),
         in_pins(newPins),
@@ -55,8 +55,8 @@ public:
    inline NetType(const NetType& newNet);
    inline void operator =(const NetType& newNet);
 
-   const uofm::vector<PinType>& pins;
-   const uofm::vector<PadType>& pads;
+   const std::vector<PinType>& pins;
+   const std::vector<PadType>& pads;
 
    float getHPWL(const OrientedPacking& pk) const;
 
@@ -76,8 +76,8 @@ public:
    };
 
 private:
-   uofm::vector<PinType> in_pins;
-   uofm::vector<PadType> in_pads;
+   std::vector<PinType> in_pins;
+   std::vector<PadType> in_pads;
 
    inline void getOffsets(float orig_x_offset,
                           float orig_y_offset,
@@ -93,29 +93,29 @@ public:
                       const HardBlockInfoType& blockinfo);
 
    class PadInfoType;
-   const uofm::vector<NetType>& nets;
-   const uofm::vector<PadInfoType>& padinfo;
+   const std::vector<NetType>& nets;
+   const std::vector<PadInfoType>& padinfo;
    inline float getHPWL(const OrientedPacking& pk) const;
 
    class PadInfoType
    {
    public:
-      uofm::string pad_name;
+      std::string pad_name;
       float xloc;
       float yloc;
    };
 
 private:
-   uofm::vector<NetType> in_nets;
-   uofm::vector<PadInfoType> in_all_pads;
+   std::vector<NetType> in_nets;
+   std::vector<PadInfoType> in_all_pads;
 
    void ParsePl(std::ifstream& infile,
                 const HardBlockInfoType& blockinfo);
    void ParseNets(std::ifstream& infile,
                   const HardBlockInfoType& blockinfo);
-   inline void get_index(const uofm::string& name,
-                         uofm::vector<int>& indices) const;
-   inline int get_index(const uofm::string& name,
+   inline void get_index(const std::string& name,
+                         std::vector<int>& indices) const;
+   inline int get_index(const std::string& name,
                         const HardBlockInfoType& blockinfo) const;
 
    NetListType(const NetListType&);
@@ -150,7 +150,7 @@ inline float NetListType::getHPWL(const OrientedPacking& pk) const
    return HPWL;
 }
 // --------------------------------------------------------
-inline int NetListType::get_index(const uofm::string& name,
+inline int NetListType::get_index(const std::string& name,
                                   const HardBlockInfoType& blockinfo) const
 {
    for (int i = 0; i < blockinfo.blocknum(); i++)
@@ -159,13 +159,13 @@ inline int NetListType::get_index(const uofm::string& name,
    return -1;
 }
 // --------------------------------------------------------
-inline void NetListType::get_index(const uofm::string& name,
-                                   uofm::vector<int>& indices) const
+inline void NetListType::get_index(const std::string& name,
+                                   std::vector<int>& indices) const
 {
    indices.clear();
    for (unsigned int i = 0; i < in_all_pads.size(); i++)
    {
-      const uofm::string& this_pad_name = in_all_pads[i].pad_name;
+      const std::string& this_pad_name = in_all_pads[i].pad_name;
       int pos = this_pad_name.find(name, 0);     
       if (pos == 0)
       {

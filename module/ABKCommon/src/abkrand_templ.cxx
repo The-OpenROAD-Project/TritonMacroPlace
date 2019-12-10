@@ -99,12 +99,12 @@ std::pair<double,double> RandomNormCorrPairsT<RK>::getPair()
 }
 template<class RK>
 bool RandomNormCorrTuplesT<RK>::
-_findBasis(const uofm::vector<uofm::vector<double> > &_rho_ij,
-            uofm::vector<uofm::vector<double> > &_v_ij)
+_findBasis(const std::vector<std::vector<double> > &_rho_ij,
+            std::vector<std::vector<double> > &_v_ij)
 {
     _v_ij.clear();
     const unsigned n=_rho_ij.size()+1;
-    uofm::vector<double> zeros(n,0);
+    std::vector<double> zeros(n,0);
     _v_ij.insert(_v_ij.end(),n,zeros);
     _v_ij[0][0]=1;
     unsigned i,j,k;
@@ -127,11 +127,11 @@ _findBasis(const uofm::vector<uofm::vector<double> > &_rho_ij,
         }
 
         if (sumsq >= 1) return false; //If sumsq>1, can't get new
-                                      //length-1 uofm::vector with correct
+                                      //length-1 std::vector with correct
                                       //correlations; if sumsq==1, could,
                                       //but vecs would be lin. dep.
 
-        _v_ij[i][i] = sqrt(1-sumsq); //make uofm::vector have length 1
+        _v_ij[i][i] = sqrt(1-sumsq); //make std::vector have length 1
 
     }
 
@@ -148,14 +148,14 @@ RandomNormCorrTuplesT<RK>::~RandomNormCorrTuplesT()
 
 template<class RK>
 RandomNormCorrTuplesT<RK>::
-   RandomNormCorrTuplesT(const uofm::vector<double> &means,
-                         const uofm::vector<double> &stdDevs,
+   RandomNormCorrTuplesT(const std::vector<double> &means,
+                         const std::vector<double> &stdDevs,
 
                          //Note:  corrs[i][j] is the desired
                          //correlation between X_i and
                          //X_{i+j+1} (i.e. only upper-triangular
                          //elements are included
-                         const uofm::vector<uofm::vector<double> > &corrs,
+                         const std::vector<std::vector<double> > &corrs,
                          const char *locIdent,
                          unsigned counterOverride,
                          Verbosity verb):_n(means.size()),
@@ -187,7 +187,7 @@ RandomNormCorrTuplesT<RK>::
     _bad=!success;
 }
 template<class RK>
-void RandomNormCorrTuplesT<RK>::getTuple(uofm::vector<double> &tuple)
+void RandomNormCorrTuplesT<RK>::getTuple(std::vector<double> &tuple)
 {
     abkfatal(tuple.size()==_n,"Bad tuple size");
     abkfatal(!_bad,"Attempt to get tuple from bad RNG");
@@ -198,7 +198,7 @@ void RandomNormCorrTuplesT<RK>::getTuple(uofm::vector<double> &tuple)
     for (i=0;i<_n;i++)
     {
         double val=0;
-        const uofm::vector<double> &v_i=_v_ij[i];
+        const std::vector<double> &v_i=_v_ij[i];
         for (j=0;j<=i;j++)
             val += v_i[j]*_y_j[j];
         val *= _sigma_i[i];

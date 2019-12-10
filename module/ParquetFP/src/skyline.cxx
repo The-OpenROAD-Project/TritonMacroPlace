@@ -79,7 +79,7 @@ void Skyline::print() {
 // This function returns skyline for a given array of buildings 
 // arr[l..h].  This function is similar to mergeSort(). 
 Skyline *findSkyline(
-    uofm::vector<SkylineContour::BTreeNode>& arr, 
+    std::vector<SkylineContour::BTreeNode>& arr, 
     int l, int h) {
 
   if (l == h) { 
@@ -282,7 +282,7 @@ void SkylineContour::Clear() {
     skyline_ = 0;
   }
   width_ = height_ = 0;
-  uofm::vector<BTreeNode>().swap(bTreeInfo_);
+  std::vector<BTreeNode>().swap(bTreeInfo_);
 }
 
 

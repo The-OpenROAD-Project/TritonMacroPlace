@@ -39,7 +39,7 @@
 
 using std::cout;
 using std::endl;
-using uofm::vector;
+using std::vector;
 
 int main()
 {

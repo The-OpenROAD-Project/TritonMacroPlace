@@ -42,12 +42,12 @@
 
 using namespace basepacking_h;
 using std::ofstream;
-using uofm::string;
+using std::string;
 using std::max;
 using std::min;
 using std::cout;
 using std::endl;
-using uofm::vector;
+using std::vector;
 
 
 
@@ -957,7 +957,7 @@ void BTree::save_bbb(const string& filename) const
    outfile << endl;
 }
 
-void BTree::save_dot(const uofm::string& fileName) const {
+void BTree::save_dot(const std::string& fileName) const {
   std::filebuf fb;
   fb.open( fileName.c_str(), std::ios::out );
   std::ostream outs (&fb);
@@ -989,7 +989,7 @@ void BTree::save_dot(const uofm::string& fileName) const {
   fb.close();
 }
 
-void BTree::save_plot(const uofm::string& fileName) const {
+void BTree::save_plot(const std::string& fileName) const {
   using std::endl;
   std::filebuf fb;
   fb.open( fileName.c_str(), std::ios::out );

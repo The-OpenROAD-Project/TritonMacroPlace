@@ -42,20 +42,20 @@
 class MixedBlockInfoType
 {
 public:
-   MixedBlockInfoType(const uofm::string& blocksfilename,
-                      const uofm::string& format); // "blocks" or "txt"
+   MixedBlockInfoType(const std::string& blocksfilename,
+                      const std::string& format); // "blocks" or "txt"
    virtual ~MixedBlockInfoType() {}
    
    class BlockARInfo
    {
    public:
       float area;
-      uofm::vector<float> maxAR; // maxAR/minAR for the "North" orientation
-      uofm::vector<float> minAR;
+      std::vector<float> maxAR; // maxAR/minAR for the "North" orientation
+      std::vector<float> minAR;
       bool isSoft;
    };
    const HardBlockInfoType& currDimensions;
-   const uofm::vector<BlockARInfo>& blockARinfo;
+   const std::vector<BlockARInfo>& blockARinfo;
    static const int Orient_Num; // = HardBlockInfoType::Orient_Num;
 
    inline void setBlockDimensions(int index, float newWidth, float newHeight,
@@ -63,7 +63,7 @@ public:
 
 protected:
    HardBlockInfoType _currDimensions;
-   uofm::vector<BlockARInfo> _blockARinfo;
+   std::vector<BlockARInfo> _blockARinfo;
 
    void ParseBlocks(std::ifstream& input);
    void ParseTxt(std::ifstream& input);

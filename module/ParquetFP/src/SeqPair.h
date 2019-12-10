@@ -46,8 +46,8 @@ namespace parquetfp
    class SeqPair
    {
    private:
-      uofm::vector<unsigned> _XX;         //seqPair in the X direction
-      uofm::vector<unsigned> _YY;         //seqPair in the Y direction
+      std::vector<unsigned> _XX;         //seqPair in the X direction
+      std::vector<unsigned> _YY;         //seqPair in the Y direction
 
    public:
       // empty sequence-pair
@@ -57,13 +57,13 @@ namespace parquetfp
       SeqPair(unsigned size);
 
       // sequence-pair (X, Y)
-      SeqPair(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y);
+      SeqPair(const std::vector<unsigned>& X, const std::vector<unsigned>& Y);
 
-      inline const uofm::vector<unsigned>& getX() const;
-      inline const uofm::vector<unsigned>& getY() const;
+      inline const std::vector<unsigned>& getX() const;
+      inline const std::vector<unsigned>& getY() const;
   
-      inline void putX(const uofm::vector<unsigned>& X);
-      inline void putY(const uofm::vector<unsigned>& Y);
+      inline void putX(const std::vector<unsigned>& X);
+      inline void putY(const std::vector<unsigned>& Y);
 
       inline void printX(void) const;
       inline void printY(void) const;
@@ -72,16 +72,16 @@ namespace parquetfp
    };
 
    // -----IMPLEMENTATIONS-----
-   const uofm::vector<unsigned>& SeqPair::getX(void) const
+   const std::vector<unsigned>& SeqPair::getX(void) const
    {   return _XX; }
 
-   const uofm::vector<unsigned>& SeqPair::getY(void) const
+   const std::vector<unsigned>& SeqPair::getY(void) const
    {   return _YY; }
 
-   void SeqPair::putX(const uofm::vector<unsigned>& X)
+   void SeqPair::putX(const std::vector<unsigned>& X)
    { _XX = X; }
 
-   void SeqPair::putY(const uofm::vector<unsigned>& Y)
+   void SeqPair::putY(const std::vector<unsigned>& Y)
    { _YY = Y; }
 
    unsigned SeqPair::getSize(void) const

@@ -51,13 +51,13 @@
 
 class BitBoard  
 {
-       uofm::vector<unsigned> _bitIndicesSet;
+       std::vector<unsigned> _bitIndicesSet;
        bit_vector       _boardSpace;
 
     public:
 
        BitBoard(unsigned size): _boardSpace(size,false) {}
-       const uofm::vector<unsigned>& getIndicesOfSetBits() const
+       const std::vector<unsigned>& getIndicesOfSetBits() const
        { return _bitIndicesSet; }
        //To get the Indices of Bits which have been set to 1;
        const bit_vector& getBoardSpace() const
@@ -91,7 +91,7 @@ class BitBoard
 
        void clear()  
        { 
-               for(uofm::vector<unsigned>::iterator it= _bitIndicesSet.begin();
+               for(std::vector<unsigned>::iterator it= _bitIndicesSet.begin();
                                          it!=_bitIndicesSet.end(); it++)
           _boardSpace[*it]=false;
           _bitIndicesSet.clear(); 

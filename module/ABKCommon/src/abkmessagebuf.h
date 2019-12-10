@@ -43,12 +43,12 @@
 class ABKMessageBuf
 {
  private:
-  std::priority_queue< std::pair<unsigned,uofm::string> > *_buf;
+  std::priority_queue< std::pair<unsigned,std::string> > *_buf;
 
  public:
 
   ABKMessageBuf(void);
-  void addMessage(unsigned priority, const uofm::string &msg);
+  void addMessage(unsigned priority, const std::string &msg);
   void print(std::ostream& out);
 };
 

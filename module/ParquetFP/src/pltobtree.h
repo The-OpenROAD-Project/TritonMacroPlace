@@ -43,29 +43,29 @@ class Pl2BTree
 public:
    enum AlgoType {HEURISTIC, TCG};
 
-   inline Pl2BTree(const uofm::vector<float>& n_xloc,
-                   const uofm::vector<float>& n_yloc,
-                   const uofm::vector<float>& n_widths,
-                   const uofm::vector<float>& n_heights,
+   inline Pl2BTree(const std::vector<float>& n_xloc,
+                   const std::vector<float>& n_yloc,
+                   const std::vector<float>& n_widths,
+                   const std::vector<float>& n_heights,
                    AlgoType algo);
 
-   inline const uofm::vector<BTree::BTreeNode>& btree() const;
-   inline const uofm::vector<int>& getXX() const;
-   inline const uofm::vector<int>& getYY() const;
+   inline const std::vector<BTree::BTreeNode>& btree() const;
+   inline const std::vector<int>& getXX() const;
+   inline const std::vector<int>& getYY() const;
    
    static const float Infty;
    static const int Undefined; // = basepacking_h::Dimension::Undefined;
    static const float Epsilon_Accuracy; // = basepacking_h::Dimension::Epsilon_Accuracy;
    
 private:
-   const uofm::vector<float>& _xloc;
-   const uofm::vector<float>& _yloc;
-   const uofm::vector<float>& _widths;
-   const uofm::vector<float>& _heights;
+   const std::vector<float>& _xloc;
+   const std::vector<float>& _yloc;
+   const std::vector<float>& _widths;
+   const std::vector<float>& _heights;
    const int _blocknum;
    const float _epsilon;
 
-   uofm::vector<BTree::BTreeNode> _btree;
+   std::vector<BTree::BTreeNode> _btree;
 
    inline void initializeTree();
    inline float get_epsilon() const;
@@ -95,11 +95,11 @@ private:
    class ValidCriterion // only compare relevant elements
    {
    public:
-      inline ValidCriterion(const uofm::vector<BuildTreeRecord>& new_btr_vec);
+      inline ValidCriterion(const std::vector<BuildTreeRecord>& new_btr_vec);
       bool operator ()(const BuildTreeRecord& btr1,
                        const BuildTreeRecord& btr2) const;
       
-      const uofm::vector<BuildTreeRecord>& btr_vec;
+      const std::vector<BuildTreeRecord>& btr_vec;
    };
    
    void heuristic_build_tree();   
@@ -107,22 +107,22 @@ private:
    
    // tcg-based algo, always work
    int _count;
-   uofm::vector<int> _XX;
-   uofm::vector<int> _YY;
+   std::vector<int> _XX;
+   std::vector<int> _YY;
    void TCG_build_tree();
 
    // DP to find TCG
-   void TCG_DP(uofm::vector< uofm::vector <bool> >& TCGMatrix); 
-   void TCGDfs(uofm::vector< uofm::vector <bool> >& TCGMatrix, 
-               const uofm::vector< uofm::vector <bool> >& adjMatrix,
+   void TCG_DP(std::vector< std::vector <bool> >& TCGMatrix); 
+   void TCGDfs(std::vector< std::vector <bool> >& TCGMatrix, 
+               const std::vector< std::vector <bool> >& adjMatrix,
                int v, 
-               uofm::vector<int>& pre);
+               std::vector<int>& pre);
 
    class SPXRelation
    {
    public:
-      SPXRelation(const uofm::vector< uofm::vector<bool> >& TCGMatrixHorizIP, 
-                  const uofm::vector< uofm::vector<bool> >& TCGMatrixVertIP)
+      SPXRelation(const std::vector< std::vector<bool> >& TCGMatrixHorizIP, 
+                  const std::vector< std::vector<bool> >& TCGMatrixVertIP)
          : TCGMatrixHoriz(TCGMatrixHorizIP),
            TCGMatrixVert(TCGMatrixVertIP)
          {}
@@ -130,15 +130,15 @@ private:
       inline bool operator ()(int i, int j) const;
          
    private:
-      const uofm::vector< uofm::vector<bool> >& TCGMatrixHoriz;
-      const uofm::vector< uofm::vector<bool> >& TCGMatrixVert;      
+      const std::vector< std::vector<bool> >& TCGMatrixHoriz;
+      const std::vector< std::vector<bool> >& TCGMatrixVert;      
    };
 
    class SPYRelation
    {
    public:
-      SPYRelation(const uofm::vector< uofm::vector<bool> >& TCGMatrixHorizIP, 
-                  const uofm::vector< uofm::vector<bool> >& TCGMatrixVertIP)
+      SPYRelation(const std::vector< std::vector<bool> >& TCGMatrixHorizIP, 
+                  const std::vector< std::vector<bool> >& TCGMatrixVertIP)
          : TCGMatrixHoriz(TCGMatrixHorizIP),
            TCGMatrixVert(TCGMatrixVertIP)
          {}
@@ -146,8 +146,8 @@ private:
       inline bool operator ()(int i, int j) const;
 
    private:
-      const uofm::vector< uofm::vector<bool> >& TCGMatrixHoriz;
-      const uofm::vector< uofm::vector<bool> >& TCGMatrixVert;      
+      const std::vector< std::vector<bool> >& TCGMatrixHoriz;
+      const std::vector< std::vector<bool> >& TCGMatrixVert;      
    };
 };
 // --------------------------------------------------------
@@ -155,10 +155,10 @@ private:
 // ===============
 // IMPLEMENTATIONS
 // ===============
-Pl2BTree::Pl2BTree(const uofm::vector<float>& n_xloc,
-                   const uofm::vector<float>& n_yloc,
-                   const uofm::vector<float>& n_widths,
-                   const uofm::vector<float>& n_heights,
+Pl2BTree::Pl2BTree(const std::vector<float>& n_xloc,
+                   const std::vector<float>& n_yloc,
+                   const std::vector<float>& n_widths,
+                   const std::vector<float>& n_heights,
                    Pl2BTree::AlgoType algo)
    : _xloc(n_xloc),
      _yloc(n_yloc),
@@ -222,17 +222,17 @@ float Pl2BTree::get_epsilon() const
    return ep;
 }
 // --------------------------------------------------------
-const uofm::vector<BTree::BTreeNode>& Pl2BTree::btree() const
+const std::vector<BTree::BTreeNode>& Pl2BTree::btree() const
 {   return _btree; }
 // --------------------------------------------------------
-const uofm::vector<int>& Pl2BTree::getXX() const
+const std::vector<int>& Pl2BTree::getXX() const
 {   return _XX; }
 // --------------------------------------------------------
-const uofm::vector<int>& Pl2BTree::getYY() const
+const std::vector<int>& Pl2BTree::getYY() const
 {   return _YY; }
 // --------------------------------------------------------
 Pl2BTree::ValidCriterion::ValidCriterion(
-   const uofm::vector<BuildTreeRecord>& new_btr_vec)
+   const std::vector<BuildTreeRecord>& new_btr_vec)
    : btr_vec(new_btr_vec)
 {}
 // --------------------------------------------------------

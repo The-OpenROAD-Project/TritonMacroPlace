@@ -41,7 +41,7 @@
 
 using std::cout;
 using std::endl;
-using uofm::vector;
+using std::vector;
 
 const float ShiftLegalizer::Infty = basepacking_h::Dimension::Infty;
 const int ShiftLegalizer::Undefined = basepacking_h::Dimension::Undefined;

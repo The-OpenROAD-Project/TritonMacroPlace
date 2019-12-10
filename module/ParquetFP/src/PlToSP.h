@@ -47,18 +47,18 @@ namespace parquetfp
    class Pl2SP
    {
    private:
-      uofm::vector<float> _xloc;
-      uofm::vector<float> _yloc;
-      uofm::vector<float> _widths;
-      uofm::vector<float> _heights;
+      std::vector<float> _xloc;
+      std::vector<float> _yloc;
+      std::vector<float> _widths;
+      std::vector<float> _heights;
 
-      uofm::vector<unsigned> _XX;
-      uofm::vector<unsigned> _YY;
+      std::vector<unsigned> _XX;
+      std::vector<unsigned> _YY;
 
       int _cnt;
    public:
-      Pl2SP(uofm::vector<float>& xloc, uofm::vector<float>& yloc, uofm::vector<float>& widths,
-            uofm::vector<float>& heights, PL2SP_ALGO whichAlgo);
+      Pl2SP(std::vector<float>& xloc, std::vector<float>& yloc, std::vector<float>& widths,
+            std::vector<float>& heights, PL2SP_ALGO whichAlgo);
 
       ~Pl2SP() {}
     
@@ -66,20 +66,20 @@ namespace parquetfp
       void TCGAlgo(void);
 
       //Floyd Marshal to find TCG
-      void TCG_FM(uofm::vector< uofm::vector <bool> >& TCGMatrixHoriz, 
-                  uofm::vector< uofm::vector <bool> >& TCGMatrixVert);
+      void TCG_FM(std::vector< std::vector <bool> >& TCGMatrixHoriz, 
+                  std::vector< std::vector <bool> >& TCGMatrixVert);
 
       //DP to find TCG
-      void TCG_DP(uofm::vector< uofm::vector <bool> >& TCGMatrixHoriz, 
-                  uofm::vector< uofm::vector <bool> >& TCGMatrixVert);
-      void TCGDfs(uofm::vector< uofm::vector <bool> >& TCGMatrix, 
-                  uofm::vector< uofm::vector <bool> >& adjMatrix, int v, 
-                  uofm::vector<int>& pre);
+      void TCG_DP(std::vector< std::vector <bool> >& TCGMatrixHoriz, 
+                  std::vector< std::vector <bool> >& TCGMatrixVert);
+      void TCGDfs(std::vector< std::vector <bool> >& TCGMatrix, 
+                  std::vector< std::vector <bool> >& adjMatrix, int v, 
+                  std::vector<int>& pre);
 
-      const uofm::vector<unsigned>& getXSP(void) const
+      const std::vector<unsigned>& getXSP(void) const
          { return _XX; }
      
-      const uofm::vector<unsigned>& getYSP(void) const
+      const std::vector<unsigned>& getYSP(void) const
          { return _YY; }
 
       void print(void) const;
@@ -101,12 +101,12 @@ namespace parquetfp
 
    class SPXRelation
    {
-      const uofm::vector< uofm::vector<bool> >& TCGMatrixHoriz;
-      const uofm::vector< uofm::vector<bool> >& TCGMatrixVert;
+      const std::vector< std::vector<bool> >& TCGMatrixHoriz;
+      const std::vector< std::vector<bool> >& TCGMatrixVert;
 
    public:
-      SPXRelation(const uofm::vector< uofm::vector<bool> >& TCGMatrixHorizIP, 
-                  const uofm::vector< uofm::vector<bool> >& TCGMatrixVertIP) : 
+      SPXRelation(const std::vector< std::vector<bool> >& TCGMatrixHorizIP, 
+                  const std::vector< std::vector<bool> >& TCGMatrixVertIP) : 
          TCGMatrixHoriz(TCGMatrixHorizIP), TCGMatrixVert(TCGMatrixVertIP)
          {}
 
@@ -149,12 +149,12 @@ namespace parquetfp
 
    class SPYRelation
    {
-      const uofm::vector< uofm::vector<bool> >& TCGMatrixHoriz;
-      const uofm::vector< uofm::vector<bool> >& TCGMatrixVert;
+      const std::vector< std::vector<bool> >& TCGMatrixHoriz;
+      const std::vector< std::vector<bool> >& TCGMatrixVert;
 
    public:
-      SPYRelation(const uofm::vector< uofm::vector<bool> >& TCGMatrixHorizIP, 
-                  const uofm::vector< uofm::vector<bool> >& TCGMatrixVertIP) : 
+      SPYRelation(const std::vector< std::vector<bool> >& TCGMatrixHorizIP, 
+                  const std::vector< std::vector<bool> >& TCGMatrixVertIP) : 
          TCGMatrixHoriz(TCGMatrixHorizIP), TCGMatrixVert(TCGMatrixVertIP)
          {}
       bool operator()(const unsigned i, const unsigned j) const

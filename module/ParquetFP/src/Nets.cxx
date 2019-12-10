@@ -38,7 +38,7 @@
 
 using namespace parquetfp;
 using std::map;
-using uofm::string;
+using std::string;
 using std::vector;
 using std::cout;
 using std::endl;

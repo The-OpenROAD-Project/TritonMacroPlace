@@ -155,7 +155,7 @@ class MaxMem
    double      _peak;
    double      _initialMinFaults;
    double      _initialMajFaults;
-   uofm::string _message;
+   std::string _message;
 
 public:
    MaxMem(void); 
@@ -164,7 +164,7 @@ public:
    bool printExtra() const;
    void setPrintExtra(bool print);
    double getPeak() const;
-   const uofm::string &getMessage() const;
+   const std::string &getMessage() const;
 };
 
 std::ostream& operator<<(std::ostream&, const MaxMem&);

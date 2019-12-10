@@ -46,8 +46,8 @@ namespace parquetfp
 {
  
    class Nodes;
-   typedef uofm::vector<Net>::iterator itNet;
-   typedef uofm::vector<Net>::const_iterator itNetConst;
+   typedef std::vector<Net>::iterator itNet;
+   typedef std::vector<Net>::const_iterator itNetConst;
 
    struct eqstr
    {
@@ -60,20 +60,20 @@ namespace parquetfp
    class Nets
    {
    private:
-      uofm::vector<Net> _nets;
-      hash_map<uofm::string, int, hash<uofm::string>, equal_to<uofm::string> > _name2IdxMap;
+      std::vector<Net> _nets;
+      hash_map<std::string, int, hash<std::string>, equal_to<std::string> > _name2IdxMap;
 
    public:
-      Nets(const uofm::string &baseName);
+      Nets(const std::string &baseName);
       Nets()
          {}
 
       void clean(void)
          { _nets.clear(); }
 
-      void parseNets(const uofm::string &fnameNets);
+      void parseNets(const std::string &fnameNets);
 
-      void parseWts(const uofm::string &fnameWts);
+      void parseWts(const std::string &fnameWts);
 
       void updateNodeInfo(Nodes& nodes);
 
@@ -106,8 +106,8 @@ namespace parquetfp
          { return _nets.size(); }
 
       void initName2IdxMap(void);
-      void putName2IdxEntry(uofm::string netName, int idx);
-      int getIdxFrmName(uofm::string netName);
+      void putName2IdxEntry(std::string netName, int idx);
+      int getIdxFrmName(std::string netName);
    };
 }
 

@@ -58,7 +58,7 @@ int main()
    Verbosity verbsty2(6,3,2,0,4,1,0); 
    cout << verbsty2 << endl;
 
-   uofm::vector<unsigned> levs(4,0);
+   std::vector<unsigned> levs(4,0);
    //std::iota(levs.begin(),levs.end(),2);
    {for (unsigned i=0;i<4;i++) levs[i]=i+2;}
    Verbosity verbsty1(levs);    

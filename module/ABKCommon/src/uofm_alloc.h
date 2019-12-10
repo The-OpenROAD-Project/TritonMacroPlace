@@ -128,24 +128,24 @@ bool operator!=(const malloc_allocation<T1>&, const malloc_allocation<T2>&)
 #include <string>
 #include <sstream>
 
-namespace uofm
-{
-   template<typename T> class vector : public std::vector<T, malloc_allocation<T> >
-   {
-   public:
-     typedef std::vector<T, malloc_allocation<T> > stlvector;
-     explicit vector() : stlvector() {}
-     explicit vector(size_t n, const T& val = T()) : stlvector(n,val) {}
-     template<class In> vector(In first, In last) : stlvector(first,last) {}
-   };
-
-   typedef std::basic_string<char,std::char_traits<char>,malloc_allocation<char> > string;
-
-   typedef std::basic_stringstream<char,std::char_traits<char>,malloc_allocation<char> > stringstream;
-
-   typedef std::basic_ostringstream<char,std::char_traits<char>,malloc_allocation<char> > ostringstream;
-
-   typedef std::basic_istringstream<char,std::char_traits<char>,malloc_allocation<char> > istringstream;
-}
+//namespace std
+//{
+//   template<typename T> class vector : public std::vector<T, malloc_allocation<T> >
+//   {
+//   public:
+//     typedef std::vector<T, malloc_allocation<T> > stlvector;
+//     explicit vector() : stlvector() {}
+//     explicit vector(size_t n, const T& val = T()) : stlvector(n,val) {}
+//     template<class In> vector(In first, In last) : stlvector(first,last) {}
+//   };
+//
+//   typedef std::basic_string<char,std::char_traits<char>,malloc_allocation<char> > string;
+//
+//   typedef std::basic_stringstream<char,std::char_traits<char>,malloc_allocation<char> > stringstream;
+//
+//   typedef std::basic_ostringstream<char,std::char_traits<char>,malloc_allocation<char> > ostringstream;
+//
+//   typedef std::basic_istringstream<char,std::char_traits<char>,malloc_allocation<char> > istringstream;
+//}
 
 #endif

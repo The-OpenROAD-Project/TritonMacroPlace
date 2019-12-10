@@ -61,11 +61,11 @@ namespace parquetfp
         private: 
             bool _active; //not active means always compute when asked
             bool _pinOffsetsSetup; 
-            uofm::vector<bool> _computedPinOffset;
-            uofm::vector< float > _pinOffsetx;
-            uofm::vector< float > _pinOffsety;
-            uofm::vector<unsigned> _netOffsetIntoPinArray;
-            uofm::vector<bool> _nodeHard;
+            std::vector<bool> _computedPinOffset;
+            std::vector< float > _pinOffsetx;
+            std::vector< float > _pinOffsety;
+            std::vector<unsigned> _netOffsetIntoPinArray;
+            std::vector<bool> _nodeHard;
             
             mutable unsigned hits;
             mutable unsigned misses;
@@ -123,8 +123,8 @@ namespace parquetfp
 
         if(!_pinOffsetsSetup)
         {
-          uofm::stringstream ss;
-          uofm::string msg("Trying to invalidate a pin offset before cache is set up");
+          std::stringstream ss;
+          std::string msg("Trying to invalidate a pin offset before cache is set up");
           ss<<" in pin cache "<<inst<<endl;   
           msg+=ss.str();
           abkfatal(_pinOffsetsSetup, msg.c_str());

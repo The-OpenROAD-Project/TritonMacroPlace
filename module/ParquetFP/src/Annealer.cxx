@@ -44,7 +44,7 @@ using namespace parquetfp;
 using std::numeric_limits;
 using std::cout;
 using std::endl;
-using uofm::vector;
+using std::vector;
 
 #ifndef expf
 #define expf exp

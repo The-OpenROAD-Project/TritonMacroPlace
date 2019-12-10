@@ -305,7 +305,7 @@ Command_Line::Command_Line (int argc, const char *argv[])
    StringParam outline("outline", argc, argv);
    if(outline.found())
    {
-     uofm::stringstream strstream;
+     std::stringstream strstream;
      strstream << outline;
      strstream >> nonTrivialOutline;
      scaleTerms = false;     

@@ -39,7 +39,7 @@
 #include <cmath>
 
 using namespace parquetfp;
-using uofm::vector;
+using std::vector;
 
 AnalytSolve::AnalytSolve(Command_Line* params, DB* db)
 	   :_params(params), _db(db)

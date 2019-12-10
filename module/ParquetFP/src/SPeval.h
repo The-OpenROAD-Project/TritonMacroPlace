@@ -47,55 +47,55 @@ namespace parquetfp
    {
    private:
       //buffers go in here
-      uofm::vector<unsigned> _match;
-      uofm::vector<unsigned> _reverseXX;
-      uofm::vector<unsigned> _reverseYY;
-      uofm::vector<float> _LL;      
-      uofm::vector<float> _heights;
-      uofm::vector<float> _widths;
-      uofm::vector<float> _xlocRev;
-      uofm::vector<float> _ylocRev;
+      std::vector<unsigned> _match;
+      std::vector<unsigned> _reverseXX;
+      std::vector<unsigned> _reverseYY;
+      std::vector<float> _LL;      
+      std::vector<float> _heights;
+      std::vector<float> _widths;
+      std::vector<float> _xlocRev;
+      std::vector<float> _ylocRev;
       std::map<unsigned , float> _BST;  //for the O(nlogn) algo
 
-      uofm::vector< uofm::vector<bool> > _TCGMatrixHoriz;
-      uofm::vector< uofm::vector<bool> > _TCGMatrixVert;
+      std::vector< std::vector<bool> > _TCGMatrixHoriz;
+      std::vector< std::vector<bool> > _TCGMatrixVert;
 
-      float _lcsCompute(const uofm::vector<unsigned>& X,
-                        const uofm::vector<unsigned>& Y,
-                        const uofm::vector<float>& weights,
-                        uofm::vector<unsigned>& match,
-                        uofm::vector<float>& P,
-                        uofm::vector<float>& L
+      float _lcsCompute(const std::vector<unsigned>& X,
+                        const std::vector<unsigned>& Y,
+                        const std::vector<float>& weights,
+                        std::vector<unsigned>& match,
+                        std::vector<float>& P,
+                        std::vector<float>& L
          );
 
-      float _lcsReverseCompute(const uofm::vector<unsigned>& X,
-                               const uofm::vector<unsigned>& Y,
-                               const uofm::vector<float>& weights,
-                               uofm::vector<unsigned>& match,
-                               uofm::vector<float>& P,
-                               uofm::vector<float>& L
+      float _lcsReverseCompute(const std::vector<unsigned>& X,
+                               const std::vector<unsigned>& Y,
+                               const std::vector<float>& weights,
+                               std::vector<unsigned>& match,
+                               std::vector<float>& P,
+                               std::vector<float>& L
          );
   
-      float _lcsComputeCompact(const uofm::vector<unsigned>& X,
-                               const uofm::vector<unsigned>& Y,
-                               const uofm::vector<float>& weights,
-                               uofm::vector<unsigned>& match,
-                               uofm::vector<float>& P,
-                               uofm::vector<float>& L,
-                               uofm::vector<float>& oppLocs,
-                               uofm::vector<float>& oppWeights
+      float _lcsComputeCompact(const std::vector<unsigned>& X,
+                               const std::vector<unsigned>& Y,
+                               const std::vector<float>& weights,
+                               std::vector<unsigned>& match,
+                               std::vector<float>& P,
+                               std::vector<float>& L,
+                               std::vector<float>& oppLocs,
+                               std::vector<float>& oppWeights
          );
   
       //fast are for the O(nlog n) algo
       float _findBST(unsigned index); //see the paper for definitions
       void _discardNodesBST(unsigned index, float length);
 
-      float _lcsComputeFast(const uofm::vector<unsigned>& X,
-                             const uofm::vector<unsigned>& Y,
-                             const uofm::vector<float>& weights,
-                             uofm::vector<unsigned>& match,
-                             uofm::vector<float>& P,
-                             uofm::vector<float>& L
+      float _lcsComputeFast(const std::vector<unsigned>& X,
+                             const std::vector<unsigned>& Y,
+                             const std::vector<float>& weights,
+                             std::vector<unsigned>& match,
+                             std::vector<float>& P,
+                             std::vector<float>& L
          );
 
 
@@ -104,56 +104,56 @@ namespace parquetfp
       bool _paramUseFastSP;
 
    public:
-      uofm::vector<float> xloc;
-      uofm::vector<float> yloc;
-      uofm::vector<float> xlocRev;
-      uofm::vector<float> ylocRev;
+      std::vector<float> xloc;
+      std::vector<float> yloc;
+      std::vector<float> xlocRev;
+      std::vector<float> ylocRev;
       float xSize;
       float ySize;
-      uofm::vector<float> xSlacks;
-      uofm::vector<float> ySlacks;
+      std::vector<float> xSlacks;
+      std::vector<float> ySlacks;
 
 
-      SPeval(const uofm::vector<float>& heights,
-             const uofm::vector<float>& widths,
+      SPeval(const std::vector<float>& heights,
+             const std::vector<float>& widths,
              bool paramUseFastSP);
 
   
-      void evaluate(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y,
+      void evaluate(const std::vector<unsigned>& X, const std::vector<unsigned>& Y,
                     bool leftpack, bool botpack);      
-      void evalSlacks(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y);
-      void evaluateCompact(const uofm::vector<unsigned>& X,
-                           const uofm::vector<unsigned>& Y, 
+      void evalSlacks(const std::vector<unsigned>& X, const std::vector<unsigned>& Y);
+      void evaluateCompact(const std::vector<unsigned>& X,
+                           const std::vector<unsigned>& Y, 
                            bool whichDir, bool leftpack, bool botpack);
 
       //following are for evaluating with the O(nlog n) scheme
-      void evaluateFast(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y,
+      void evaluateFast(const std::vector<unsigned>& X, const std::vector<unsigned>& Y,
                         bool leftpack, bool botpack);
-      void evalSlacksFast(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y);
+      void evalSlacksFast(const std::vector<unsigned>& X, const std::vector<unsigned>& Y);
    private:
 
-      float xEval(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y,
-                  bool leftpack, uofm::vector<float>& xcoords);
-      float yEval(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y,
-                  bool botpack, uofm::vector<float>& ycoords);
-      float xEvalCompact(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y,
-                         bool leftpack, uofm::vector<float>& xcoords, uofm::vector<float>& ycoords);
-      float yEvalCompact(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y,
-                         bool botpack, uofm::vector<float>& xcoords, uofm::vector<float>& ycoords);
-      void computeConstraintGraphs(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y);
-      void removeRedundantConstraints(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y, bool knownDir);
-      void computeSPFromCG(uofm::vector<unsigned>& X, uofm::vector<unsigned>& Y);
+      float xEval(const std::vector<unsigned>& X, const std::vector<unsigned>& Y,
+                  bool leftpack, std::vector<float>& xcoords);
+      float yEval(const std::vector<unsigned>& X, const std::vector<unsigned>& Y,
+                  bool botpack, std::vector<float>& ycoords);
+      float xEvalCompact(const std::vector<unsigned>& X, const std::vector<unsigned>& Y,
+                         bool leftpack, std::vector<float>& xcoords, std::vector<float>& ycoords);
+      float yEvalCompact(const std::vector<unsigned>& X, const std::vector<unsigned>& Y,
+                         bool botpack, std::vector<float>& xcoords, std::vector<float>& ycoords);
+      void computeConstraintGraphs(const std::vector<unsigned>& X, const std::vector<unsigned>& Y);
+      void removeRedundantConstraints(const std::vector<unsigned>& X, const std::vector<unsigned>& Y, bool knownDir);
+      void computeSPFromCG(std::vector<unsigned>& X, std::vector<unsigned>& Y);
 
       //following are for evaluating with the O(nlog n) scheme
-      float xEvalFast(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y,
-                      bool leftpack, uofm::vector<float>& xcoords);
-      float yEvalFast(const uofm::vector<unsigned>& X, const uofm::vector<unsigned>& Y,
-                      bool botpack,  uofm::vector<float>& ycoords);
+      float xEvalFast(const std::vector<unsigned>& X, const std::vector<unsigned>& Y,
+                      bool leftpack, std::vector<float>& xcoords);
+      float yEvalFast(const std::vector<unsigned>& X, const std::vector<unsigned>& Y,
+                      bool botpack,  std::vector<float>& ycoords);
 
    public:
       //miscelleneous functions
-      void changeWidths(const uofm::vector<float>& widths);
-      void changeHeights(const uofm::vector<float>& heights);
+      void changeWidths(const std::vector<float>& widths);
+      void changeHeights(const std::vector<float>& heights);
       void changeNodeWidth(const unsigned index, float width);
       void changeNodeHeight(const unsigned index, float height);
       void changeOrient(unsigned index);

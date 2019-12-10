@@ -140,7 +140,7 @@ class SeedHandler
         static unsigned _externalSeed;
         static unsigned _progOverrideExternalSeed;
         
-        static std::map<uofm::string,unsigned>
+        static std::map<std::string,unsigned>
             _counters;
         
         static bool _loggingOff;            

@@ -55,7 +55,7 @@ namespace parquetfp
       DB *_oldDB;     //used in cluster
 
       BitBoard _nodesSeenBB;
-      uofm::vector<float> _numConnections;
+      std::vector<float> _numConnections;
 
    public:
 
@@ -69,7 +69,7 @@ namespace parquetfp
                           std::map<unsigned, unsigned>& mapping);
 
       Node& getClosestNode(Node& currNode, Nodes* nodes, Nets* nets, 
-                           uofm::vector<bool>& seenNodes, unsigned maxConnId=1,
+                           std::vector<bool>& seenNodes, unsigned maxConnId=1,
 			   bool direction = true);
       void addWSPerNode(void);
 

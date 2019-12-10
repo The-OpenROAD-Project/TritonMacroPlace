@@ -44,18 +44,18 @@
 int main(void)
 {
     double meansA[]={3,4,5};
-    uofm::vector<double> means(meansA,meansA+3);
+    std::vector<double> means(meansA,meansA+3);
 
     double stdDevA[]={7,8,9};
-    uofm::vector<double> stdDevs(stdDevA,stdDevA+3);
+    std::vector<double> stdDevs(stdDevA,stdDevA+3);
 
     double row1A[]={0.3,0.1};
-    uofm::vector<double> row1(row1A,row1A+2);
+    std::vector<double> row1(row1A,row1A+2);
 
     double row2A[]={0.2};
-    uofm::vector<double> row2(row2A,row2A+1);
+    std::vector<double> row2(row2A,row2A+1);
 
-    uofm::vector<uofm::vector<double> > corrs(2);
+    std::vector<std::vector<double> > corrs(2);
     corrs[0]=row1;
     corrs[1]=row2;
 
@@ -73,7 +73,7 @@ int main(void)
     double sumv0=0,sumv1=0,sumv2=0;
     double sumv0squared=0,sumv1squared=0,sumv2squared=0;
     double sumv0v1=0,sumv0v2=0,sumv1v2=0;
-    uofm::vector<double> tuple(3,DBL_MAX);
+    std::vector<double> tuple(3,DBL_MAX);
 
     for (i=0;i<trials;i++)
         {

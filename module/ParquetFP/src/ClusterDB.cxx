@@ -40,7 +40,7 @@ using namespace parquetfp;
 using std::map;
 using std::cout;
 using std::endl;
-using uofm::vector;
+using std::vector;
 
 ClusterDB::ClusterDB(DB* db, Command_Line *params) :
   _params(params),_db(db),_newDB(0),_oldDB(0),_nodesSeenBB(0),_numConnections(0,0)

@@ -40,30 +40,30 @@
 class PlSP2BTree
 {
 public:
-   PlSP2BTree(const uofm::vector<float>& n_xloc,
-              const uofm::vector<float>& n_yloc,
-              const uofm::vector<float>& n_widths,
-              const uofm::vector<float>& n_heights,
-              const uofm::vector<int>& XX,
-              const uofm::vector<int>& YY);
+   PlSP2BTree(const std::vector<float>& n_xloc,
+              const std::vector<float>& n_yloc,
+              const std::vector<float>& n_widths,
+              const std::vector<float>& n_heights,
+              const std::vector<int>& XX,
+              const std::vector<int>& YY);
 
-   PlSP2BTree(const uofm::vector<float>& n_xloc,
-              const uofm::vector<float>& n_yloc,
-              const uofm::vector<float>& n_widths,
-              const uofm::vector<float>& n_heights,
-              const uofm::vector<unsigned int>& XX,
-              const uofm::vector<unsigned int>& YY);
+   PlSP2BTree(const std::vector<float>& n_xloc,
+              const std::vector<float>& n_yloc,
+              const std::vector<float>& n_widths,
+              const std::vector<float>& n_heights,
+              const std::vector<unsigned int>& XX,
+              const std::vector<unsigned int>& YY);
 
-   inline const uofm::vector<BTree::BTreeNode>& btree() const;
-   inline const uofm::vector<int>& SP_XX() const;
-   inline const uofm::vector<int>& SP_YY() const;
-   inline const uofm::vector<int>& SP_XXinverse() const;
-   inline const uofm::vector<int>& SP_YYinverse() const;
+   inline const std::vector<BTree::BTreeNode>& btree() const;
+   inline const std::vector<int>& SP_XX() const;
+   inline const std::vector<int>& SP_YY() const;
+   inline const std::vector<int>& SP_XXinverse() const;
+   inline const std::vector<int>& SP_YYinverse() const;
    
-   const uofm::vector<float>& xloc;
-   const uofm::vector<float>& yloc;
-   const uofm::vector<float>& widths;
-   const uofm::vector<float>& heights;
+   const std::vector<float>& xloc;
+   const std::vector<float>& yloc;
+   const std::vector<float>& widths;
+   const std::vector<float>& heights;
 
    inline bool SPleftof(int i, int j) const;
    inline bool SPrightof(int i , int j) const;
@@ -75,11 +75,11 @@ public:
 
 private:
    int _blocknum;
-   uofm::vector<int> _XX;
-   uofm::vector<int> _YY;
-   uofm::vector<int> _XXinverse;
-   uofm::vector<int> _YYinverse;
-   uofm::vector<BTree::BTreeNode> _btree;
+   std::vector<int> _XX;
+   std::vector<int> _YY;
+   std::vector<int> _XXinverse;
+   std::vector<int> _YYinverse;
+   std::vector<BTree::BTreeNode> _btree;
 
    void constructor_core();
    void initializeTree();
@@ -92,19 +92,19 @@ private:
 // ===============
 // IMPLEMENTATIONS
 // ===============
-inline const uofm::vector<BTree::BTreeNode>& PlSP2BTree::btree() const
+inline const std::vector<BTree::BTreeNode>& PlSP2BTree::btree() const
 {   return _btree; }
 // --------------------------------------------------------
-inline const uofm::vector<int>& PlSP2BTree::SP_XX() const
+inline const std::vector<int>& PlSP2BTree::SP_XX() const
 {   return _XX; }
 // --------------------------------------------------------
-inline const uofm::vector<int>& PlSP2BTree::SP_YY() const
+inline const std::vector<int>& PlSP2BTree::SP_YY() const
 {   return _YY; }
 // --------------------------------------------------------
-inline const uofm::vector<int>& PlSP2BTree::SP_XXinverse() const
+inline const std::vector<int>& PlSP2BTree::SP_XXinverse() const
 {   return _XXinverse; }
 // --------------------------------------------------------
-inline const uofm::vector<int>& PlSP2BTree::SP_YYinverse() const
+inline const std::vector<int>& PlSP2BTree::SP_YYinverse() const
 {   return _YYinverse; }
 // --------------------------------------------------------
 inline bool PlSP2BTree::SPleftof(int i, int j) const

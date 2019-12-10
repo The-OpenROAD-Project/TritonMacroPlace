@@ -49,7 +49,7 @@ namespace parquetfp
       unsigned pinOffset;
    };
 
-   typedef uofm::vector<NodePin>::iterator itNodePin;
+   typedef std::vector<NodePin>::iterator itNodePin;
 
    class Node
    {
@@ -76,10 +76,10 @@ namespace parquetfp
            bool _isMacro;           //is Node Macro(used only during clustering)
 		   bool _needsFP;           //<aaronnn> if node needs FP (e.g., if this node triggered FP)
            Point _placement;
-           uofm::vector<NodePin> _pins;       //all the pins of this node
-           uofm::vector<int> _subBlockIndices; //indices of subBlocks
+           std::vector<NodePin> _pins;       //all the pins of this node
+           std::vector<int> _subBlockIndices; //indices of subBlocks
 
-           uofm::string _name;
+           std::string _name;
            float _origWidth;
            float _origHeight;
 
@@ -89,7 +89,7 @@ namespace parquetfp
            bool calcAllPinsAtCenter(Nets& nets); //use this only for initialization. else use above variable
 
            //ctors
-           Node(const uofm::string block_name,float block_area,float minAr,float maxAr,
+           Node(const std::string block_name,float block_area,float minAr,float maxAr,
                    int index,bool type);
            Node(const Node& orig);
 //           Node& operator=(const Node& rhs);
@@ -102,7 +102,7 @@ namespace parquetfp
            float getWidth(void) const      {return _width;}
            float getOrigHeight(void) const {return _origHeight;}
            float getOrigWidth(void) const  {return _origWidth;}
-           uofm::string getName(void) const {return _name;}
+           std::string getName(void) const {return _name;}
            float getX(void) const          {return _placement.x;}
            float getY(void) const          {return _placement.y;}
            float getslackX(void) const     {return _slackX;}
@@ -127,10 +127,10 @@ namespace parquetfp
            itNodePin pinsEnd()             {return _pins.end(); }
            unsigned getDegree() const      { return _pins.size(); }
            void clearPins()                { _pins.clear(); }
-           uofm::vector<int>::iterator subBlocksBegin()  {return _subBlockIndices.begin();}
-           uofm::vector<int>::iterator subBlocksEnd()    {return _subBlockIndices.end();}
+           std::vector<int>::iterator subBlocksBegin()  {return _subBlockIndices.begin();}
+           std::vector<int>::iterator subBlocksEnd()    {return _subBlockIndices.end();}
            unsigned numSubBlocks()                 {return _subBlockIndices.size();}
-           uofm::vector<int>& getSubBlocks()             { return _subBlockIndices; }
+           std::vector<int>& getSubBlocks()             { return _subBlockIndices; }
 
 
            void putArea(float area)         {_area=area;}

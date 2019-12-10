@@ -43,7 +43,7 @@
 
 using std::cout;
 using std::endl;
-using uofm::vector;
+using std::vector;
 
 const float Pl2BTree::Infty = basepacking_h::Dimension::Infty;
 const int Pl2BTree::Undefined = basepacking_h::Dimension::Undefined;

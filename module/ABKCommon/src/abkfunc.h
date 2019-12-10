@@ -40,7 +40,7 @@
 /* This file contains all the declarations of functions for ABKCommon */
 
 unsigned abkGcd (unsigned, unsigned);
-unsigned abkGcd (const uofm::vector<unsigned>&);
+unsigned abkGcd (const std::vector<unsigned>&);
 unsigned abkFactorial(unsigned n);
 
 //: Be true if the two string are same

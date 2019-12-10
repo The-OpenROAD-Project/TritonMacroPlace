@@ -59,11 +59,11 @@ typedef int SLong;
 typedef unsigned int ULong;
 #ifdef __GNUC__
   #if( __GNUC__ >= 3)
-    typedef uofm::vector< bool > bit_vector;
+    typedef std::vector< bool > bit_vector;
   #endif
 #endif
 #ifdef _MSC_VER
-  typedef uofm::vector< bool > bit_vector;
+  typedef std::vector< bool > bit_vector;
 #endif
 
 

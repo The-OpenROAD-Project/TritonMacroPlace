@@ -44,10 +44,10 @@
 class ShiftBlock
 {
 public:
-   ShiftBlock(const uofm::vector<float>& xloc,
-              const uofm::vector<float>& yloc,
-              const uofm::vector<float>& widths,
-              const uofm::vector<float>& heights,
+   ShiftBlock(const std::vector<float>& xloc,
+              const std::vector<float>& yloc,
+              const std::vector<float>& widths,
+              const std::vector<float>& heights,
               float left_bound,
               float right_bound,
               float top_bound,
@@ -62,7 +62,7 @@ public:
       float overlapMax;
    };
    void operator ()(int currBlk,
-                    uofm::vector<ShiftInfo>& shiftinfo) const; // 4-elt uofm::vector
+                    std::vector<ShiftInfo>& shiftinfo) const; // 4-elt std::vector
 
    enum Directions {NORTH, EAST, SOUTH, WEST, DIR_NUM};
    static const float Infty;
@@ -71,10 +71,10 @@ public:
 
 private:
    int _blocknum;
-   uofm::vector<float> _xStart;
-   uofm::vector<float> _xEnd;
-   uofm::vector<float> _yStart;
-   uofm::vector<float> _yEnd;
+   std::vector<float> _xStart;
+   std::vector<float> _xEnd;
+   std::vector<float> _yStart;
+   std::vector<float> _yEnd;
 
    float _epsilon;
 };
@@ -83,10 +83,10 @@ private:
 class ShiftLegalizer
 {
 public:
-   ShiftLegalizer(const uofm::vector<float>& n_xloc,
-                  const uofm::vector<float>& n_yloc,
-                  const uofm::vector<float>& n_widths,
-                  const uofm::vector<float>& n_heights,
+   ShiftLegalizer(const std::vector<float>& n_xloc,
+                  const std::vector<float>& n_yloc,
+                  const std::vector<float>& n_widths,
+                  const std::vector<float>& n_heights,
                   float left_bound,
                   float right_bound,
                   float top_bound,
@@ -95,19 +95,19 @@ public:
    enum AlgoType {NAIVE};
    
    bool legalizeAll(AlgoType algo,
-                    const uofm::vector<int>& checkBlks,
-                    uofm::vector<int>& badBlks);   
+                    const std::vector<int>& checkBlks,
+                    std::vector<int>& badBlks);   
 
-   bool naiveLegalize(const uofm::vector<int>& checkBlks,
-                      uofm::vector<int>& badBlks); // "t" ~ badBlks.empty() 
+   bool naiveLegalize(const std::vector<int>& checkBlks,
+                      std::vector<int>& badBlks); // "t" ~ badBlks.empty() 
    bool legalizeBlock(int currBlk); // "t" ~ "currBlk" not overlap
 
    void putBlockIntoCore(int currBlk);
 
-   inline const uofm::vector<float>& xloc() const;
-   inline const uofm::vector<float>& yloc() const;
-   inline const uofm::vector<float>& widths() const;
-   inline const uofm::vector<float>& heights() const;
+   inline const std::vector<float>& xloc() const;
+   inline const std::vector<float>& yloc() const;
+   inline const std::vector<float>& widths() const;
+   inline const std::vector<float>& heights() const;
 
    inline float leftBound() const;
    inline float rightBound() const;
@@ -127,18 +127,18 @@ public:
       float shiftExtent;
    };
    bool shiftDecider(ShiftBlock::Directions currDir,
-                     const uofm::vector<ShiftBlock::ShiftInfo>& shiftinfo,
+                     const std::vector<ShiftBlock::ShiftInfo>& shiftinfo,
                      ShiftRotateDecision& decision) const;
    bool rotateDecider(int currBlk,
-                      const uofm::vector<ShiftBlock::ShiftInfo>& shiftinfo,
+                      const std::vector<ShiftBlock::ShiftInfo>& shiftinfo,
                       ShiftRotateDecision& decision) const;                            
    
 private:
    int _blocknum;
-   uofm::vector<float> _xloc;
-   uofm::vector<float> _yloc;
-   uofm::vector<float> _widths;
-   uofm::vector<float> _heights;
+   std::vector<float> _xloc;
+   std::vector<float> _yloc;
+   std::vector<float> _widths;
+   std::vector<float> _heights;
    float _epsilon;
 
    const float _leftBound;
@@ -149,22 +149,22 @@ private:
    void adjustBlock(int currBlk, const ShiftRotateDecision& decision);
 };
 void OutputShiftInfo(std::ostream& outs,
-                     const uofm::vector<ShiftBlock::ShiftInfo>& shiftinfo);
+                     const std::vector<ShiftBlock::ShiftInfo>& shiftinfo);
 // --------------------------------------------------------
 
 // ===============
 // IMPLEMENTATIONS
 // ===============
-const uofm::vector<float>& ShiftLegalizer::xloc() const
+const std::vector<float>& ShiftLegalizer::xloc() const
 {   return _xloc; }
 // --------------------------------------------------------
-const uofm::vector<float>& ShiftLegalizer::yloc() const
+const std::vector<float>& ShiftLegalizer::yloc() const
 {   return _yloc; }
 // --------------------------------------------------------
-const uofm::vector<float>& ShiftLegalizer::widths() const
+const std::vector<float>& ShiftLegalizer::widths() const
 {   return _widths; }
 // --------------------------------------------------------
-const uofm::vector<float>& ShiftLegalizer::heights() const
+const std::vector<float>& ShiftLegalizer::heights() const
 {   return _heights; }
 // --------------------------------------------------------
 float ShiftLegalizer::leftBound() const

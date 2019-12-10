@@ -50,7 +50,7 @@ void OutputHardBlockInfoType(std::ostream& outs,
 void OutputBTree(std::ostream& outs,
                  const BTree& bt);
 void OutputBTree(std::ostream& outs,
-                 const uofm::vector<BTree::BTreeNode>& tree);
+                 const std::vector<BTree::BTreeNode>& tree);
 void OutputPacking(std::ostream& outs,
                    const OrientedPacking& pk);
 

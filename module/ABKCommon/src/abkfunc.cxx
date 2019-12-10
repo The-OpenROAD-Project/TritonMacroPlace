@@ -64,12 +64,12 @@ unsigned abkGcd (unsigned x, unsigned y)
     return x;
 }
 
-unsigned abkGcd (const uofm::vector<unsigned>& numbers)
+unsigned abkGcd (const std::vector<unsigned>& numbers)
 {
     unsigned count = numbers.size();
 	abkfatal (count!=0, "Vector of size 0 passed to abkGcd");
 
-    uofm::vector<unsigned> numsLocal(numbers);
+    std::vector<unsigned> numsLocal(numbers);
     while (1)
     {
         if (count == 1) return numsLocal[0];

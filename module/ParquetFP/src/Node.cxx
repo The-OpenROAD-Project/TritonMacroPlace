@@ -35,8 +35,8 @@
 #include "Nets.h"
 #include "Node.h"
 
-using uofm::string;
-using uofm::vector;
+using std::string;
+using std::vector;
 
 namespace parquetfp
 {

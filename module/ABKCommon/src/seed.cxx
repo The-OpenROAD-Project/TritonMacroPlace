@@ -73,7 +73,7 @@ bool      SeedHandler::_cleaned=false;
 unsigned  SeedHandler::_externalSeed=UINT_MAX;
 unsigned  SeedHandler::_progOverrideExternalSeed=UINT_MAX;
 
-map<uofm::string,unsigned> SeedHandler::_counters;
+map<std::string,unsigned> SeedHandler::_counters;
 
 SeedCleaner   cleaner; //when this object goes out of scope at the end of
                    //execution, it will make sure that SeedHandler::clean()
@@ -220,7 +220,7 @@ SeedHandler::SeedHandler(const char *locIdent,
         _counter=counterOverride;
     else
         {
-        map<uofm::string,unsigned>::iterator iC;
+        map<std::string,unsigned>::iterator iC;
         iC = _counters.find(_locIdent);
         if (iC==_counters.end()) _counters[_locIdent]=_counter=0;
         else { iC->second++; _counter=iC->second; }

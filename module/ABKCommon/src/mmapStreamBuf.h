@@ -73,7 +73,7 @@ class MMapStreamBuf : public std::streambuf
  private:
 	unsigned _fileSize;
 	unsigned _mapSize;
-	uofm::string _fileName;
+	std::string _fileName;
 
 	MMapStreamBuf();
 };

@@ -37,7 +37,7 @@
 using namespace parquetfp;
 using std::cout;
 using std::endl;
-using uofm::vector;
+using std::vector;
 
 SeqPair::SeqPair(unsigned size) //ctor randomly generates the seqPair
 {

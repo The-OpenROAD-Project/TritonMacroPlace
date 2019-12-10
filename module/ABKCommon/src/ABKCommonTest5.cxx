@@ -35,15 +35,15 @@
 
 #include "abkcommon.h"
 
-using uofm::ostringstream;
-using uofm::istringstream;
-using uofm::string;
+using std::ostringstream;
+using std::istringstream;
+using std::string;
 using std::cout;
 using std::endl;
 
 int main()
 {
-      uofm::vector<unsigned> v(100);
+      std::vector<unsigned> v(100);
       //std::iota(v.begin(), v.end(), 10);
       {for (unsigned i=0;i<100;i++) v[i]=i+10;}
       

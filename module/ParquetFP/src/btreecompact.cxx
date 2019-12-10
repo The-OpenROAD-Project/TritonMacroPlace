@@ -174,7 +174,7 @@ void BTreeCompactor::build_orth_tree_add_block(int tree_ptr)
 }
 // --------------------------------------------------------
 
-void BTreeCompactor::out_orth_dot(const uofm::string& file) const {
+void BTreeCompactor::out_orth_dot(const std::string& file) const {
   std::filebuf fb;
   fb.open( file.c_str(), std::ios::out );
   std::ostream outs (&fb);
@@ -205,7 +205,7 @@ void BTreeCompactor::out_orth_dot(const uofm::string& file) const {
   outs << "}" << std::endl;
   fb.close();
 }
-void BTreeCompactor::out_orth_plot(const uofm::string& file) const {
+void BTreeCompactor::out_orth_plot(const std::string& file) const {
   using std::endl;
   std::filebuf fb;
   fb.open( file.c_str(), std::ios::out );

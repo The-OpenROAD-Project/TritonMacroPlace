@@ -707,7 +707,7 @@ ExecInfo::ExecInfo()
 //: Prints starting execution info
 {
 #ifdef linux
-	uofm::string infoLine;
+	std::string infoLine;
 	char buf[MAXPATHLEN];
 
 	infoLine += "# Working directory : ";

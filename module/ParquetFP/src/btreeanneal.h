@@ -89,8 +89,8 @@ public:
    int packSoftBlocks(int numIter);          // returns -1
    inline int compactBlocks();               // returns -1        
    
-   inline static void sort_slacks(const uofm::vector<float>& slacks,
-                                  uofm::vector<int>& indices_sorted);
+   inline static void sort_slacks(const std::vector<float>& slacks,
+                                  std::vector<int>& indices_sorted);
    void GenerateRandomSoln(BTree& soln, int blocknum) const;
    
    inline unsigned getNumObstacles();
@@ -111,7 +111,7 @@ public:
    BTree in_best_solution;
 
    // (blockIndex, [0-7]) --> [0-7], constantly 0 if fixedOrient
-   uofm::vector< uofm::vector<parquetfp::ORIENT> > _physicalOrient;
+   std::vector< std::vector<parquetfp::ORIENT> > _physicalOrient;
    
    BTreeSlackEval *_slackEval;
 
@@ -136,7 +136,7 @@ public:
    void DBfromSoln(const BTree& soln); // update *_db from "soln"
    
    void makeMoveSlacksCore(bool); // used by "makeMoveSlacks" and "makeARMove"
-   void locateSearchBlocks(int, uofm::vector<int>&); // used by HPWL and ARWL moves
+   void locateSearchBlocks(int, std::vector<int>&); // used by HPWL and ARWL moves
 
    // the following -SoftBl- fcns assumes slacks are ALREADY EVAULATED
    int getSoftBlIndex(bool horizontal) const; // returns the index of the operand
@@ -184,11 +184,11 @@ int BTreeAreaWireAnnealer::compactBlocks()
    return MISC;
 }
 // --------------------------------------------------------
-void BTreeAreaWireAnnealer::sort_slacks(const uofm::vector<float>& slacks,
-                                        uofm::vector<int>& indices_sorted)
+void BTreeAreaWireAnnealer::sort_slacks(const std::vector<float>& slacks,
+                                        std::vector<int>& indices_sorted)
 {
    int blocknum = slacks.size();
-   uofm::vector<SlackInfo> slackinfo(blocknum);
+   std::vector<SlackInfo> slackinfo(blocknum);
    for (int i = 0; i < blocknum; i++)
    {
       slackinfo[i].slack = slacks[i];

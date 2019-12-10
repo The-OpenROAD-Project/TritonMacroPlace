@@ -38,7 +38,7 @@
 using namespace parquetfp;
 using std::cout;
 using std::endl;
-using uofm::vector;
+using std::vector;
 
 Pl2SP::Pl2SP(vector<float>& xloc, vector<float>& yloc, 
 	     vector<float>& widths, vector<float>& heights, 

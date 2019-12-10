@@ -103,7 +103,7 @@ protected:
    parquetfp::DB *const _db;                     // _db, _params behaves like
    const parquetfp::Command_Line *const _params; // references, use ptrs for
    parquetfp::AnalytSolve *const _analSolve;       // code backwd compatibility
-   uofm::string _baseFileName;
+   std::string _baseFileName;
 
    const bool _isFixedOutline;
    const float _outlineDeadspaceRatio;

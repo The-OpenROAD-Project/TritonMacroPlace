@@ -52,13 +52,13 @@ namespace parquetfp
       bool getSeed, budgetTime;
       bool softBlocks;
       bool initQP;     // initialize a QP soln
-      uofm::string inFileName;
-      uofm::string outPlFile;
-      uofm::string capoPlFile;
-      uofm::string capoBaseFile;
-      uofm::string baseFile;
+      std::string inFileName;
+      std::string outPlFile;
+      std::string capoPlFile;
+      std::string capoBaseFile;
+      std::string baseFile;
 
-      uofm::string FPrep;
+      std::string FPrep;
       
       unsigned seed;   // fixed seed
       int iterations;  // number of runs

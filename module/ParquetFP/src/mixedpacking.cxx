@@ -41,7 +41,7 @@
 using namespace parse_utils;
 using namespace basepacking_h;
 using std::vector;
-using uofm::string;
+using std::string;
 using std::cout;
 using std::endl;
 using std::min;

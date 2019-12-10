@@ -40,7 +40,7 @@ using std::pair;
 using std::make_pair;
 using std::ostream;
 using std::flush;
-using uofm::string;
+using std::string;
 
 
 ABKMessageBuf::ABKMessageBuf(void): _buf(NULL)

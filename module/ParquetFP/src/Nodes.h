@@ -42,23 +42,23 @@
 namespace parquetfp
 {
     class Nets;
-    typedef uofm::vector<Node>::iterator itNode;
+    typedef std::vector<Node>::iterator itNode;
 
     class Nodes
     {
         private:
-            uofm::vector<Node> _nodes;
-            uofm::vector<Node> _terminals;
+            std::vector<Node> _nodes;
+            std::vector<Node> _terminals;
 
         public:
-            Nodes(const uofm::string &baseName);
+            Nodes(const std::string &baseName);
             Nodes(void){}
             Nodes(const Nodes& orig);
             Nodes& operator=(const Nodes& rhs);
 
-            void parseNodes(const uofm::string & fnameBl);
-            void parseTxt(const uofm::string & fnameTxt);
-            void parsePl(const uofm::string &fnamePl);
+            void parseNodes(const std::string & fnameBl);
+            void parseTxt(const std::string & fnameTxt);
+            void parsePl(const std::string &fnamePl);
 
             unsigned getNumNodes(void) const          { return _nodes.size(); }
             itNode nodesBegin(void)                   { return _nodes.begin(); }
@@ -82,10 +82,10 @@ namespace parquetfp
                 _terminals.clear();
             }
 
-            uofm::vector<float> getNodeWidths();
-            uofm::vector<float> getNodeHeights();
-            uofm::vector<float> getXLocs();
-            uofm::vector<float> getYLocs();
+            std::vector<float> getNodeWidths();
+            std::vector<float> getNodeHeights();
+            std::vector<float> getXLocs();
+            std::vector<float> getYLocs();
             float getNodeWidth(unsigned index);
             float getNodeHeight(unsigned index);
             float getNodesArea();

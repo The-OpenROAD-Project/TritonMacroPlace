@@ -54,14 +54,14 @@
 
 using std::min;
 using std::max;
-using uofm::stringstream;
+using std::stringstream;
 using std::numeric_limits;
 using std::map;
-using uofm::string;
+using std::string;
 using std::cout;
 using std::endl;
 using std::ofstream;
-using uofm::vector;
+using std::vector;
 
 
 #if defined(sun)
@@ -108,7 +108,7 @@ void DB::scaleTerminals(void)
 }
 
 //ctor
-DB::DB(const uofm::string &baseName)
+DB::DB(const std::string &baseName)
 {
    cout << "Reading Nodes (files " << baseName << ".blocks and "
         << baseName << ".pl)" << endl;

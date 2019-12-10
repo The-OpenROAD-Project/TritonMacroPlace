@@ -53,7 +53,7 @@
 using namespace parquetfp;
 using std::min;
 using std::max;
-using uofm::string;
+using std::string;
 using std::cout;
 using std::setw;
 using std::endl;

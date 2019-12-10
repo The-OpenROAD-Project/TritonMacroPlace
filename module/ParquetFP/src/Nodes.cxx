@@ -38,12 +38,12 @@
 using namespace parquetfp;
 using std::numeric_limits;
 using std::map;
-using uofm::string;
+using std::string;
 using std::cout;
 using std::endl;
 using std::ofstream;
 using std::ifstream;
-using uofm::vector;
+using std::vector;
 
 //ctor
 
