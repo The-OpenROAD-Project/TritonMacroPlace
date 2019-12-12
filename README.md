@@ -15,8 +15,8 @@ ParquetFP based macro cell placer for OpenROAD.
 * Recommended OS: Centos6, Centos7 or Ubuntu 16.04
 
 ### Clone repo and submodules 
-    $ git clone --recursive https://github.com/abk-openroad/TritonMacroPlace
-    $ make build
+    $ git clone --recursive https://github.com/The-OpenROAD-Project/TritonMacroPlace
+    $ mkdir build
     $ cd build
     $ cmake ..             // you may specify -DCMAKE_INSTALL_PREFIX to avoid installing in /usr/local/*
     $ make
