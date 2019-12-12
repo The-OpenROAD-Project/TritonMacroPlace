@@ -1100,7 +1100,7 @@ bool BTreeAreaWireAnnealer::anneal()
   if(saved_best)
     in_curr_solution = in_best_solution;
     //   if(_params->verb.getForActions() > 0)
-  cout << "NumMoves attempted: " << count << endl;
+//  cout << "NumMoves attempted: " << count << endl;
   if (reqdAR != FREE_OUTLINE)
     return false;
   else
