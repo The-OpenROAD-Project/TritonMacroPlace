@@ -1651,7 +1651,7 @@ Plot(string fileName, vector<MacroNetlist::Partition>& set) {
       << " rect from " << curSet.lx << "," << curSet.ly 
       << " to " << curSet.lx + curSet.width << "," 
       << curSet.ly + curSet.height
-      << " fc rgb \"#FFFFFFFF\"" << endl;
+      << " fc rgb \"#FFFFFF\"" << endl;
   }
 
   gpOut << "plot '-' w l" << endl;
