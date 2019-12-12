@@ -25,18 +25,4 @@ void Circuit::Init( vector<string>& lefStor, string defFilename,
     // ParseVerilog(verilogFilename);   
   }
 }
-
-NetInfo::NetInfo( int _macroIdx, int _compIdx, int _pinIdx) 
-    : macroIdx(_macroIdx), compIdx(_compIdx), pinIdx(_pinIdx) {};
-}
-  
-DieRect::DieRect() : llx(INT_MAX), lly(INT_MAX), urx(INT_MIN), ury(INT_MIN) {};
-
-void DieRect::Dump() {
-  cout << "(" << llx << ", " << lly << ") - (" << urx << ", " << ury << ")" << endl;
-}
-
-bool DieRect::isNotInitialize () {
-    return ( llx == INT_MAX || lly == INT_MAX
-        || urx == INT_MIN || ury == INT_MIN);
 }

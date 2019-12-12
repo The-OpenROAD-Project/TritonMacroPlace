@@ -22,18 +22,20 @@ typedef Eigen::Triplet<int> T;
 
 MacroCircuit::MacroCircuit() :
   _ckt(0), _env(0),
-  lx(0), ly(0), ux(0), uy(0), 
   gHaloX(0), gHaloY(0), 
-  gChannelX(0), gChannelY(0), netTable(0) {};
+  gChannelX(0), gChannelY(0), 
+  lx(0), ly(0), ux(0), uy(0),
+  netTable(0) {}
 
 MacroCircuit::MacroCircuit(
     Circuit::Circuit* ckt, 
     EnvFile* env,
     CircuitInfo* cinfo) :
   _ckt(ckt), _env(env),
-  lx(0), ly(0), ux(0), uy(0),
   gHaloX(0), gHaloY(0), 
-  gChannelX(0), gChannelY(0), netTable(0) {
+  gChannelX(0), gChannelY(0), 
+  lx(0), ly(0), ux(0), uy(0),
+  netTable(0) {
 
   Init(ckt, env, cinfo);
 }
@@ -205,9 +207,8 @@ void MacroCircuit::FillMacroStor() {
 }
 
 void MacroCircuit::FillPinGroup(){
-  cout << "OpenSTA Object Starting... ";
   _sta = GetStaObject( *_env );
-  cout << "Done!" << endl;
+  cout << "OpenSTA Object Init Done!" << endl;
  
   int numEdge = _sta->graph()->edgeCount();
   int numVertex = _sta->graph()->vertexCount();
@@ -293,7 +294,7 @@ void MacroCircuit::FillPinGroup(){
 void MacroCircuit::FillVertexEdge() {
 
   cout << "Generating Sequantial Graph..." << endl; 
-  int numEdge = _sta->graph()->edgeCount();
+//  int numEdge = _sta->graph()->edgeCount();
   int numVertex = _sta->graph()->vertexCount();
 
   Eigen::setNbThreads(8);
@@ -307,7 +308,7 @@ void MacroCircuit::FillVertexEdge() {
     vertexStor.push_back( MacroNetlist::Vertex((void*)&pinGroupStor[i], VertexClass::pin ));
   }
 
-  auto startTime = std::chrono::system_clock::now();
+//  auto startTime = std::chrono::system_clock::now();
 
   // Fill Vertex for FF/Macro cells 
   for(int i=1; i<=numVertex; i++) {
@@ -359,12 +360,12 @@ void MacroCircuit::FillVertexEdge() {
   adjMatrix.resize( vertexStor.size(), vertexStor.size() ); 
   vector< T > tripletList;
 
-  auto endTime = std::chrono::system_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
-  cout << "Vertex Building: " << elapsed.count()<< "s" << endl;
+//  auto endTime = std::chrono::system_clock::now();
+//  auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
+//  cout << "Vertex Building: " << elapsed.count()<< "s" << endl;
 
   
-  startTime = std::chrono::system_clock::now();
+//  startTime = std::chrono::system_clock::now();
 
   // Query Get_FanIn/ Get_FanOut
   for(int i=1; i<=numVertex; i++) {
@@ -393,7 +394,7 @@ void MacroCircuit::FillVertexEdge() {
       continue;
     }
 
-    MacroNetlist::Vertex* mVert = GetVertex(pin);
+//    MacroNetlist::Vertex* mVert = GetVertex(pin);
 
 //TmpInstanceSet *
 //find_fanin_insts(PinSeq *to,
@@ -511,13 +512,13 @@ void MacroCircuit::FillVertexEdge() {
       delete fanin;
     }
   }
-  endTime = std::chrono::system_clock::now();
-  elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
-  cout << "Edge Building for Non-FF: " << elapsed.count() << "s" << endl;
+//  endTime = std::chrono::system_clock::now();
+//  elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
+//  cout << "Edge Building for Non-FF: " << elapsed.count() << "s" << endl;
 
 
 
-  startTime = std::chrono::system_clock::now();
+//  startTime = std::chrono::system_clock::now();
 
   // Query find_timing_paths 
   for(int i=1; i<=numVertex; i++) {
@@ -567,7 +568,7 @@ void MacroCircuit::FillVertexEdge() {
       continue;
     }
 
-    MacroNetlist::Vertex* mVert = GetVertex(pin);
+//    MacroNetlist::Vertex* mVert = GetVertex(pin);
 
 //    cout << "[" << _sta->network()->pathName(pin) << "]" << endl;
 
@@ -715,9 +716,9 @@ void MacroCircuit::FillVertexEdge() {
 
   adjMatrix.setFromTriplets( tripletList.begin(), tripletList.end() );
   
-  endTime = std::chrono::system_clock::now();
-  elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
-  cout << "Edge Building for IO: " << elapsed.count()<< "s" << endl;
+//  endTime = std::chrono::system_clock::now();
+//  elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
+//  cout << "Edge Building for IO: " << elapsed.count()<< "s" << endl;
 
 //  for(auto& curEdge: edgeStor) {
 //    cout << "EdgePrint: " << &curEdge << " " << curEdge.from << " " << curEdge.to << endl;
@@ -821,7 +822,7 @@ void MacroCircuit::CheckGraphInfo() {
     vector<MacroNetlist::Vertex*> newVertex;
 
     for(auto& curVertex1: searchVert) {
-      int idx1 = &curVertex1 - &searchVert[0];
+//      int idx1 = &curVertex1 - &searchVert[0];
 
       // for all other vertex
       for(auto& curVertex2: vertexStor) {
@@ -843,7 +844,7 @@ void MacroCircuit::CheckGraphInfo() {
   }
 
   int sumArr[CHECK_LEVEL_MAX+1] = {0, };
-  for(int i=0; i<vertexStor.size(); i++) {
+  for(size_t i=0; i<vertexStor.size(); i++) {
     if( vertexCover[i] != -1 ) {
       sumArr[ vertexCover[i] ] ++;
     }
@@ -982,7 +983,7 @@ void MacroCircuit::FillMacroConnection() {
   }
 
 
-  cout << "searchVertSize: " << searchVertIdx.size() << endl;
+//  cout << "searchVertSize: " << searchVertIdx.size() << endl;
   // macroNetlistWeight Initialize
   macroWeight.resize(searchVertIdx.size());
   for(size_t i=0; i<searchVertIdx.size(); i++) {
@@ -1016,7 +1017,7 @@ void MacroCircuit::FillMacroConnection() {
   cout << "SMatrix calculation runtime: " << elapsed.count() << "s" << endl;
 */
 
-  auto startTime = std::chrono::system_clock::now();
+//  auto startTime = std::chrono::system_clock::now();
   for(auto& curVertex1: searchVertIdx) {
     for(auto& curVertex2: searchVertIdx) {
       if( curVertex1 == curVertex2 ) { 
@@ -1042,7 +1043,7 @@ void MacroCircuit::FillMacroConnection() {
         ((PinGroup*)ptr1)->name() : _sta->network()->pathName((sta::Instance*)ptr1);
       string name2 = (class2 == VertexClass::pin)?
         ((PinGroup*)ptr2)->name() : _sta->network()->pathName((sta::Instance*)ptr2);
-      cout << "[ " << name1 << " --> " << name2 << " ]" <<endl;
+      // cout << "[ " << name1 << " --> " << name2 << " ]" <<endl;
 
       macroWeight[macroPinAdjMatrixMap[curVertex1]][macroPinAdjMatrixMap[curVertex2]] 
         = GetPathWeightMatrix( 
@@ -1052,15 +1053,15 @@ void MacroCircuit::FillMacroConnection() {
 //      cout << GetPathWeight( curVertex1, curVertex2, 3) << endl;
     }
   }
-  auto endTime = std::chrono::system_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
-  cout << "Macro Weight Assign: " << elapsed.count()<< "s" << endl;
-  for(size_t i=0; i<searchVertIdx.size(); i++) {
-    for(size_t j=0; j<searchVertIdx.size(); j++) {
-      cout << macroWeight[i][j] << " ";
-    }
-    cout << endl;
-  }
+//  auto endTime = std::chrono::system_clock::now();
+//  auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
+//  cout << "Macro Weight Assign: " << elapsed.count()<< "s" << endl;
+//  for(size_t i=0; i<searchVertIdx.size(); i++) {
+//    for(size_t j=0; j<searchVertIdx.size(); j++) {
+//      cout << macroWeight[i][j] << " ";
+//    }
+//    cout << endl;
+//  }
 
 }
 
@@ -1089,7 +1090,7 @@ void MacroCircuit::UpdateVertexToMacroStor() {
 // macroStr & macroInstMap update
 void MacroCircuit::UpdateInstanceToMacroStor() {
   sta::VertexId numVertex = _sta->graph()->vertexCount();
-  for(int i=1; i<=numVertex; i++) {
+  for(size_t i=1; i<=numVertex; i++) {
     sta::Vertex* vert = _sta->graph()->vertex(i);
     sta::Pin* pin = vert->pin();
     if( _sta->network()->isTopLevelPort(pin) ) {
@@ -1473,7 +1474,7 @@ size_t TrimWhiteSpace(char *out, size_t len, const char *str)
   end++;
 
   // Set output size to minimum of trimmed string length and buffer size minus 1
-  out_size = (end - str) < len-1 ? (end - str) : len-1;
+  out_size = (end - str) < (size_t)(len-1) ? (end - str) : size_t(len-1);
 
   // Copy trimmed string and add null terminator
   memcpy(out, str, out_size);
@@ -1754,14 +1755,14 @@ double MacroCircuit::GetWeightedWL() {
 
 CircuitInfo::CircuitInfo() : lx(FLT_MIN), ly(FLT_MIN), 
       ux(FLT_MIN), uy(FLT_MIN),
-      siteSizeX(FLT_MIN), siteSizeY(FLT_MIN) {};
+      siteSizeX(FLT_MIN), siteSizeY(FLT_MIN) {}
     
 CircuitInfo::CircuitInfo( double _lx, double _ly, double _ux, double _uy, 
         double _siteSizeX, double _siteSizeY ) :
       lx(_lx), ly(_ly), ux(_ux), uy(_uy),
-      siteSizeX(_siteSizeX), siteSizeY(_siteSizeY) {};
+      siteSizeX(_siteSizeX), siteSizeY(_siteSizeY) {}
 
 CircuitInfo::CircuitInfo( CircuitInfo& orig, MacroNetlist::Partition& part ) :
       lx(part.lx), ly(part.ly), ux(part.lx+part.width), uy(part.ly+part.height),
-      siteSizeX(orig.siteSizeX), siteSizeY(orig.siteSizeY) {};
+      siteSizeX(orig.siteSizeX), siteSizeY(orig.siteSizeY) {}
 

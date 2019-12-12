@@ -220,46 +220,8 @@ class Circuit {
 
 };
 
-// Verilog net Info Storage
-struct NetInfo {
-  int macroIdx;
-  int compIdx;
-  int pinIdx;
-
-  NetInfo( int _macroIdx, int _compIdx, int _pinIdx);
-};
-
 extern Circuit __ckt; 
-
 }
-
-struct DieRect {
-  int llx, lly, urx, ury;
-  DieRect();
-  bool isNotInitialize ();
-  void Dump();
-};
-
-DieRect GetDieFromProperty();
-DieRect GetDieFromDieArea();
-
-void ParseInput();
-void ParseLefDef();
-
-void ReadPl(const char* fileName);
-void ReadPlLefDef(const char* fileName);
-
-void WriteDef(const char* defOutput);
-
-void GenerateModuleTerminal(Circuit::Circuit& __ckt);
-void GenerateRow(Circuit::Circuit& __ckt);
-
-void GenerateNetDefOnly(Circuit::Circuit& __ckt);
-void GenerateNetDefVerilog(Circuit::Circuit& __ckt);
-
-// custom scale down parameter setting during the stage
-void SetUnitY(float  _unitY);
-void SetUnitY(double _unitY);
 
 #endif
 

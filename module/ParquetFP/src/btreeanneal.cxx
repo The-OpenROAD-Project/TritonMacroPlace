@@ -187,7 +187,6 @@ void BTreeAreaWireAnnealer::constructor_core()
 
   // generate an initial solution
   GenerateRandomSoln(in_curr_solution, blockinfo.currDimensions.blocknum());
-  cout << "finished GenerateRandSoln" << endl;
   in_best_solution = in_curr_solution;
   in_next_solution = in_curr_solution;
 

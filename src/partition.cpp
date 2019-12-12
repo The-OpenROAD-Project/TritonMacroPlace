@@ -294,7 +294,8 @@ void Partition::FillNetlistTable(MacroCircuit& _mckt,
   
   auto mpPtr = macroPartMap.find( partClass );
   if( mpPtr == macroPartMap.end()) {
-    cout << "ERROR: Partition: " << partClass << " not exists MacroCell (macroPartMap)" << endl;
+    cout << "ERROR: Partition: " << partClass 
+      << " not exists MacroCell (macroPartMap)" << endl;
     exit(1);
   }
 
@@ -538,7 +539,7 @@ bool Partition::DoAnneal() {
     return true;
   }
   
-  cout << "Parquet is starting... " << endl;
+  cout << "Parquet is starting... " ;
   
   
   // Preprocessing in macroPlacer side
@@ -643,6 +644,7 @@ bool Partition::DoAnneal() {
   param.nonTrivialOutline = parquetfp::BBox(0, 0, width, height);
   param.reqdAR = width/height;
   param.maxWS = 0;
+  param.verb = "0 0 0";
 
   // Instantiate BTreeAnnealer Object
   BTreeAreaWireAnnealer* annealer = 
