@@ -122,7 +122,7 @@ set_target_properties( mplacelib
 add_custom_command(OUTPUT ${MPLACE_HOME}/src/mPlace_wrap.cpp
   COMMAND ${SWIG_EXECUTABLE} -tcl8 -c++ -o ${MPLACE_HOME}/src/mPlace_wrap.cpp ${MPLACE_HOME}/src/mPlace.i   
   WORKING_DIRECTORY ${MPLACE_HOME}
-  DEPENDS ${MPLACE_SWIG_FILES}
+  DEPENDS ${MPLACE_HOME}/src/mPlace.i "src/mPlaceExternal.cpp" "src/mPlaceExternal.h"
 )
 
 ############################################################
