@@ -1,34 +1,6 @@
 MacroPlacer Version: 1.0.0
-Liberty: 
-nangate45-bench/tech/NangateOpenCellLibrary_typical.lib
-nangate45-bench/tech/fakeram45_64x7.lib
-
-Verilog: 
-nangate45-bench/design/gcd_mem1/gcd_mem1.v
-
-
-Sdc: 
-nangate45-bench/design/gcd_mem1/gcd_mem1.sdc
-
-Lef: 
-nangate45-bench/tech/fakeram45_64x7.lef
-nangate45-bench/tech/NangateOpenCellLibrary.lef
-
-Def: 
-nangate45-bench/design/gcd_mem1/gcd_mem1.def
-
-Search Depth: 
-3
-
-globalConfig: 
-nangate45-bench/design/gcd_mem1/halo_1.0.cfg
-
-localConfig: 
-
-
 PROC: LEF/DEF Parsing... Done!
 
-Parsing globalConfig: nangate45-bench/design/gcd_mem1/halo_1.0.cfg ... Done!
 Extracting Macro Cells... Done!
 Extracted # Macros: 1
 OpenSTA 2.0.17 2fe5cfafa2 Copyright (c) 2019, Parallax Software, Inc.
@@ -90,7 +62,6 @@ INFO: Total Extracted Sets = 2
 
 Parquet is starting... Done
 Set 1: WWL = 0
-INFO: /home/mgwoo/02_macroPlace/git/TritonMacroPlace/test/results/gcd-mem1-test-02-mplace.def has beed exported!
 PossibleSol : 1
 VERSION 5.8 ;
 DIVIDERCHAR "/" ;

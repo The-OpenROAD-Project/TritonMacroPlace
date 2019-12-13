@@ -57,7 +57,7 @@ void PrintAllSets(FILE* fp, CircuitInfo& cInfo,
 vector< vector<Partition> >
 PlaceMacros(EnvFile& env, Circuit::Circuit& ckt, MacroCircuit& mckt) {
 
-  env.Print(); 
+  //env.Print(); 
 
   cout << "PROC: LEF/DEF Parsing... ";
   ckt.Init(env.lefStor, env.def);

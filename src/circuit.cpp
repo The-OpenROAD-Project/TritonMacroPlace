@@ -1485,7 +1485,7 @@ size_t TrimWhiteSpace(char *out, size_t len, const char *str)
 
 
 void MacroCircuit::ParseGlobalConfig(string fileName) {
-  cout << "Parsing globalConfig: " << fileName << " ... " ;
+//  cout << "Parsing globalConfig: " << fileName << " ... " ;
   std::ifstream gConfFile (fileName);
   if( !gConfFile.is_open() ) {
     cout << "ERROR: Cannot open file: " << fileName << endl;
@@ -1545,7 +1545,7 @@ void MacroCircuit::ParseGlobalConfig(string fileName) {
       exit(1);
     }
   }
-  cout << "Done!" << endl;
+//  cout << "Done!" << endl;
 }
 
 void MacroCircuit::ParseLocalConfig(string fileName) {

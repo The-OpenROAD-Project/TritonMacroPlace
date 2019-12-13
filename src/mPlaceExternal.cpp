@@ -77,7 +77,6 @@ void mplace_external::export_def(const char* def) {
 
   ckt.WriteDef( fp );
   fclose(fp);
-  cout << "INFO: " << def << " has beed exported!" << endl;
 }
 
 void mplace_external::export_all_def(const char* location) { 
@@ -131,7 +130,6 @@ void mplace_external::export_all_def(const char* location) {
     ckt.WriteDef( fp );
     fclose(fp);
     
-    cout << "INFO: " << fileName << " has beed exported!" << endl;
     solCount++;
   }
 }
