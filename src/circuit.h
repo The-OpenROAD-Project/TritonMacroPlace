@@ -27,7 +27,8 @@ class MacroCircuit {
     MacroCircuit();
     MacroCircuit(odb::dbDatabase* db, EnvFile* env, CircuitInfo* cinfo);
     
-    void Init(EnvFile* env, CircuitInfo* cinfo);
+    void Init(odb::dbDatabase* db, 
+        EnvFile* env, CircuitInfo* cinfo);
     
     std::vector<MacroNetlist::Vertex> vertexStor;
     std::vector<MacroNetlist::Edge> edgeStor;

@@ -1,6 +1,7 @@
 #include "mPlace.h"
 #include "circuit.h"
-#include "partition.h"
+#include "partition.h" 
+#include <opendb/db.h>
 
 #include <boost/icl/interval_map.hpp>
 #include <boost/icl/closed_interval.hpp>
@@ -15,6 +16,8 @@ using std::unordered_set;
 using MacroNetlist::Partition;
 using namespace MacroNetlist;
 using namespace boost::icl;
+
+using namespace odb;
 
 typedef vector<pair<Partition, Partition>> TwoPartitions;
 
@@ -54,57 +57,58 @@ void PrintAllSets(FILE* fp, CircuitInfo& cInfo,
 }
 
 vector< vector<Partition> >
-PlaceMacros(EnvFile& env, Circuit::Circuit& ckt, MacroCircuit& mckt) {
+PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
 
-  //env.Print(); 
+  dbTech* tech = db->getTech();
+  dbChip* chip = db->getChip(); 
+  dbBlock* block = chip->getBlock();
 
-  cout << "PROC: LEF/DEF Parsing... ";
-  ckt.Init(env.lefStor, env.def);
-  env.design = ckt.defDesignName;
-  cout << "Done!" << endl;
+  env.design = block->getConstName();
 
-  double defScale = ckt.defUnit;
-  defiPoints points = ckt.defDieArea.getPoint();
-  if( points.numPoints != 2) {
-    cout << "ERROR: The Layout must be rectangle..! "<< endl;
-    exit(1);
-  }
-
-  if( ckt.defRowStor.size() == 0) {
+  dbSet<dbRow> rows = block->getRows();
+  if( rows.size() == 0 ) { 
     cout << "ERROR: DEF must contain ROW"<< endl;
     exit(1);
   }
 
-  string siteName(ckt.defRowStor[0].macro());
-  auto sitePtr = ckt.lefSiteMap.find( siteName );
-  if( sitePtr == ckt.lefSiteMap.end()) {
-    cout << "ERROR: SITE " << siteName << " not exists in LEF." << endl;
-    exit(1);
-  }
-  
-  double siteSizeX = ckt.lefSiteStor[sitePtr->second].sizeX();
-  double siteSizeY = ckt.lefSiteStor[sitePtr->second].sizeY();
+  dbBox* dieBox = block->getBBox();
+//  double defScale = tech->getDbUnitsPerMicron();
 
-  CircuitInfo cInfo( 1.0*points.x[0]/defScale, 
-        1.0*points.y[0]/defScale,
-        1.0*points.x[1]/defScale,
-        1.0*points.y[1]/defScale,
+  cout << dieBox->xMax() << " " << dieBox->yMax() << endl;
+
+  adsRect rowBox;
+  rows.begin()->getBBox(rowBox);  
+
+//  string siteName(ckt.defRowStor[0].macro());
+//  auto sitePtr = ckt.lefSiteMap.find( siteName );
+//  if( sitePtr == ckt.lefSiteMap.end()) {
+//    cout << "ERROR: SITE " << siteName << " not exists in LEF." << endl;
+//    exit(1);
+//  }
+  
+//  double siteSizeX = ckt.lefSiteStor[sitePtr->second].sizeX();
+//  double siteSizeY = ckt.lefSiteStor[sitePtr->second].sizeY();
+  double siteSizeX = rowBox.dx();
+  double siteSizeY = rowBox.dy();
+
+  CircuitInfo cInfo( 
+        dieBox->xMin(), dieBox->yMin(), 
+        dieBox->xMax(), dieBox->yMax(),
+//      1.0*points.x[0]/defScale, 
+//        1.0*points.y[0]/defScale,
+//        1.0*points.x[1]/defScale,
+//        1.0*points.y[1]/defScale,
         siteSizeX, siteSizeY ); 
 
   cout << endl;
 
   cout << "DieBBox: (" << cInfo.lx << " " << cInfo.ly << ") - (" 
     << cInfo.ux << " " << cInfo.uy << ")" << endl;
-//  cout << "Layout Information" << endl;
-//  for(int i=0; i<points.numPoints; i++) {
-//    cout << 1.0*points.x[i]/defScale << " ";
-//    cout << 1.0*points.y[i]/defScale << endl;
-//  }
 
 //  cout << "Original Macro List" << endl;
 
 //  MacroCircuit mckt(ckt, env, cInfo);
-  mckt.Init(&ckt, &env, &cInfo);   
+  mckt.Init(db, &env, &cInfo);   
   
   //  RandomPlace for special needs. 
   //  Really not recommended to execute this functioning 
@@ -562,7 +566,7 @@ vector<pair<Partition, Partition>> GetPart(
 
     // Fill in the Partitioning information
     PartClass lClass = None, uClass = None;
-    if( partition.partClass == ALL ) {
+    if( partition.partClass == MacroNetlist::PartClass::ALL ) {
       lClass = (isHorizontal)? W : S;
       uClass = (isHorizontal)? E : N;
     }
@@ -737,8 +741,9 @@ void UpdateMacroPartMap(
 // 
 // update ckt class from mckt, env.
 //
-void UpdateCircuitCoordi(EnvFile& env, MacroCircuit& mckt, Circuit::Circuit& ckt) {
+void UpdateCircuitCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
   unordered_set<int> macroIdxMap;
+  /*
   double defScale = ckt.defUnit;
 
   // update ckt structure
@@ -786,4 +791,5 @@ void UpdateCircuitCoordi(EnvFile& env, MacroCircuit& mckt, Circuit::Circuit& ckt
     ckt.defComponentStor[i].setPlacementStatus(0);
     ckt.defComponentStor[i].setPlacementLocation(-1,-1,-1);
   }
+  */
 }

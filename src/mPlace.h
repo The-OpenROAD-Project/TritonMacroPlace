@@ -2,6 +2,7 @@
 #define __MACRO_PLACE__
 
 #include "partition.h"
+#include "opendb/db.h"
 
 class MacroCircuit;
 class CircuitInfo;
@@ -22,9 +23,11 @@ void UpdateMacroPartMap( MacroCircuit& mckt,
         MyHash<MacroNetlist::PartClass>>& macroPartMap);
 
 std::vector< std::vector<MacroNetlist::Partition> > 
-PlaceMacros(EnvFile& env, Circuit::Circuit& ckt, MacroCircuit& mckt);
+PlaceMacros(odb::dbDatabase* db, 
+    EnvFile& env, MacroCircuit& mckt);
 
-void UpdateCircuitCoordi(EnvFile& env, MacroCircuit& mckt, Circuit::Circuit& ckt);
+void UpdateCircuitCoordi(odb::dbDatabase* db, 
+    EnvFile& env, MacroCircuit& mckt);
 
 
 #endif

@@ -19,10 +19,12 @@ using Eigen::VectorXf;
 typedef Eigen::SparseMatrix<int, Eigen::RowMajor> SMatrix;
 typedef Eigen::Triplet<int> T;
 
+using namespace odb;
+
 MacroCircuit::MacroCircuit() :
-  _db(0), _env(0),
   gHaloX(0), gHaloY(0), 
   gChannelX(0), gChannelY(0), 
+  _db(0), _env(0),
   lx(0), ly(0), ux(0), uy(0),
   netTable(0) {}
 
@@ -30,19 +32,21 @@ MacroCircuit::MacroCircuit(
     odb::dbDatabase* db,
     EnvFile* env,
     CircuitInfo* cinfo) :
-  _db(db), _env(env),
   gHaloX(0), gHaloY(0), 
   gChannelX(0), gChannelY(0), 
+  _db(db), _env(env),
   lx(0), ly(0), ux(0), uy(0),
   netTable(0) {
 
-  Init(env, cinfo);
+  Init(db, env, cinfo);
 }
 
 void MacroCircuit::Init( 
+    odb::dbDatabase* db, 
     EnvFile* env, 
     CircuitInfo* cinfo) {
   
+  _db = db; 
   _env = env;
 
   lx = cinfo->lx;
@@ -82,28 +86,38 @@ using std::make_pair;
 void MacroCircuit::FillMacroStor() {
   cout << "Extracting Macro Cells... ";
 
-  double cellHeight = FLT_MIN;
-  for(auto& curSite : _ckt->lefSiteStor) {
-    if( strcmp( curSite.siteClass(), "CORE" ) == 0 ) {
-      cellHeight = curSite.sizeY();
-      break;
-    }
-  }
-  double defScale = _ckt->defUnit;
-//  cout << "Normal cellHeight: " << cellHeight << endl;
-//  cout << "DEF scale down: " << defScale << endl;
+  dbTech* tech = _db->getTech();
 
-  defiPoints points = _ckt->defDieArea.getPoint();
+  dbChip* chip = _db->getChip();
+  dbBlock* block = chip->getBlock();
+  
+  dbSet<dbRow> rows = block->getRows();
+  adsRect dieBox;
+
+  rows.begin()->getBBox(dieBox);
+  int cellHeight = dieBox.dy();
+  cout << "cellHeight: " << cellHeight << endl;
+
+  const double dbu = tech->getDbUnitsPerMicron();
+//  cout << "Normal cellHeight: " << cellHeight << endl;
+//  cout << "DEF scale down: " << dbu << endl;
+
+//  defiPoints points = _ckt->defDieArea.getPoint();
 //  cout << points.numPoints << endl;
 
 //  for(int i=0; i<points.numPoints; i++ ) {
-//    cout << 1.0*points.x[i]/defScale << " " 
-//      << 1.0*points.y[i]/defScale << endl;
+//    cout << 1.0*points.x[i]/dbu << " " 
+//      << 1.0*points.y[i]/dbu << endl;
 //  }
   // cout << _ckt->defDieArea.xl() << " " << _ckt->defDieArea.yl() << " "
   //  << _ckt->defDieArea.xh() << " " << _ckt->defDieArea.yh() << endl;
 
+  for(dbInst* inst : block->getInsts() ){ 
 
+
+  }
+
+  /*
   for(auto& curComp : _ckt->defComponentStor) {
     auto macroPtr = _ckt->lefMacroMap.find( string(curComp.name()) );
     if( macroPtr == _ckt->lefMacroMap.end() ) {
@@ -186,8 +200,8 @@ void MacroCircuit::FillMacroStor() {
 
     MacroNetlist::Macro 
       tmpMacro( macroName, curComp.name(), 
-          1.0*curComp.placementX()/defScale, 
-          1.0*curComp.placementY()/defScale,
+          1.0*curComp.placementX()/dbu, 
+          1.0*curComp.placementY()/dbu,
           realSizeX, realSizeY, 
           curHaloX, curHaloY, 
           curChannelX, curChannelY,  
@@ -195,6 +209,7 @@ void MacroCircuit::FillMacroStor() {
 
     macroStor.push_back( tmpMacro ); 
   }
+*/
 
   if( macroStor.size() == 0 ) {
     cout << "ERROR: Cannot find any macros in this design. " << endl;
@@ -205,6 +220,9 @@ void MacroCircuit::FillMacroStor() {
 }
 
 void MacroCircuit::FillPinGroup(){
+  dbTech* tech = _db->getTech(); 
+  const double dbu = tech->getDbUnitsPerMicron();
+
   _sta = GetStaObject( *_env );
   cout << "OpenSTA Object Init Done!" << endl;
  
@@ -214,14 +232,16 @@ void MacroCircuit::FillPinGroup(){
   cout << "OpenSTA numEdge: " << numEdge << endl;
   cout << "OpenSTA numVertex: " << numVertex << endl;
 
-  int dbuLx = int(lx*_ckt->defUnit+0.5f);
-  int dbuLy = int(ly*_ckt->defUnit+0.5f);
-  int dbuUx = int(ux*_ckt->defUnit+0.5f);
-  int dbuUy = int(uy*_ckt->defUnit+0.5f);
+
+  int dbuLx = int(lx * dbu +0.5f);
+  int dbuLy = int(ly * dbu +0.5f);
+  int dbuUx = int(ux * dbu +0.5f);
+  int dbuUy = int(uy * dbu +0.5f);
 
   using MacroNetlist::PinGroupClass;
 
   unordered_map<string, PinGroupClass> pinGroupStrMap;
+  /*
   for(auto& curPin: _ckt->defPinStor) {
     if( curPin.hasUse() && 
         (strcmp(curPin.use(), "POWER") == 0 || strcmp(curPin.use(), "GROUND") == 0) ) {
@@ -252,6 +272,8 @@ void MacroCircuit::FillPinGroup(){
       exit(1);
     }
   }
+  */
+
 
   // this is always four array.
   pinGroupStor.resize(4);

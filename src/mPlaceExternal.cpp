@@ -1,21 +1,42 @@
 #include "mPlaceExternal.h"
 #include "mPlace.h"
+#include "opendb/lefin.h"
+#include "opendb/defin.h"
 
 using std::string;
 using std::cout;
 using std::endl;
 using std::to_string; 
+using namespace odb;
 
-mplace_external::mplace_external() : solCount(0) {}; 
-mplace_external::~mplace_external() {};
+mplace_external::mplace_external() : solCount(0) {
+  odb::dbDatabase* db = odb::dbDatabase::create();
+  db_id = db->getId();
+} 
+mplace_external::~mplace_external() {}
 
-void mplace_external::help() {};
+void mplace_external::help() {}
+void mplace_external::set_db(odb::dbDatabase* db) {
+  db_id = db->getId();
+}
+
 void mplace_external::import_lef(const char* lef) {
-  env.lefStor.push_back(lef);
+  dbDatabase* db = odb::dbDatabase::getDatabase(db_id);
+  odb::lefin lefReader(db, false);
+  lefReader.createTechAndLib("testlib", lef);
 }
 
 void mplace_external::import_def(const char* def) {
-  env.def = def; 
+  dbDatabase* db = odb::dbDatabase::getDatabase(db_id);
+  odb::defin defReader(db);
+
+  std::vector<odb::dbLib *> search_libs;
+  odb::dbSet<odb::dbLib> libs = db->getLibs();
+  odb::dbSet<odb::dbLib>::iterator itr;
+  for( itr = libs.begin(); itr != libs.end(); ++itr ) {
+    search_libs.push_back(*itr);
+  }
+  odb::dbChip* chip = defReader.createChip( search_libs,  def );
 }
 
 void mplace_external::export_def(const char* def) { 
@@ -60,23 +81,13 @@ void mplace_external::export_def(const char* def) {
   
   // bestset DEF writing
   std::vector<MacroNetlist::Partition> bestSet = allSets[bestSetIdx];
-  UpdateCircuitCoordi(env, mckt, ckt); 
+  dbDatabase* db = odb::dbDatabase::getDatabase(db_id);
+  UpdateCircuitCoordi(db, env, mckt); 
 
   // check plotting
   if( env.isPlot ) {
     mckt.Plot(string(def) + "_best.plt", bestSet );
   }
-
-  // top-level layout print
-  FILE* fp = fopen( def, "w"); 
-
-  if( fp == NULL) { 
-    cout << "ERROR: cannot open " << def << " to write output file" << endl;
-    exit(1);
-  }
-
-  ckt.WriteDef( fp );
-  fclose(fp);
 }
 
 void mplace_external::export_all_def(const char* location) {
@@ -160,7 +171,8 @@ void mplace_external::set_plot_enable(bool mode) {
 }
 
 bool mplace_external::place_macros() {
-  allSets = PlaceMacros(env, ckt, mckt);
+  odb::dbDatabase* db = odb::dbDatabase::getDatabase(db_id);
+  allSets = PlaceMacros(db, env, mckt);
   return true;
 }
 

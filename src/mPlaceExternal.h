@@ -17,6 +17,8 @@ public:
 
   void help();
 
+  void set_db(odb::dbDatabase* db);
+
   void import_lef(const char* lef);
   void import_def(const char* def);
   void export_def(const char* def);
@@ -34,6 +36,7 @@ public:
   int get_solution_count();
 
 private:
+  int db_id;
   EnvFile env;
   MacroCircuit mckt;
   std::vector< std::vector<MacroNetlist::Partition> > allSets;
