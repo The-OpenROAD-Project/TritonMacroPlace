@@ -1,5 +1,5 @@
-#ifndef __REPLACE_TIMING_STA__
-#define __REPLACE_TIMING_STA__ 0
+#ifndef __MPLACE_TIMING_STA__
+#define __MPLACE_TIMING_STA__ 
 
 #include "Machine.hh"
 #include "Liberty.hh"
@@ -83,9 +83,6 @@ namespace sta {
     extern const char *tcl_inits[];
 }
 
-//void evalTclInitForLibrary(Tcl_Interp *interp, 
-//        const char *inits[]);
-void parasiticsChangedAfter(sta::Sta* sta); 
 sta::Sta* GetStaObject(EnvFile& _env);
 
 

@@ -79,7 +79,8 @@ void mplace_external::export_def(const char* def) {
   fclose(fp);
 }
 
-void mplace_external::export_all_def(const char* location) { 
+void mplace_external::export_all_def(const char* location) {
+ /* 
   solCount = 0;
   for(auto& curSet: allSets) {
     // skip for top-layout partition
@@ -132,6 +133,7 @@ void mplace_external::export_all_def(const char* location) {
     
     solCount++;
   }
+  */
 }
 
 void mplace_external::import_sdc(const char* sdc) {

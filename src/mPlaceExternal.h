@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 #include "parse.h"
-#include "lefdefIO.h"
 #include "circuit.h"
 
 namespace MacroNetlist {
@@ -36,7 +35,6 @@ public:
 
 private:
   EnvFile env;
-  Circuit::Circuit ckt;
   MacroCircuit mckt;
   std::vector< std::vector<MacroNetlist::Partition> > allSets;
   int solCount;

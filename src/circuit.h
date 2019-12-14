@@ -8,12 +8,12 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
+#include <opendb/db.h>
 
 #include "parse.h"
 #include "graph.h"
 #include "partition.h"
 #include "macro.h"
-#include "lefdefIO.h"
 
 
 namespace sta { 
@@ -25,9 +25,9 @@ class CircuitInfo;
 class MacroCircuit {
   public:
     MacroCircuit();
-    MacroCircuit(Circuit::Circuit* ckt, EnvFile* env, CircuitInfo* cinfo);
+    MacroCircuit(odb::dbDatabase* db, EnvFile* env, CircuitInfo* cinfo);
     
-    void Init(Circuit::Circuit* ckt, EnvFile* env, CircuitInfo* cinfo);
+    void Init(EnvFile* env, CircuitInfo* cinfo);
     
     std::vector<MacroNetlist::Vertex> vertexStor;
     std::vector<MacroNetlist::Edge> edgeStor;
@@ -82,7 +82,7 @@ class MacroCircuit {
     void StubPlacer(double snapGrid);
 
   private:
-    Circuit::Circuit* _ckt;
+    odb::dbDatabase* _db;
     EnvFile* _env;
     sta::Sta* _sta;
 
@@ -154,7 +154,6 @@ class CircuitInfo {
 
 bool ParseArgv(int argc, char** argv, EnvFile& _env);
 void PrintUsage();
-//void GetMacroStor(Circuit::Circuit& _ckt, MacroNetlist::Circuit& _mckt);
 
 // for string escape
 inline bool ReplaceStringInPlace( std::string& subject, 

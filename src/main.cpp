@@ -8,7 +8,6 @@
 #include "timingSta.h"
 #include "parse.h"
 #include "circuit.h"
-#include "lefdefIO.h"
 
 #define STRING_EQUAL(a, b) !strcmp((a), (b))
 

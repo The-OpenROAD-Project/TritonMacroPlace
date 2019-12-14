@@ -17,12 +17,6 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 set(MPLACE_HOME ${PROJECT_SOURCE_DIR} )
-set(DEFLIB_HOME
-  ${PROJECT_SOURCE_DIR}/module/def
-)
-set(LEFLIB_HOME
-  ${PROJECT_SOURCE_DIR}/module/lef
-)
 set(OPENSTA_HOME
   ${PROJECT_SOURCE_DIR}/module/OpenSTA
 )
@@ -32,15 +26,17 @@ set(EIGEN_HOME
 set(ABKCOMMON_HOME
   ${PROJECT_SOURCE_DIR}/module/ABKCommon 
 )
-set( PARQUET_HOME
+set(PARQUET_HOME
   ${PROJECT_SOURCE_DIR}/module/ParquetFP
 )
+set(OPENDB_HOME 
+  ${PROJECT_SOURCE_DIR}/module/OpenDB
+)
 
-add_subdirectory(${DEFLIB_HOME})
-add_subdirectory(${LEFLIB_HOME})
 add_subdirectory(${OPENSTA_HOME})
 add_subdirectory(${ABKCOMMON_HOME})
 add_subdirectory(${PARQUET_HOME})
+add_subdirectory(${OPENDB_HOME})
 
 set(ENV{TYPE_CALL} library)
 
@@ -59,14 +55,11 @@ find_package(Threads REQUIRED)
 
 set (MPLACE_SRC 
   src/circuit.cpp
-  src/defParser.cpp
-  src/lefParser.cpp
   src/main.cpp
   src/timingSta.cpp
   src/partition.cpp
   src/parse.cpp
   src/graph.cpp
-  src/lefdefIO.cpp
   src/macro.cpp
   src/mPlace_wrap.cpp
   src/mPlaceExternal.cpp
@@ -80,44 +73,10 @@ set (MPLACE_HEADER
 ############################################################
 # include directories 
 ############################################################
-include_directories(
-  ${BOOST_INCLUDEDIR}
-
-  ${EIGEN_HOME}
-  ${ABKCOMMON_HOME}
-  ${PARQUET_HOME}/src
-
-  ${DEFLIB_HOME}/def
-  ${DEFLIB_HOME}/defzlib
-
-  ${LEFLIB_HOME}/lef
-  ${LEFLIB_HOME}/lefzlib
-
-  ${OPENSTA_HOME}/app
-  ${OPENSTA_HOME}/dcalc
-  ${OPENSTA_HOME}/graph
-  ${OPENSTA_HOME}/liberty
-  ${OPENSTA_HOME}/network
-  ${OPENSTA_HOME}/parasitics
-  ${OPENSTA_HOME}/sdc
-  ${OPENSTA_HOME}/sdf
-  ${OPENSTA_HOME}/search
-  ${OPENSTA_HOME}/tcl
-  ${OPENSTA_HOME}/util
-  ${OPENSTA_HOME}/verilog
-
-  )
 
 ############################################################
 # Create a library 
 ############################################################
-add_library( mplacelib STATIC
-  ${MPLACE_SRC}
-)
-
-set_target_properties( mplacelib 
-  PROPERTIES OUTPUT_NAME "TritonFPlan"
-)
 
 add_custom_command(OUTPUT ${MPLACE_HOME}/src/mPlace_wrap.cpp
   COMMAND ${SWIG_EXECUTABLE} -tcl8 -c++ -o ${MPLACE_HOME}/src/mPlace_wrap.cpp ${MPLACE_HOME}/src/mPlace.i   
@@ -133,20 +92,35 @@ add_executable( mplace
 )
 
 add_dependencies( mplace sta )
-add_dependencies( mplace def )
-add_dependencies( mplace lef )
 
-add_dependencies( mplacelib sta )
-add_dependencies( mplacelib def )
-add_dependencies( mplacelib lef )
+target_include_directories( mplace
+PRIVATE
+  ${BOOST_INCLUDEDIR}
+
+  ${EIGEN_HOME}
+  ${ABKCOMMON_HOME}
+  ${PARQUET_HOME}/src
+
+  ${OPENSTA_HOME}/app
+  ${OPENSTA_HOME}/dcalc
+  ${OPENSTA_HOME}/graph
+  ${OPENSTA_HOME}/liberty
+  ${OPENSTA_HOME}/network
+  ${OPENSTA_HOME}/parasitics
+  ${OPENSTA_HOME}/sdc
+  ${OPENSTA_HOME}/sdf
+  ${OPENSTA_HOME}/search
+  ${OPENSTA_HOME}/tcl
+  ${OPENSTA_HOME}/util
+  ${OPENSTA_HOME}/verilog
+
+  ${OPENDB_HOME}/include/opendb
+  ${OPENDB_HOME}/include
+  )
 
 target_link_libraries( mplace
   PUBLIC
   OpenSTA
-  def
-  defzlib
-  lef
-  lefzlib
 
   ParquetFP
   ABKCommon
@@ -162,6 +136,5 @@ target_link_libraries( mplace
 
 install(FILES ${MPLACE_HEADER} DESTINATION include)
 install(TARGETS mplace DESTINATION bin)
-install(TARGETS mplacelib DESTINATION lib)
 
 

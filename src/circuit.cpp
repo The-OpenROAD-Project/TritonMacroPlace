@@ -4,7 +4,6 @@
 #include <fstream>
 #include <sstream>
 
-#include "lefdefIO.h"
 #include "parse.h"
 #include "circuit.h"
 #include "timingSta.h"
@@ -21,30 +20,29 @@ typedef Eigen::SparseMatrix<int, Eigen::RowMajor> SMatrix;
 typedef Eigen::Triplet<int> T;
 
 MacroCircuit::MacroCircuit() :
-  _ckt(0), _env(0),
+  _db(0), _env(0),
   gHaloX(0), gHaloY(0), 
   gChannelX(0), gChannelY(0), 
   lx(0), ly(0), ux(0), uy(0),
   netTable(0) {}
 
 MacroCircuit::MacroCircuit(
-    Circuit::Circuit* ckt, 
+    odb::dbDatabase* db,
     EnvFile* env,
     CircuitInfo* cinfo) :
-  _ckt(ckt), _env(env),
+  _db(db), _env(env),
   gHaloX(0), gHaloY(0), 
   gChannelX(0), gChannelY(0), 
   lx(0), ly(0), ux(0), uy(0),
   netTable(0) {
 
-  Init(ckt, env, cinfo);
+  Init(env, cinfo);
 }
 
-void MacroCircuit::Init( Circuit::Circuit* ckt,
+void MacroCircuit::Init( 
     EnvFile* env, 
     CircuitInfo* cinfo) {
   
-  _ckt = ckt; 
   _env = env;
 
   lx = cinfo->lx;
@@ -177,7 +175,7 @@ void MacroCircuit::FillMacroStor() {
         realSizeY = curMacro.sizeY(); 
         break;
       case 1:
-      case 3:
+      case 3: 
       case 5:
       case 7:
         realSizeX = curMacro.sizeY();
