@@ -90,9 +90,12 @@ PlaceMacros(EnvFile& env, Circuit::Circuit& ckt, MacroCircuit& mckt) {
         1.0*points.y[0]/defScale,
         1.0*points.x[1]/defScale,
         1.0*points.y[1]/defScale,
-        siteSizeX, siteSizeY );
+        siteSizeX, siteSizeY ); 
 
   cout << endl;
+
+  cout << "DieBBox: (" << cInfo.lx << " " << cInfo.ly << ") - (" 
+    << cInfo.ux << " " << cInfo.uy << ")" << endl;
 //  cout << "Layout Information" << endl;
 //  for(int i=0; i<points.numPoints; i++) {
 //    cout << 1.0*points.x[i]/defScale << " ";

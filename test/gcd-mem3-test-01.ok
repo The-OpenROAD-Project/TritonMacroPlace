@@ -1,6 +1,7 @@
 MacroPlacer Version: 1.0.0
 PROC: LEF/DEF Parsing... Done!
 
+DieBBox: (0 0) - (58.14 56)
 Extracting Macro Cells... Done!
 Extracted # Macros: 3
 OpenSTA 2.0.17 2fe5cfafa2 Copyright (c) 2019, Parallax Software, Inc.

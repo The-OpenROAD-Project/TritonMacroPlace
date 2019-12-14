@@ -656,6 +656,10 @@ bool Partition::DoAnneal() {
   // Failed annealing
   if( sol.totalWidth() > width ||
       sol.totalHeight() > height ) {
+    cout << "Failed" << endl;
+    cout << "ParquetBBox: " << sol.totalWidth() << " " << sol.totalHeight() << endl;
+    cout << "SetBBox: " << width << " " << height << endl;
+
     return false;
   }
   delete annealer;

@@ -1,6 +1,7 @@
 MacroPlacer Version: 1.0.0
 PROC: LEF/DEF Parsing... Done!
 
+DieBBox: (0 0) - (69.35 67.2)
 Extracting Macro Cells... Done!
 Extracted # Macros: 5
 OpenSTA 2.0.17 2fe5cfafa2 Copyright (c) 2019, Parallax Software, Inc.
@@ -93,7 +94,19 @@ PROC: End 2nd Second Level Partition
 
 INFO: Total Extracted Sets = 5
 
-Parquet is starting... Parquet is starting... Parquet is starting... Parquet is starting... PossibleSol : 0
+Parquet is starting... Failed
+ParquetBBox: 55.12 74
+SetBBox: 69.35 67.2
+Parquet is starting... Failed
+ParquetBBox: 55.12 74
+SetBBox: 69.35 67.2
+Parquet is starting... Failed
+ParquetBBox: 55.12 74
+SetBBox: 69.35 67.2
+Parquet is starting... Failed
+ParquetBBox: 55.12 74
+SetBBox: 69.35 67.2
+PossibleSol : 0
 VERSION 5.8 ;
 DIVIDERCHAR "/" ;
 BUSBITCHARS "[]" ;
