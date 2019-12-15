@@ -7,6 +7,11 @@ namespace sta {
 class Instance; 
 }
 
+namespace odb {
+class dbInst;
+}
+
+
 namespace MacroNetlist { 
 
 class Vertex;
@@ -19,13 +24,15 @@ class Macro {
     double haloX, haloY; 
     double channelX, channelY;
     Vertex* ptr;
-    sta::Instance* instPtr;
+    sta::Instance* staInstPtr;
+    odb::dbInst* dbInstPtr;
     Macro( std::string _name, std::string _type, 
         double _lx, double _ly, 
         double _w, double _h,
         double _haloX, double _haloY, 
         double _channelX, double _channelY,
-        Vertex* _ptr, sta::Instance* _instPtr);
+        Vertex* _ptr, sta::Instance* _staInstPtr,
+        odb::dbInst* _dbInstPtr);
     void Dump(); 
 };
 

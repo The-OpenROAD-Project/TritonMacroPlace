@@ -2,6 +2,7 @@
 #include "mPlace.h"
 #include "opendb/lefin.h"
 #include "opendb/defin.h"
+#include "opendb/defout.h"
 
 using std::string;
 using std::cout;
@@ -41,116 +42,18 @@ void mplace_external::import_def(const char* def) {
   for( itr = libs.begin(); itr != libs.end(); ++itr ) {
     search_libs.push_back(*itr);
   }
-  odb::dbChip* chip = defReader.createChip( search_libs,  def );
+  defReader.createChip( search_libs,  def );
 }
 
 void mplace_external::export_def(const char* def) { 
-  solCount = 0;
-  int bestSetIdx = 0;
-  double bestWwl = DBL_MIN;
-  for(auto& curSet: allSets) {
-    // skip for top-layout partition
-    if( curSet.size() == 1) {
-      continue;
-    }
-    // For each partitions (four partition)
-    //
-    bool isFailed = false;
-    for(auto& curPart : curSet) {
-      // Annealing based on ParquetFP Engine
-      if( !curPart.DoAnneal() ) {
-        isFailed = true;
-        break;
-      }
-      // Update mckt frequently
-      mckt.UpdateMacroCoordi(curPart);
-    }
-    if( isFailed ) {
-      continue;
-    }
-
-    // update partitons' macro info
-    for(auto& curPart : curSet) { 
-      curPart.UpdateMacroCoordi(mckt);
-    }
-      
-    double curWwl = mckt.GetWeightedWL();
-    cout << "Set " << &curSet - &allSets[0] << ": WWL = " << curWwl << endl;
-
-    if( curWwl > bestWwl ) {
-      bestWwl = curWwl;
-      bestSetIdx = &curSet - &allSets[0]; 
-    }
-    solCount++;
-  }
-  
-  // bestset DEF writing
-  std::vector<MacroNetlist::Partition> bestSet = allSets[bestSetIdx];
+  defout writer;
+  writer.setVersion( defout::DEF_5_6 );
   dbDatabase* db = odb::dbDatabase::getDatabase(db_id);
-  UpdateOpendbCoordi(db, env, mckt); 
-
-  // check plotting
-  if( env.isPlot ) {
-    mckt.Plot(string(def) + "_best.plt", bestSet );
-  }
+  dbChip* chip = db->getChip();
+  dbBlock* block = chip->getBlock();
+  writer.writeBlock( block, def );
 }
 
-void mplace_external::export_all_def(const char* location) {
- /* 
-  solCount = 0;
-  for(auto& curSet: allSets) {
-    // skip for top-layout partition
-    if( curSet.size() == 1) {
-      continue;
-    }
-
-    bool isFailed = false;
-    // For each partitions (four partition)
-    for(auto& curPart : curSet) {
-      // Annealing based on ParquetFP Engine
-      if( !curPart.DoAnneal() ) {
-        isFailed = true;
-        break;
-      }
-      // Update mckt frequently
-      mckt.UpdateMacroCoordi(curPart);
-    }
-    
-    if( isFailed ) {
-      continue;
-    }
-
-    // update partitons' macro info
-    for(auto& curPart : curSet) { 
-      curPart.UpdateMacroCoordi(mckt);
-    }
-
-    // update ckt structure
-    UpdateCircuitCoordi(env, mckt, ckt);
-
-    // check plotting
-    if( env.isPlot ) {
-      mckt.Plot(string(location) + "_" + std::to_string(solCount) + ".plt", curSet);
-    }
-
-    string fileName = string(string(location) + "_" 
-            + std::to_string(solCount) + ".def");
-
-    // top-level layout print
-    FILE* fp = fopen(fileName.c_str(), "w"); 
-
-    if( fp == NULL) { 
-      cout << "ERROR: cannot open " << fileName << " to write output file" << endl;
-      exit(1);
-    }
-
-    ckt.WriteDef( fp );
-    fclose(fp);
-    
-    solCount++;
-  }
-  */
-}
 
 void mplace_external::import_sdc(const char* sdc) {
   env.sdc = sdc;
@@ -177,7 +80,7 @@ void mplace_external::set_plot_enable(bool mode) {
 
 bool mplace_external::place_macros() {
   odb::dbDatabase* db = odb::dbDatabase::getDatabase(db_id);
-  allSets = PlaceMacros(db, env, mckt);
+  PlaceMacros(db, env, mckt, solCount);
   return true;
 }
 

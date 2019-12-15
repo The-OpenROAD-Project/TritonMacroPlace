@@ -22,9 +22,9 @@ void UpdateMacroPartMap( MacroCircuit& mckt,
         std::unordered_map< MacroNetlist::PartClass, std::vector<int>,
         MyHash<MacroNetlist::PartClass>>& macroPartMap);
 
-std::vector< std::vector<MacroNetlist::Partition> > 
+void
 PlaceMacros(odb::dbDatabase* db, 
-    EnvFile& env, MacroCircuit& mckt);
+    EnvFile& env, MacroCircuit& mckt, int& solCount);
 
 void UpdateOpendbCoordi(odb::dbDatabase* db, 
     EnvFile& env, MacroCircuit& mckt);

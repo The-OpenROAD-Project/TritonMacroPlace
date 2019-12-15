@@ -159,7 +159,7 @@ void MacroCircuit::FillMacroStor() {
           1.0*inst->getBBox()->getDX()/dbu, 1.0*inst->getBBox()->getDY()/dbu, 
           curHaloX, curHaloY, 
           curChannelX, curChannelY,  
-          NULL, NULL );
+          NULL, NULL, inst );
     macroStor.push_back( tmpMacro ); 
   }
 
@@ -1248,7 +1248,7 @@ void MacroCircuit::UpdateInstanceToMacroStor() {
 //    cout << "Passed: " << instName << endl;
 
     // macro & macroInstMap update
-    macroStor[mnPtr->second].instPtr = inst;
+    macroStor[mnPtr->second].staInstPtr = inst;
     macroInstMap[inst] = mnPtr->second; 
   }
 }

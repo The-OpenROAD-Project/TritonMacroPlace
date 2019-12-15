@@ -56,8 +56,8 @@ void PrintAllSets(FILE* fp, CircuitInfo& cInfo,
   cout << "Done!" << endl;
 }
 
-vector< vector<Partition> >
-PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
+void 
+PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt, int& solCount) {
 
   dbTech* tech = db->getTech();
   dbChip* chip = db->getChip(); 
@@ -228,105 +228,54 @@ PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
       cout << "PROC: Vertical Cuts" << endl;
     }
   }
-  cout << "INFO: Total Extracted Sets = " << allSets.size() << endl << endl;
+  cout << "INFO: Total Extracted Sets = " << allSets.size() -1 << endl << endl;
 
-  return allSets;
-
-
-  // Legalize macro on global Structure
-//  double snapGrid = 0.002f;
-
-  // TopLevel Macro Location Update
-  // For each possible full-layout
- 
-  /* 
-  int setCnt = 0;
+  solCount = 0;
   int bestSetIdx = 0;
   double bestWwl = DBL_MIN;
   for(auto& curSet: allSets) {
-
     // skip for top-layout partition
     if( curSet.size() == 1) {
       continue;
     }
-
     // For each partitions (four partition)
-//    cout << "curSet.size: " << curSet.size() << endl;
+    //
+    bool isFailed = false;
     for(auto& curPart : curSet) {
       // Annealing based on ParquetFP Engine
-      curPart.DoAnneal();
+      if( !curPart.DoAnneal() ) {
+        isFailed = true;
+        break;
+      }
       // Update mckt frequently
       mckt.UpdateMacroCoordi(curPart);
+    }
+    if( isFailed ) {
+      continue;
     }
 
     // update partitons' macro info
     for(auto& curPart : curSet) { 
       curPart.UpdateMacroCoordi(mckt);
     }
-
-    if( env.generateAll ) {
-      // update ckt structure
-      UpdateCircuitCoordi(env, mckt, ckt);
-
-      // check plotting
-      if( env.isPlot ) {
-        mckt.Plot(env.output + "_" + std::to_string(setCnt) + ".plt", curSet);
-      }
-
-      // top-level layout print
-      FILE* fp = 
-        fopen(string(env.output + "_" 
-              + std::to_string(setCnt) + ".def").c_str(), "w"); 
-
-      if( fp == NULL) { 
-        cout << "ERROR: cannot open " << env.output << " to write output file" << endl;
-        exit(1);
-      }
-
-      ckt.WriteDef( fp );
-      fclose(fp);
-    }
-    else {
-      double curWwl = mckt.GetWeightedWL();
-      cout << "Set " << &curSet - &allSets[0] << ": WWL = " << curWwl << endl;
       
-      if( curWwl > bestWwl ) {
-        bestWwl = curWwl;
-        bestSetIdx = &curSet - &allSets[0]; 
-      }
+    double curWwl = mckt.GetWeightedWL();
+    cout << "Set " << &curSet - &allSets[0] << ": WWL = " << curWwl << endl;
+
+    if( curWwl > bestWwl ) {
+      bestWwl = curWwl;
+      bestSetIdx = &curSet - &allSets[0]; 
     }
-    setCnt ++;
+    solCount++;
   }
 
   // bestset DEF writing
-  vector<Partition> bestSet = allSets[bestSetIdx];
-  if( !env.generateAll ) {
-    for(auto& curPart : bestSet) { 
-      curPart.UpdateMacroCoordi(mckt);
-    }
-    
-    UpdateCircuitCoordi(env, mckt, ckt); 
-
-    // check plotting
-    if( env.isPlot ) {
-      mckt.Plot(env.output + "_best.plt", bestSet );
-    }
-
-    // top-level layout print
-    FILE* fp = 
-      fopen(string(env.output + "_best.def").c_str(), "w"); 
-
-    if( fp == NULL) { 
-      cout << "ERROR: cannot open " << env.output << " to write output file" << endl;
-      exit(1);
-    }
-
-    ckt.WriteDef( fp );
-    fclose(fp);
+  std::vector<MacroNetlist::Partition> bestSet = allSets[bestSetIdx];
+  for( auto& curBestPart: bestSet) { 
+    mckt.UpdateMacroCoordi(curBestPart);
   }
-   */
-   
-  
+  UpdateOpendbCoordi(db, env, mckt); 
+
 
   /*
   // Writing functions for Sets file
@@ -341,73 +290,10 @@ PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
   fclose(fp);
   */
 
-
-
   // ParquetFormat print
   // only top-level formats
 //  layout.PrintParquetFormat(_env.output);
-
   cout << "PROC: End TritonMacroPlacer" << endl;
-
-
-  // All Edges... 
-//  for(int i=1; i<=numEdge; i++) {
-//    sta::Edge* edge = _sta->graph()->edge(i);
-//    cout << edge->from(_sta->graph())->name(_sta->network()) << 
-//      " -> " << edge->to(_sta->graph())->name(_sta->network()) << endl;
-//  }
-
-
-//  PinSeq pinStor;
-//  pinStor.push_back( );
-
-//  for(auto& curSet : allSets) {
-//    for(auto& curPart : curSet) {
-//      for(auto& curMacro : curPart.macroStor) {
-//        cout << curMacro.name << endl;
-//        Pin* curPin = _sta->network()->findPin(curMacro.name.c_str()); 
-//      }
-//    }
-//  } 
-  
-  /* 
-  // vertex 
-  sta::VertexIterator vertIter(_sta->graph());
-  while( vertIter.hasNext()) {
-    sta::Vertex* vertex = vertIter.next();
-//    if( vertex->isRoot() ) {
-//     if ( vertex->isCheckClk() || vertex->isGatedClkEnable() || vertex->isRegClk() ) {
-//    if( _sta->network()->isTopLevelPort(vertex->pin())) {
-//      cout << vertex->name(_sta->network()) << endl;
-//    }
-  }
-
-  for(int i=1; i<=numEdge; i++) {
-    sta::Edge* edge = _sta->graph()->edge(i);
-//    cout << edge->from(_sta->graph())->name(_sta->network()) << 
-//      " -> " << edge->to(_sta->graph())->name(_sta->network()) << endl;
-  }
-
-  LeafInstanceIterator* leafInstanceIter = _sta->network()->leafInstanceIterator();
-  while( leafInstanceIter->hasNext() ) {
-    Instance* instance = leafInstanceIter->next();
-//    cout << _sta->network()->name(instance) << "/";
-    InstancePinIterator* instancePinIter = _sta->network()->pinIterator(instance);
-    while( instancePinIter->hasNext()) {
-      sta::Pin* pin = instancePinIter->next();
-      if( _sta->network()->isDriver(pin) ) {
-        cout << "D: ";
-      }
-      else if( _sta->network()->isLoad(pin) ) {
-        cout << "L: ";
-      }
-      cout << _sta->network()->name(pin) << endl ;
-    }
-    cout <<endl;
-  }
-  */
-  
-//  cout << "top: " << _sta->network()->name(_sta->network()->topInstance()) << endl;
 }
 
 
@@ -596,7 +482,8 @@ vector<pair<Partition, Partition>> GetPart(
               curMacro.w, curMacro.h,
               curMacro.haloX, curMacro.haloY,
               curMacro.channelX, curMacro.channelY, 
-              curMacro.ptr, curMacro.instPtr )) ; 
+              curMacro.ptr, curMacro.staInstPtr,
+              curMacro.dbInstPtr )) ; 
       }
       else if( chkArr[i] == 2 ) {
         upperPart.macroStor.push_back(
@@ -606,7 +493,8 @@ vector<pair<Partition, Partition>> GetPart(
               curMacro.w, curMacro.h,
               curMacro.haloX, curMacro.haloY,
               curMacro.channelX, curMacro.channelY, 
-              curMacro.ptr, curMacro.instPtr));
+              curMacro.ptr, curMacro.staInstPtr,
+              curMacro.dbInstPtr));
       }
       else if( chkArr[i] == 3 ) {
         double centerPoint = 
@@ -621,7 +509,8 @@ vector<pair<Partition, Partition>> GetPart(
                 curMacro.w, curMacro.h,
                 curMacro.haloX, curMacro.haloY,
                 curMacro.channelX, curMacro.channelY, 
-                curMacro.ptr, curMacro.instPtr )) ; 
+                curMacro.ptr, curMacro.staInstPtr,
+                curMacro.dbInstPtr )) ; 
         
         }
         else {
@@ -632,7 +521,8 @@ vector<pair<Partition, Partition>> GetPart(
                 curMacro.w, curMacro.h,
                 curMacro.haloX, curMacro.haloY,
                 curMacro.channelX, curMacro.channelY, 
-                curMacro.ptr, curMacro.instPtr));
+                curMacro.ptr, curMacro.staInstPtr,
+                curMacro.dbInstPtr));
         }
       }
     }
@@ -700,10 +590,10 @@ void UpdateMacroPartMap(
     vector<int> curMacroStor;
     // convert macro Information into macroIdx
     for(auto& curMacro: part.macroStor) {
-      auto miPtr = mckt.macroInstMap.find( curMacro.instPtr );
+      auto miPtr = mckt.macroInstMap.find( curMacro.staInstPtr );
       if( miPtr == mckt.macroInstMap.end() ) {
         cout << "ERROR: macro " << curMacro.name 
-          << " not exists in macroInstMap: " << curMacro.instPtr << endl;
+          << " not exists in macroInstMap: " << curMacro.staInstPtr << endl;
         exit(1);
       }
       curMacroStor.push_back( miPtr->second) ;
@@ -718,57 +608,14 @@ void UpdateMacroPartMap(
 }
 
 // 
-// update ckt class from mckt, env.
-//
+// update opendb dataset from mckt.
 void UpdateOpendbCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
-  unordered_set<int> macroIdxMap;
-  /*
-  double defScale = ckt.defUnit;
-
-  // update ckt structure
+  dbTech* tech = db->getTech();
+  const int dbu = tech->getDbUnitsPerMicron();
+  
   for(auto& curMacro : mckt.macroStor) {
-    auto cPtr = ckt.defComponentMap.find( curMacro.name );
-    if( cPtr == ckt.defComponentMap.end()) {
-      cout << "ERROR: Cannot find " << curMacro.name 
-        << " in defiComponentMap" << endl;
-      exit(1);
-    }
-    int cIdx = cPtr->second;
-    macroIdxMap.insert(cIdx);
-    int lx = int(curMacro.lx * defScale + 0.5f);
-    int ly = int(curMacro.ly * defScale + 0.5f);
-
-    int orient = -1;
-    if( ckt.defComponentStor[cIdx].placementStatus() != 0 
-        && ckt.defComponentStor[cIdx].placementStatus() != DEFI_COMPONENT_UNPLACED ) {
-      // Follow original orient 
-      orient = ckt.defComponentStor[cIdx].placementOrient(); 
-    }
-    else {
-      // Default is North
-      orient = 0;
-    }
-
-    if( env.isWestFix ) {
-      orient = 1;
-    }
-
-    ckt.defComponentStor[cIdx].
-      setPlacementLocation(lx, ly, orient);
-
-    ckt.defComponentStor[cIdx].
-      setPlacementStatus(DEFI_COMPONENT_FIXED);
+    curMacro.dbInstPtr->setLocation( 
+        int(curMacro.lx * dbu + 0.5f), int(curMacro.ly * dbu + 0.5f) ) ;
+    curMacro.dbInstPtr->setPlacementStatus( dbPlacementStatus::LOCKED ) ;
   }
-
-  // reset other cells's location not to have bug in other tools
-  for(size_t i=0; i<ckt.defComponentStor.size(); i++) {
-    // continue for MacroIndex
-    if( macroIdxMap.find(i) != macroIdxMap.end() ) {
-      continue;
-    }
-
-    ckt.defComponentStor[i].setPlacementStatus(0);
-    ckt.defComponentStor[i].setPlacementLocation(-1,-1,-1);
-  }
-  */
 }
