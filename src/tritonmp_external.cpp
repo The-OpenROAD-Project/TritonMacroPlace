@@ -1,5 +1,5 @@
-#include "mPlaceExternal.h"
-#include "mPlace.h"
+#include "tritonmp/tritonmp_external.h"
+#include "macroPlace.h"
 #include "opendb/lefin.h"
 #include "opendb/defin.h"
 #include "opendb/defout.h"

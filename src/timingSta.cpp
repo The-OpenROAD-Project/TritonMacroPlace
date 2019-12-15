@@ -50,8 +50,7 @@ sta::Sta* GetStaObject(EnvFile& _env ) {
   }
   _sta->readNetlistBefore();       
   
-  bool readVerilog = 
-    readVerilogFile(_env.verilog.c_str(), _sta->networkReader());
+  readVerilogFile(_env.verilog.c_str(), _sta->networkReader());
 
   //link_design
   std::cout << "Linking in OpenSTA ..." << std::endl;

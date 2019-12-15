@@ -1,4 +1,4 @@
-#include "mPlace.h"
+#include "macroPlace.h"
 #include "circuit.h"
 #include "partition.h" 
 #include <opendb/db.h>
@@ -13,8 +13,10 @@ using std::vector;
 using std::pair;
 using std::unordered_map;
 using std::unordered_set;
-using MacroNetlist::Partition;
-using namespace MacroNetlist;
+using MacroPlace::Partition;
+
+using namespace MacroPlace;
+
 using namespace boost::icl;
 
 using namespace odb;
@@ -117,7 +119,8 @@ PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt, int& solCount) {
 
   vector< vector<Partition> > allSets;
 
-  // Fill the MacroNetlist for ALL circuits
+  // Fill the MacroPlace for ALL circuits
+
   unordered_map< PartClass, vector<int>, 
     MyHash<PartClass>> globalMacroPartMap;
   UpdateMacroPartMap( mckt, layout, globalMacroPartMap );
@@ -270,7 +273,8 @@ PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt, int& solCount) {
   }
 
   // bestset DEF writing
-  std::vector<MacroNetlist::Partition> bestSet = allSets[bestSetIdx];
+  std::vector<MacroPlace::Partition> bestSet = allSets[bestSetIdx];
+
   for( auto& curBestPart: bestSet) { 
     mckt.UpdateMacroCoordi(curBestPart);
   }
@@ -431,7 +435,8 @@ vector<pair<Partition, Partition>> GetPart(
 
     // Fill in the Partitioning information
     PartClass lClass = None, uClass = None;
-    if( partition.partClass == MacroNetlist::PartClass::ALL ) {
+    if( partition.partClass == MacroPlace::PartClass::ALL ) {
+
       lClass = (isHorizontal)? W : S;
       uClass = (isHorizontal)? E : N;
     }
@@ -581,9 +586,12 @@ vector<pair<Partition, Partition>> GetPart(
 // second: macro candidates.
 void UpdateMacroPartMap( 
     MacroCircuit& mckt,
-    MacroNetlist::Partition& part, 
-    unordered_map<MacroNetlist::PartClass, vector<int>, 
-    MyHash<MacroNetlist::PartClass>>& macroPartMap ) {
+    MacroPlace::Partition& part, 
+
+    unordered_map<MacroPlace::PartClass, vector<int>, 
+
+    MyHash<MacroPlace::PartClass>>& macroPartMap ) {
+
 
   auto mpPtr = macroPartMap.find( part.partClass );
   if( mpPtr == macroPartMap.end() ) {

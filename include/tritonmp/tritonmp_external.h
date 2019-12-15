@@ -6,7 +6,7 @@
 #include "parse.h"
 #include "circuit.h"
 
-namespace MacroNetlist {
+namespace MacroPlace {
 class Partition;
 }
 

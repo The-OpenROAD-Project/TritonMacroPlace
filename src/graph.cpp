@@ -1,7 +1,8 @@
 #include "graph.h"
 
 
-namespace MacroNetlist {
+namespace MacroPlace {
+
 
 Edge::Edge(): from(0), to(0), weight(0) {}; 
 Edge::Edge(Vertex* _from, Vertex* _to, int _weight): 

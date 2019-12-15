@@ -18,8 +18,10 @@ using std::string;
 using std::pair;
 using std::unordered_map;
 using std::unordered_set;
-using MacroNetlist::Partition;
-using MacroNetlist::PartClass;
+using MacroPlace::Partition;
+
+using MacroPlace::PartClass;
+
 
 extern "C" {
 extern int Mplace_Init(Tcl_Interp *interp);

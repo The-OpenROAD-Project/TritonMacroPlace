@@ -12,15 +12,20 @@ namespace Circuit{
   class Circuit;
 }
 
-std::vector<std::pair<MacroNetlist::Partition, MacroNetlist::Partition>> GetPart ( 
+std::vector<std::pair<MacroPlace::Partition, MacroPlace::Partition>> GetPart ( 
+
     CircuitInfo& cInfo,  
-    MacroNetlist::Partition& partition, bool isHorizontal );
+    MacroPlace::Partition& partition, bool isHorizontal );
+
 
 // Partition Class --> macroStor's index.
 void UpdateMacroPartMap( MacroCircuit& mckt,
-    MacroNetlist::Partition& part, 
-        std::unordered_map< MacroNetlist::PartClass, std::vector<int>,
-        MyHash<MacroNetlist::PartClass>>& macroPartMap);
+    MacroPlace::Partition& part, 
+
+        std::unordered_map< MacroPlace::PartClass, std::vector<int>,
+
+        MyHash<MacroPlace::PartClass>>& macroPartMap);
+
 
 void
 PlaceMacros(odb::dbDatabase* db, 

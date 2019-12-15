@@ -12,7 +12,8 @@ class dbInst;
 }
 
 
-namespace MacroNetlist { 
+namespace MacroPlace { 
+
 
 class Vertex;
 class Macro {

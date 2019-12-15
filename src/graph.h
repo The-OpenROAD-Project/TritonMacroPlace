@@ -13,7 +13,8 @@ class Pin;
 class MacroCircuit;
 template <class T> struct MyHash;
 
-namespace MacroNetlist{
+namespace MacroPlace{
+
 
 class Vertex;
 class Edge {

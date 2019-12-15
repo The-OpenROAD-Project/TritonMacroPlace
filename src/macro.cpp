@@ -1,6 +1,7 @@
 #include "macro.h"
 
-namespace MacroNetlist{ 
+namespace MacroPlace{ 
+
 
 Macro::Macro( std::string _name, std::string _type, 
         double _lx, double _ly, 

@@ -130,7 +130,6 @@ record_resizer_tests {
 
 # Record tests in $STAX/designs
 record_test_design {
-#   aes2/aes2_rebuffer1
 }
 
 ################################################################
@@ -140,15 +139,9 @@ record_test_design {
 # Medium speed tests.
 # run time <15s with optimized compile
 define_test_group med {
-#  mea_resize1
-#  aes2_resize1
-#  aes2_rebuffer1
-#  vanilla_bean_resize1
 }
 
 define_test_group slow {
-#  jpeg_resize1
-#  coyote_resize1
 }
 
 set fast [group_tests all]

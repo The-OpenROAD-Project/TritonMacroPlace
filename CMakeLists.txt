@@ -61,9 +61,9 @@ set (MPLACE_SRC
   src/parse.cpp
   src/graph.cpp
   src/macro.cpp
-  src/mPlace_wrap.cpp
-  src/mPlaceExternal.cpp
-  src/mPlace.cpp
+  src/macroPlace_wrap.cpp
+  src/tritonmp_external.cpp
+  src/macroPlace.cpp
 )
 
 
@@ -78,10 +78,10 @@ set (MPLACE_HEADER
 # Create a library 
 ############################################################
 
-add_custom_command(OUTPUT ${MPLACE_HOME}/src/mPlace_wrap.cpp
-  COMMAND ${SWIG_EXECUTABLE} -tcl8 -c++ -o ${MPLACE_HOME}/src/mPlace_wrap.cpp ${MPLACE_HOME}/src/mPlace.i   
+add_custom_command(OUTPUT ${MPLACE_HOME}/src/macroPlace_wrap.cpp
+  COMMAND ${SWIG_EXECUTABLE} -tcl8 -c++ -o ${MPLACE_HOME}/src/macroPlace_wrap.cpp -I${MPLACE_HOME}/include ${MPLACE_HOME}/src/macroPlace.i   
   WORKING_DIRECTORY ${MPLACE_HOME}
-  DEPENDS ${MPLACE_HOME}/src/mPlace.i "src/mPlaceExternal.cpp" "src/mPlaceExternal.h"
+  DEPENDS ${MPLACE_HOME}/src/macroPlace.i "src/tritonmp_external.cpp" "include/tritonmp/tritonmp_external.h"
 )
 
 ############################################################
@@ -114,8 +114,10 @@ PRIVATE
   ${OPENSTA_HOME}/util
   ${OPENSTA_HOME}/verilog
 
-  ${OPENDB_HOME}/include/opendb
   ${OPENDB_HOME}/include
+
+  ${MPLACE_HOME}/include
+  ${MPLACE_HOME}/src
   )
 
 target_link_libraries( mplace

@@ -30,14 +30,18 @@ class MacroCircuit {
     void Init(odb::dbDatabase* db, 
         EnvFile* env, CircuitInfo* cinfo);
     
-    std::vector<MacroNetlist::Vertex> vertexStor;
-    std::vector<MacroNetlist::Edge> edgeStor;
+    std::vector<MacroPlace::Vertex> vertexStor;
+
+    std::vector<MacroPlace::Edge> edgeStor;
+
     
     // macro Information
-    std::vector<MacroNetlist::Macro> macroStor;
+    std::vector<MacroPlace::Macro> macroStor;
+
 
     // pin Group Information
-    std::vector<MacroNetlist::PinGroup> pinGroupStor;
+    std::vector<MacroPlace::PinGroup> pinGroupStor;
+
 
     // pin Group Map;
     // Pin* --> pinGroupStor's index.
@@ -49,14 +53,17 @@ class MacroCircuit {
     // macro idx/idx pair -> give each 
     std::vector< std::vector<int> > macroWeight;
 
-    std::string GetEdgeName(MacroNetlist::Edge* edge);
-    std::string GetVertexName(MacroNetlist::Vertex* vertex);
+    std::string GetEdgeName(MacroPlace::Edge* edge);
+
+    std::string GetVertexName(MacroPlace::Vertex* vertex);
+
     
     // sta::Instance* --> macroStor's index stor
     std::unordered_map<sta::Instance*, int> macroInstMap;
 
     // Update Macro Location from Partition info
-    void UpdateMacroCoordi(MacroNetlist::Partition& part);
+    void UpdateMacroCoordi(MacroPlace::Partition& part);
+
 
     // parsing function
     void ParseGlobalConfig(std::string fileName);
@@ -70,10 +77,12 @@ class MacroCircuit {
     std::unordered_map< std::string, MacroLocalInfo > macroLocalMap;
 
     // plotting 
-    void Plot(std::string outputFile, std::vector<MacroNetlist::Partition>& set);
+    void Plot(std::string outputFile, std::vector<MacroPlace::Partition>& set);
+
 
     // netlist  
-    void UpdateNetlist(MacroNetlist::Partition& layout);
+    void UpdateNetlist(MacroPlace::Partition& layout);
+
 
     // return weighted wire-length to get best solution
     double GetWeightedWL();
@@ -98,11 +107,13 @@ class MacroCircuit {
     
     void UpdateVertexToMacroStor();
     void UpdateInstanceToMacroStor();
-//    std::unordered_map<MacroNetlist::Edge*, int> edgeMap;
+//    std::unordered_map<MacroPlace::Edge*, int> edgeMap;
+
 
     // either Pin*, Inst* -> vertexStor's index.
     std::unordered_map<void*, int> pinInstVertexMap;
-    std::unordered_map<MacroNetlist::Vertex*, int> vertexPtrMap;
+    std::unordered_map<MacroPlace::Vertex*, int> vertexPtrMap;
+
 
     // adjacency matrix for whole(macro/pins/FFs) graph
     Eigen::SparseMatrix<int, Eigen::RowMajor> adjMatrix;
@@ -114,23 +125,31 @@ class MacroCircuit {
     Eigen::SparseMatrix<int, Eigen::RowMajor> macroPinAdjMatrix;
     
     // pair of <StartVertex*, EndVertex*> --> edgeStor's index
-    std::unordered_map< std::pair<MacroNetlist::Vertex*, MacroNetlist::Vertex*>, 
+    std::unordered_map< std::pair<MacroPlace::Vertex*, MacroPlace::Vertex*>, 
+
       int, MyHash<std::pair<void*, void*>> > vertexPairEdgeMap;
     
-    std::pair<void*, MacroNetlist::VertexClass> GetPtrClassPair(sta::Pin* pin);
+    std::pair<void*, MacroPlace::VertexClass> GetPtrClassPair(sta::Pin* pin);
 
-    MacroNetlist::Vertex* GetVertex(sta::Pin* pin); 
 
-    int GetPathWeight( MacroNetlist::Vertex* from, 
-        MacroNetlist::Vertex* to, int limit );
+    MacroPlace::Vertex* GetVertex(sta::Pin* pin); 
+
+
+    int GetPathWeight( MacroPlace::Vertex* from, 
+
+        MacroPlace::Vertex* to, int limit );
+
     // Matrix version
     int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
-        MacroNetlist::Vertex* from, 
-        MacroNetlist::Vertex* to );
+        MacroPlace::Vertex* from, 
+
+        MacroPlace::Vertex* to );
+
     
     // Matrix version
     int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
-        MacroNetlist::Vertex* from, 
+        MacroPlace::Vertex* from, 
+
         int toIdx );
     
     // Matrix version
@@ -150,7 +169,8 @@ class CircuitInfo {
     CircuitInfo( double _lx, double _ly, double _ux, double _uy, 
         double _siteSizeX, double _siteSizeY );
 
-    CircuitInfo( CircuitInfo& orig, MacroNetlist::Partition& part );
+    CircuitInfo( CircuitInfo& orig, MacroPlace::Partition& part );
+
 };
 
 bool ParseArgv(int argc, char** argv, EnvFile& _env);

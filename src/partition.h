@@ -12,7 +12,8 @@ template <class T> struct MyHash;
 
 class MacroCircuit;
 
-namespace MacroNetlist {
+namespace MacroPlace {
+
 
 enum PartClass {
   S, N, W, E, NW, NE, SW, SE, ALL, None
@@ -75,8 +76,10 @@ class Partition {
 }
 
 template<>
-struct MyHash< MacroNetlist::PartClass > {
-  std::size_t operator()( const MacroNetlist::PartClass & k ) const {
+struct MyHash< MacroPlace::PartClass > {
+
+  std::size_t operator()( const MacroPlace::PartClass & k ) const {
+
     using boost::hash_combine;
     size_t seed = 0;
     hash_combine(seed, (int)k);

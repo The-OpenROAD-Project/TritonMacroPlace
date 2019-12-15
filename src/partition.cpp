@@ -16,7 +16,8 @@ using std::vector;
 using std::pair;
 using std::unordered_map;
 
-namespace MacroNetlist {
+namespace MacroPlace {
+
 
 Partition::Partition() 
   : partClass(PartClass::None), 
