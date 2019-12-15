@@ -23,7 +23,12 @@ void mplace_external::set_db(odb::dbDatabase* db) {
 void mplace_external::import_lef(const char* lef) {
   dbDatabase* db = odb::dbDatabase::getDatabase(db_id);
   odb::lefin lefReader(db, false);
-  lefReader.createTechAndLib("testlib", lef);
+  if( db->getTech() == nullptr ) { 
+    lefReader.createTechAndLib(lef, lef);
+  }
+  else {
+    lefReader.createLib(lef, lef);
+  }
 }
 
 void mplace_external::import_def(const char* def) {
@@ -82,7 +87,7 @@ void mplace_external::export_def(const char* def) {
   // bestset DEF writing
   std::vector<MacroNetlist::Partition> bestSet = allSets[bestSetIdx];
   dbDatabase* db = odb::dbDatabase::getDatabase(db_id);
-  UpdateCircuitCoordi(db, env, mckt); 
+  UpdateOpendbCoordi(db, env, mckt); 
 
   // check plotting
   if( env.isPlot ) {

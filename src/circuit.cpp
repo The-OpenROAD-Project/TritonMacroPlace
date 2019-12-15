@@ -113,8 +113,54 @@ void MacroCircuit::FillMacroStor() {
   //  << _ckt->defDieArea.xh() << " " << _ckt->defDieArea.yh() << endl;
 
   for(dbInst* inst : block->getInsts() ){ 
+    //cout << inst->getConstName() << " " << inst->getBBox()->getDY() << endl;
+    //
+    // Skip for standard cells
+    if( inst->getBBox()->getDY() <= cellHeight) { 
+      continue;
+    }
 
+    // for Macro cells
+    
+    dbPlacementStatus dps = inst->getPlacementStatus();
+    if( dps == dbPlacementStatus::NONE ||
+        dps == dbPlacementStatus::UNPLACED ) {
+      cout << "ERROR:  Macro: " << inst->getConstName() << " is Unplaced." << endl;
+      cout << "        Please use TD-MS-RePlAce to get a initial solution " << endl;
+      cout << "        before executing TritonMacroPlace" << endl;
+      exit(1); 
+    }
+    
+    double curHaloX =0, curHaloY = 0, curChannelX = 0, curChannelY = 0;
+    auto mlPtr = macroLocalMap.find( inst->getConstName() );
+    if( mlPtr == macroLocalMap.end() ) {
+      curHaloX = gHaloX;
+      curHaloY = gHaloY; 
+      curChannelX = gChannelX;
+      curChannelY = gChannelY;
+    }
+    else {
+      MacroLocalInfo& m = mlPtr->second;
+      curHaloX = (m.GetHaloX() == 0)? gHaloX : m.GetHaloX();
+      curHaloY = (m.GetHaloY() == 0)? gHaloY : m.GetHaloY();
+      curChannelX = (m.GetChannelX() == 0)? gChannelX : m.GetChannelX();
+      curChannelY = (m.GetChannelY() == 0)? gChannelY : m.GetChannelY();
+    }
 
+    macroNameMap[ inst->getConstName() ] = macroStor.size();
+    
+    int placeX, placeY;
+    inst->getLocation( placeX, placeY );
+     
+    MacroNetlist::Macro 
+      tmpMacro( inst->getConstName(), inst->getMaster()->getConstName(), 
+          1.0*placeX/dbu, 
+          1.0*placeY/dbu,
+          1.0*inst->getBBox()->getDX()/dbu, 1.0*inst->getBBox()->getDY()/dbu, 
+          curHaloX, curHaloY, 
+          curChannelX, curChannelY,  
+          NULL, NULL );
+    macroStor.push_back( tmpMacro ); 
   }
 
   /*
@@ -219,6 +265,11 @@ void MacroCircuit::FillMacroStor() {
   cout << "Extracted # Macros: " << macroStor.size() << endl;
 }
 
+static bool isWithIn( int val, int min, int max ) {
+  return (( min <= val ) && ( val <= max ));
+}
+
+
 void MacroCircuit::FillPinGroup(){
   dbTech* tech = _db->getTech(); 
   const double dbu = tech->getDbUnitsPerMicron();
@@ -232,6 +283,7 @@ void MacroCircuit::FillPinGroup(){
   cout << "OpenSTA numEdge: " << numEdge << endl;
   cout << "OpenSTA numVertex: " << numVertex << endl;
 
+//  cout << lx << " " << ly << " " << ux << " " << uy << endl;
 
   int dbuLx = int(lx * dbu +0.5f);
   int dbuLy = int(ly * dbu +0.5f);
@@ -241,6 +293,69 @@ void MacroCircuit::FillPinGroup(){
   using MacroNetlist::PinGroupClass;
 
   unordered_map<string, PinGroupClass> pinGroupStrMap;
+
+  dbChip* chip = _db->getChip();
+  dbBlock* block = chip->getBlock();
+
+  for(dbBTerm* bTerm : block->getBTerms()) {
+    
+    // pin signal type
+    dbSigType psType = bTerm->getSigType();
+    if( psType == dbSigType::GROUND ||
+        psType == dbSigType::POWER ) {
+      continue;
+    }
+
+    // pin placement status
+    dbPlacementStatus ppStatus = bTerm->getFirstPinPlacementStatus();
+    if( ppStatus == dbPlacementStatus::UNPLACED ||
+        ppStatus == dbPlacementStatus::NONE ) {
+      cout << "**ERROR: PIN " << bTerm->getConstName() << " is not PLACED" << endl;
+      exit(1);
+    } 
+   
+    int placeX, placeY; 
+    bTerm->getFirstPinLocation(placeX, placeY);
+    
+    bool isFound = false;
+    for(dbBPin* bPin : bTerm->getBPins()) {
+      int boxLx = bPin->getBox()->xMin();
+      int boxLy = bPin->getBox()->yMin(); 
+      int boxUx = bPin->getBox()->xMax();
+      int boxUy = bPin->getBox()->yMax();
+    
+      if( isWithIn( dbuLx, boxLx, boxUx ) ) {
+        pinGroupStrMap[ bTerm->getConstName() ] = PinGroupClass::West; 
+        isFound = true;
+        break;
+      }
+      else if( isWithIn( dbuUx, boxLx, boxUx ) ) {
+        pinGroupStrMap[ bTerm->getConstName() ] = PinGroupClass::East; 
+        isFound = true;
+        break;
+      }
+      else if( isWithIn( dbuLy, boxLy, boxUy ) ) {
+        pinGroupStrMap[ bTerm->getConstName() ] = PinGroupClass::South; 
+        isFound = true;
+        break;
+      }
+      else if( isWithIn( dbuUy, boxLy, boxUy ) ) {
+        pinGroupStrMap[ bTerm->getConstName() ] = PinGroupClass::North; 
+        isFound = true;
+        break;
+      }
+    } 
+    if( !isFound ) {
+      cout << "**ERROR: PIN " << bTerm->getConstName() << " is not PLACED in Border!!" << endl;
+      cout << "INFO: Place Information: " << placeX << " " << placeY << endl; 
+      cout << "INFO: Border Information: " << dbuLx << " " << dbuLy 
+           << " " << dbuUx << " " << dbuUy << endl;
+      exit(1);
+    } 
+    //cout << bTerm->getConstName() << endl;
+  }
+
+
   /*
   for(auto& curPin: _ckt->defPinStor) {
     if( curPin.hasUse() && 

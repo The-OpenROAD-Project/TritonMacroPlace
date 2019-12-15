@@ -72,32 +72,17 @@ PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
   }
 
   dbBox* dieBox = block->getBBox();
-//  double defScale = tech->getDbUnitsPerMicron();
-
-  cout << dieBox->xMax() << " " << dieBox->yMax() << endl;
+  int dbu = tech->getDbUnitsPerMicron();
 
   adsRect rowBox;
   rows.begin()->getBBox(rowBox);  
 
-//  string siteName(ckt.defRowStor[0].macro());
-//  auto sitePtr = ckt.lefSiteMap.find( siteName );
-//  if( sitePtr == ckt.lefSiteMap.end()) {
-//    cout << "ERROR: SITE " << siteName << " not exists in LEF." << endl;
-//    exit(1);
-//  }
-  
-//  double siteSizeX = ckt.lefSiteStor[sitePtr->second].sizeX();
-//  double siteSizeY = ckt.lefSiteStor[sitePtr->second].sizeY();
-  double siteSizeX = rowBox.dx();
-  double siteSizeY = rowBox.dy();
+  double siteSizeX = 1.0*rowBox.dx()/dbu;
+  double siteSizeY = 1.0*rowBox.dy()/dbu;
 
   CircuitInfo cInfo( 
-        dieBox->xMin(), dieBox->yMin(), 
-        dieBox->xMax(), dieBox->yMax(),
-//      1.0*points.x[0]/defScale, 
-//        1.0*points.y[0]/defScale,
-//        1.0*points.x[1]/defScale,
-//        1.0*points.y[1]/defScale,
+        1.0*dieBox->xMin()/dbu, 1.0*dieBox->yMin()/dbu, 
+        1.0*dieBox->xMax()/dbu, 1.0*dieBox->yMax()/dbu,
         siteSizeX, siteSizeY ); 
 
   cout << endl;
@@ -105,9 +90,6 @@ PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
   cout << "DieBBox: (" << cInfo.lx << " " << cInfo.ly << ") - (" 
     << cInfo.ux << " " << cInfo.uy << ")" << endl;
 
-//  cout << "Original Macro List" << endl;
-
-//  MacroCircuit mckt(ckt, env, cInfo);
   mckt.Init(db, &env, &cInfo);   
   
   //  RandomPlace for special needs. 
@@ -117,9 +99,7 @@ PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
     mckt.StubPlacer(snapGrid);
   }
 
-
 //  mckt.GetMacroStor(ckt);
-
 //  for(auto& curMacro: mckt.macroStor) {
 //    curMacro.Dump();
 //  }
@@ -136,7 +116,6 @@ PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
   TwoPartitions eastStor, westStor;
 
   vector< vector<Partition> > allSets;
-
 
   // Fill the MacroNetlist for ALL circuits
   unordered_map< PartClass, vector<int>, 
@@ -741,7 +720,7 @@ void UpdateMacroPartMap(
 // 
 // update ckt class from mckt, env.
 //
-void UpdateCircuitCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
+void UpdateOpendbCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
   unordered_set<int> macroIdxMap;
   /*
   double defScale = ckt.defUnit;

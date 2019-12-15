@@ -26,7 +26,7 @@ std::vector< std::vector<MacroNetlist::Partition> >
 PlaceMacros(odb::dbDatabase* db, 
     EnvFile& env, MacroCircuit& mckt);
 
-void UpdateCircuitCoordi(odb::dbDatabase* db, 
+void UpdateOpendbCoordi(odb::dbDatabase* db, 
     EnvFile& env, MacroCircuit& mckt);
 
 
