@@ -1,5 +1,5 @@
-#ifndef __MACRO_CIRCUIT__
-#define __MACRO_CIRCUIT__ 
+#ifndef __MACRO_PLACER_CIRCUIT__
+#define __MACRO_PLACER_CIRCUIT__ 
 
 #include <unordered_map>
 #include <unordered_set>
@@ -19,6 +19,8 @@
 namespace sta { 
 class Sta;
 }
+
+namespace MacroPlace{ 
 
 class CircuitInfo;
 
@@ -188,6 +190,8 @@ inline bool ReplaceStringInPlace( std::string& subject,
     isFound = true; 
   }
   return isFound; 
+}
+
 }
 
 #endif

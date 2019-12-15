@@ -1,5 +1,5 @@
-#ifndef __MACRO_PARTITION__
-#define __MACRO_PARTITION__ 0
+#ifndef __MACRO_PLACER_PARTITION__
+#define __MACRO_PLACER_PARTITION__ 
 
 
 #include <string>
@@ -7,19 +7,15 @@
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 
-
-template <class T> struct MyHash;
-
-class MacroCircuit;
-
 namespace MacroPlace {
 
+template <class T> struct MyHash;
+class MacroCircuit;
+class Macro;
 
 enum PartClass {
   S, N, W, E, NW, NE, SW, SE, ALL, None
 };
-
-class Macro;
 
 class Partition {
   public: 
@@ -73,8 +69,6 @@ class Partition {
     void FillNetlistTableDesc();
 }; 
 
-}
-
 template<>
 struct MyHash< MacroPlace::PartClass > {
 
@@ -86,6 +80,9 @@ struct MyHash< MacroPlace::PartClass > {
     return seed; 
   }
 };
+
+}
+
 
 
 #endif

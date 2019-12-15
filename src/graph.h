@@ -10,13 +10,12 @@ namespace sta {
 class Pin; 
 }
 
-class MacroCircuit;
-template <class T> struct MyHash;
 
 namespace MacroPlace{
 
-
+class MacroCircuit;
 class Vertex;
+template <class T> struct MyHash;
 class Edge {
   public:
     Vertex* from;
@@ -57,7 +56,6 @@ class PinGroup {
     std::string name();
 };
 
-}
 
 // hash function definition for two pairs.
 // this will enable unordered_map/unordered_set usages.
@@ -70,5 +68,7 @@ struct MyHash< std::pair<void*, void*> > {
     return seed; 
   }
 };
+
+}
 
 #endif

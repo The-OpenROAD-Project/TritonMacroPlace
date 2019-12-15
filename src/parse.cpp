@@ -1,5 +1,7 @@
 #include "parse.h"
 
+namespace MacroPlace {
+
 EnvFile::EnvFile(): def(""), verilog(""), design(""), 
   sdc(""), 
   globalConfig(""), localConfig(""), 
@@ -75,4 +77,6 @@ void EnvFile::Print() {
 
   cout << "localConfig: " << endl;
   cout << localConfig << endl << endl;
+}
+
 }

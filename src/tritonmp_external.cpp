@@ -4,6 +4,8 @@
 #include "opendb/defin.h"
 #include "opendb/defout.h"
 
+namespace MacroPlace {
+
 using std::string;
 using std::cout;
 using std::endl;
@@ -17,9 +19,9 @@ mplace_external::mplace_external() : solCount(0) {
 mplace_external::~mplace_external() {}
 
 void mplace_external::help() {}
-void mplace_external::set_db(odb::dbDatabase* db) {
-  db_id = db->getId();
-}
+//void mplace_external::set_db(odb::dbDatabase* db) {
+//  db_id = db->getId();
+//}
 
 void mplace_external::import_lef(const char* lef) {
   dbDatabase* db = odb::dbDatabase::getDatabase(db_id);
@@ -86,4 +88,6 @@ bool mplace_external::place_macros() {
 
 int mplace_external::get_solution_count() {
   return solCount;
+}
+
 }

@@ -1,5 +1,5 @@
-#ifndef __MPLACE_TIMING_STA__
-#define __MPLACE_TIMING_STA__ 
+#ifndef __MACRO_PLACER_STA__
+#define __MACRO_PLACER_STA__
 
 #include "Machine.hh"
 #include "Liberty.hh"
@@ -83,7 +83,7 @@ namespace sta {
     extern const char *tcl_inits[];
 }
 
-sta::Sta* GetStaObject(EnvFile& _env);
+sta::Sta* GetStaObject(MacroPlace::EnvFile& _env);
 
 
 #endif

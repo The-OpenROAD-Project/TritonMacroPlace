@@ -16,47 +16,28 @@ using std::unordered_set;
 using MacroPlace::Partition;
 
 using namespace MacroPlace;
-
 using namespace boost::icl;
-
 using namespace odb;
 
 typedef vector<pair<Partition, Partition>> TwoPartitions;
+static vector<pair<Partition, Partition>> GetPart(
+    CircuitInfo &cInfo,  
+    Partition& partition, 
+    bool isHorizontal );
 
-void CutRoundUp( CircuitInfo& cInfo, double& cutLine, bool isHorizontal ) {
-  if( isHorizontal ) {
-    int integer = (1.0* cutLine / cInfo.siteSizeX) + 0.5f;
-    cutLine = integer * cInfo.siteSizeX;
-    cutLine = (cutLine > cInfo.ux)? cInfo.ux : cutLine;
-    cutLine = (cutLine < cInfo.lx)? cInfo.lx : cutLine;
-  }
-  else {
-    int integer = (1.0* cutLine / cInfo.siteSizeY) + 0.5f;
-    cutLine = integer * cInfo.siteSizeY;
-    cutLine = (cutLine > cInfo.uy)? cInfo.uy : cutLine;
-    cutLine = (cutLine < cInfo.ly)? cInfo.ly : cutLine;
-  }
-}
+static void UpdateMacroPartMap( 
+    MacroCircuit& mckt,
+    MacroPlace::Partition& part, 
+    unordered_map<MacroPlace::PartClass, vector<int>, 
+    MyHash<MacroPlace::PartClass>>& macroPartMap );
 
-//
-void PrintAllSets(FILE* fp, CircuitInfo& cInfo, 
-    vector< vector<Partition> >& allSets) {
-  cout << "Writing sets file... ";
-  for(auto& curSet : allSets) {
-    fprintf(fp,"BEGIN SET ;\n" );
-    fprintf(fp,"  WIDTH %f ;\n", cInfo.ux - cInfo.lx );
-    fprintf(fp,"  HEIGHT %f ;\n", cInfo.uy - cInfo.ly );
-    for(auto& curSlice : curSet) {
-      if( curSlice.macroStor.size() == 0) {
-        continue;
-      }
-      curSlice.PrintSetFormat(fp);
-    }
-    fprintf(fp,"END SET ;\n");
-  }
-  fflush(fp);
-  cout << "Done!" << endl;
-}
+
+static void CutRoundUp( CircuitInfo& cInfo, double& cutLine, bool isHorizontal );
+static void PrintAllSets(FILE* fp, CircuitInfo& cInfo, 
+    vector< vector<Partition> >& allSets);
+
+
+namespace MacroPlace { 
 
 void 
 PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt, int& solCount) {
@@ -300,13 +281,78 @@ PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt, int& solCount) {
   cout << "PROC: End TritonMacroPlacer" << endl;
 }
 
+// 
+// update opendb dataset from mckt.
+void UpdateOpendbCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
+  dbTech* tech = db->getTech();
+  const int dbu = tech->getDbUnitsPerMicron();
+  
+  for(auto& curMacro : mckt.macroStor) {
+    curMacro.dbInstPtr->setLocation( 
+        int(curMacro.lx * dbu + 0.5f), int(curMacro.ly * dbu + 0.5f) ) ;
+    curMacro.dbInstPtr->setPlacementStatus( dbPlacementStatus::LOCKED ) ;
+  }
+}
+
+}
+
+static void CutRoundUp( CircuitInfo& cInfo, double& cutLine, bool isHorizontal ) {
+  if( isHorizontal ) {
+    int integer = (1.0* cutLine / cInfo.siteSizeX) + 0.5f;
+    cutLine = integer * cInfo.siteSizeX;
+    cutLine = (cutLine > cInfo.ux)? cInfo.ux : cutLine;
+    cutLine = (cutLine < cInfo.lx)? cInfo.lx : cutLine;
+  }
+  else {
+    int integer = (1.0* cutLine / cInfo.siteSizeY) + 0.5f;
+    cutLine = integer * cInfo.siteSizeY;
+    cutLine = (cutLine > cInfo.uy)? cInfo.uy : cutLine;
+    cutLine = (cutLine < cInfo.ly)? cInfo.ly : cutLine;
+  }
+}
+
+// using mckt.macroInstMap and partition, 
+// fill in macroPartMap
+//
+// macroPartMap will contain 
+// 
+// first: macro partition class info 
+// second: macro candidates.
+static void UpdateMacroPartMap( 
+    MacroCircuit& mckt,
+    MacroPlace::Partition& part, 
+    unordered_map<MacroPlace::PartClass, vector<int>, 
+    MyHash<MacroPlace::PartClass>>& macroPartMap ) {
+
+
+  auto mpPtr = macroPartMap.find( part.partClass );
+  if( mpPtr == macroPartMap.end() ) {
+    vector<int> curMacroStor;
+    // convert macro Information into macroIdx
+    for(auto& curMacro: part.macroStor) {
+      auto miPtr = mckt.macroInstMap.find( curMacro.staInstPtr );
+      if( miPtr == mckt.macroInstMap.end() ) {
+        cout << "ERROR: macro " << curMacro.name 
+          << " not exists in macroInstMap: " << curMacro.staInstPtr << endl;
+        exit(1);
+      }
+      curMacroStor.push_back( miPtr->second) ;
+    }
+    macroPartMap[ part.partClass ] = curMacroStor; 
+  }
+  else {
+    cout << "ERROR: Partition- " << part.partClass 
+      << " already updated (UpdateMacroPartMap)" << endl; 
+    exit(1);
+  }
+}
 
 // Two partitioning functions:
 // first : lower part
 // second : upper part
 // 
 // cutLine is sweeping from lower to upper coordinates in x / y
-vector<pair<Partition, Partition>> GetPart(
+static vector<pair<Partition, Partition>> GetPart(
     CircuitInfo &cInfo,  
     Partition& partition, 
     bool isHorizontal ) {
@@ -552,15 +598,6 @@ vector<pair<Partition, Partition>> GetPart(
       continue;
     }
 
-// Previous code
-//    if( partition.partClass == N || 
-//        partition.partClass == E ||
-//        partition.partClass == W ||
-//        partition.partClass == S ) {
-//      lowerPart.FillNetlistTable();
-//      upperPart.FillNetlistTable();
-//    }
-    
     pair<Partition, Partition> curPart( lowerPart, upperPart );
 
     cout << "INFO: NumMacro in LowerPart[" << ret.size() << "] = " 
@@ -576,54 +613,23 @@ vector<pair<Partition, Partition>> GetPart(
   return ret; 
 }
 
-
-// using mckt.macroInstMap and partition, 
-// fill in macroPartMap
-//
-// macroPartMap will contain 
-// 
-// first: macro partition class info 
-// second: macro candidates.
-void UpdateMacroPartMap( 
-    MacroCircuit& mckt,
-    MacroPlace::Partition& part, 
-
-    unordered_map<MacroPlace::PartClass, vector<int>, 
-
-    MyHash<MacroPlace::PartClass>>& macroPartMap ) {
-
-
-  auto mpPtr = macroPartMap.find( part.partClass );
-  if( mpPtr == macroPartMap.end() ) {
-    vector<int> curMacroStor;
-    // convert macro Information into macroIdx
-    for(auto& curMacro: part.macroStor) {
-      auto miPtr = mckt.macroInstMap.find( curMacro.staInstPtr );
-      if( miPtr == mckt.macroInstMap.end() ) {
-        cout << "ERROR: macro " << curMacro.name 
-          << " not exists in macroInstMap: " << curMacro.staInstPtr << endl;
-        exit(1);
+/*
+static void PrintAllSets(FILE* fp, CircuitInfo& cInfo, 
+    vector< vector<Partition> >& allSets) {
+  cout << "Writing sets file... ";
+  for(auto& curSet : allSets) {
+    fprintf(fp,"BEGIN SET ;\n" );
+    fprintf(fp,"  WIDTH %f ;\n", cInfo.ux - cInfo.lx );
+    fprintf(fp,"  HEIGHT %f ;\n", cInfo.uy - cInfo.ly );
+    for(auto& curSlice : curSet) {
+      if( curSlice.macroStor.size() == 0) {
+        continue;
       }
-      curMacroStor.push_back( miPtr->second) ;
+      curSlice.PrintSetFormat(fp);
     }
-    macroPartMap[ part.partClass ] = curMacroStor; 
+    fprintf(fp,"END SET ;\n");
   }
-  else {
-    cout << "ERROR: Partition- " << part.partClass 
-      << " already updated (UpdateMacroPartMap)" << endl; 
-    exit(1);
-  }
+  fflush(fp);
+  cout << "Done!" << endl;
 }
-
-// 
-// update opendb dataset from mckt.
-void UpdateOpendbCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
-  dbTech* tech = db->getTech();
-  const int dbu = tech->getDbUnitsPerMicron();
-  
-  for(auto& curMacro : mckt.macroStor) {
-    curMacro.dbInstPtr->setLocation( 
-        int(curMacro.lx * dbu + 0.5f), int(curMacro.ly * dbu + 0.5f) ) ;
-    curMacro.dbInstPtr->setPlacementStatus( dbPlacementStatus::LOCKED ) ;
-  }
-}
+*/

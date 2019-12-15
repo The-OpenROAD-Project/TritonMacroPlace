@@ -1,6 +1,6 @@
 #include "timingSta.h"
 
-sta::Sta* GetStaObject(EnvFile& _env ) {
+sta::Sta* GetStaObject(MacroPlace::EnvFile& _env ) {
   using namespace sta;
   
   // STA object create
@@ -72,27 +72,6 @@ sta::Sta* GetStaObject(EnvFile& _env ) {
   // SDC reading
   Tcl_Eval(_interp, string( "sta::read_sdc " + _env.sdc).c_str() ); 
 
-//  bool parasitics = 
-//    _sta->readParasitics(_env.spef.c_str(), 
-//        _sta->currentInstance(), 
-//        MinMaxAll::max(), false, true, 0.0, 
-//        reduce_parasitics_to_pi_elmore, false, true, true);
-
-/*  
-  string _clkName = "clk"; 
-  float _clkPeriod = 2e-10;
-
-  FloatSeq *waveform = new FloatSeq;
-  waveform->push_back(0.0);
-  waveform->push_back(_clkPeriod/2);
-
-  PinSet *pins = new PinSet;
-  Pin *pin = _sta->network()->findPin(_sta->currentInstance(),_clkName.c_str());
-  pins->insert(pin);
-
-  _sta->makeClock(_clkName.c_str(),pins,true,_clkPeriod,waveform, NULL);
-  _sta->findClock(_clkName.c_str());
-*/
   _sta->updateTiming(true);
   return _sta;
 }

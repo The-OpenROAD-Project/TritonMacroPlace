@@ -1,14 +1,13 @@
 #ifndef __MACRO_PLACER_EXTERNAL__
 #define __MACRO_PLACER_EXTERNAL__
 
-#include <vector>
-#include <string>
 #include "parse.h"
 #include "circuit.h"
 
 namespace MacroPlace {
-class Partition;
-}
+
+class MacroCircuit;
+class EnvFile;
 
 class mplace_external {
 public:
@@ -16,8 +15,6 @@ public:
   ~mplace_external();
 
   void help();
-
-  void set_db(odb::dbDatabase* db);
 
   void import_lef(const char* lef);
   void import_def(const char* def);
@@ -40,5 +37,7 @@ private:
   MacroCircuit mckt;
   int solCount;
 }; 
+
+}
 
 #endif

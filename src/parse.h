@@ -1,10 +1,12 @@
-#ifndef __PARSE__
-#define __PARSE__ 0
+#ifndef __MACRO_PLACER_PARSE__
+#define __MACRO_PLACER_PARSE__ 
 
 #include <iostream>
 #include <climits>
 #include <vector>
 #include <string>
+
+namespace MacroPlace {
 
 class EnvFile {
   public:
@@ -29,5 +31,7 @@ class EnvFile {
   void Print();
   
 };
+
+}
 
 #endif

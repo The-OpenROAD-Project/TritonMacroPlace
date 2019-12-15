@@ -3,10 +3,13 @@
 #include <chrono>
 #include <fstream>
 #include <sstream>
+#include <string>
 
 #include "parse.h"
 #include "circuit.h"
 #include "timingSta.h"
+
+namespace MacroPlace {
 
 using std::unordered_map;
 using std::unordered_set;
@@ -20,6 +23,15 @@ typedef Eigen::SparseMatrix<int, Eigen::RowMajor> SMatrix;
 typedef Eigen::Triplet<int> T;
 
 using namespace odb;
+
+using MacroPlace::VertexClass;
+using MacroPlace::PinGroup;
+using MacroPlace::PinGroupClass;
+
+using std::cout;
+using std::endl;
+using std::make_pair;
+using std::string;
 
 MacroCircuit::MacroCircuit() :
   gHaloX(0), gHaloY(0), 
@@ -35,6 +47,7 @@ MacroCircuit::MacroCircuit(
   gHaloX(0), gHaloY(0), 
   gChannelX(0), gChannelY(0), 
   _db(db), _env(env),
+
   lx(0), ly(0), ux(0), uy(0),
   netTable(0) {
 
@@ -74,16 +87,6 @@ void MacroCircuit::Init(
   FillMacroConnection();
 }
 
-using namespace sta;
-using MacroPlace::VertexClass;
-
-using MacroPlace::PinGroup;
-
-using MacroPlace::PinGroupClass;
-
-using std::cout;
-using std::endl;
-using std::make_pair;
 
 
 void MacroCircuit::FillMacroStor() {
@@ -440,7 +443,7 @@ void MacroCircuit::FillVertexEdge() {
 
   Eigen::setNbThreads(8);
 
-  unordered_set<Instance*> instMap;
+  unordered_set<sta::Instance*> instMap;
   unordered_set<void*> vertexDupChk;
 
   // Fill Vertex for Four IO cases.
@@ -454,8 +457,8 @@ void MacroCircuit::FillVertexEdge() {
 
   // Fill Vertex for FF/Macro cells 
   for(int i=1; i<=numVertex; i++) {
-    Vertex* vert = _sta->graph()->vertex(i); 
-    Pin* pin = vert->pin();
+    sta::Vertex* vert = _sta->graph()->vertex(i); 
+    sta::Pin* pin = vert->pin();
     
 //    cout << "vert: " << _sta->graph()->name(vert) << endl;
 //    cout << "pin: " << _sta->network()->pathName(pin) << endl ;
@@ -467,8 +470,8 @@ void MacroCircuit::FillVertexEdge() {
 //    cout << "passed level1 "<< endl;
 
     // skip for below two cases; non-FF cells
-    Instance* inst = _sta->network()->instance(pin);
-    LibertyCell* libCell = _sta->network()->libertyCell(inst);
+    sta::Instance* inst = _sta->network()->instance(pin);
+    sta::LibertyCell* libCell = _sta->network()->libertyCell(inst);
     if( !libCell -> hasSequentials() 
         && macroInstMap.find(inst) == macroInstMap.end() ) {
       continue;
@@ -512,8 +515,8 @@ void MacroCircuit::FillVertexEdge() {
 
   // Query Get_FanIn/ Get_FanOut
   for(int i=1; i<=numVertex; i++) {
-    Vertex* vert = _sta->graph()->vertex(i);
-    Pin* pin = vert->pin();
+    sta::Vertex* vert = _sta->graph()->vertex(i);
+    sta::Pin* pin = vert->pin();
     
     bool isTopPin = _sta->network()->isTopLevelPort(pin);
     // !!!!!!!!!!!!!!!!
@@ -524,8 +527,8 @@ void MacroCircuit::FillVertexEdge() {
 
     // Skip For Non-FF Cells
     if( !isTopPin ) {
-      Instance* inst = _sta->network()->instance(pin);
-      LibertyCell* libCell = _sta->network()->libertyCell(inst);
+      sta::Instance* inst = _sta->network()->instance(pin);
+      sta::LibertyCell* libCell = _sta->network()->libertyCell(inst);
       if( !libCell -> hasSequentials() && macroInstMap.find(inst) == macroInstMap.end() ) {
 //        cout << "is not: " << _sta->network()->pathName(pin) << endl; 
         continue;
@@ -552,25 +555,25 @@ void MacroCircuit::FillVertexEdge() {
 
 //    cout << "[" << _sta->network()->pathName(pin) << "]" << endl;
     
-    PinSeq pinStor;
+    sta::PinSeq pinStor;
     pinStor.push_back(pin);
   
-    PortDirection* dir = _sta->network()->direction(pin);
+    sta::PortDirection* dir = _sta->network()->direction(pin);
     MacroPlace::Vertex* curVertex = GetVertex(pin);
 
 
     // Query for get_fanin/get_fanout
     if( dir->isAnyOutput() ) {
 //      cout << "FanOut!" << endl;
-      PinSet *fanout = _sta->findFanoutPins(&pinStor, false, true ,
+      sta::PinSet *fanout = _sta->findFanoutPins(&pinStor, false, true ,
           500, 700,
           false, false);
       for(auto& adjPin: *fanout) {
 //        cout << _sta->network()->pathName(pin) << " -> " << _sta->network()->pathName(adjPin) << endl;
         // Skip For Non-FF Pin 
         if( !_sta->network()->isTopLevelPort(adjPin) ) {
-          Instance* inst = _sta->network()->instance(adjPin);
-          LibertyCell* libCell = _sta->network()->libertyCell(inst);
+          sta::Instance* inst = _sta->network()->instance(adjPin);
+          sta::LibertyCell* libCell = _sta->network()->libertyCell(inst);
           if( !libCell -> hasSequentials() && macroInstMap.find(inst) == macroInstMap.end() ) {
             continue;
           }
@@ -612,15 +615,15 @@ void MacroCircuit::FillVertexEdge() {
     }
     else {
 //      cout << "FanIn!" << endl;
-      PinSet *fanin = _sta->findFaninPins(&pinStor, false, true ,
+      sta::PinSet *fanin = _sta->findFaninPins(&pinStor, false, true ,
           500, 700,
           false, false);
       for(auto& adjPin: *fanin) {
 //        cout <<  _sta->network()->pathName(adjPin) << " -> " << _sta->network()->pathName(pin) << endl;
         // Skip For Non-FF Pin 
         if( !_sta->network()->isTopLevelPort(adjPin) ) {
-          Instance* inst = _sta->network()->instance(adjPin);
-          LibertyCell* libCell = _sta->network()->libertyCell(inst);
+          sta::Instance* inst = _sta->network()->instance(adjPin);
+          sta::LibertyCell* libCell = _sta->network()->libertyCell(inst);
           if( !libCell -> hasSequentials() && macroInstMap.find(inst) == macroInstMap.end() ) {
             continue;
           }
@@ -671,8 +674,8 @@ void MacroCircuit::FillVertexEdge() {
 
   // Query find_timing_paths 
   for(int i=1; i<=numVertex; i++) {
-    Vertex* vert = _sta->graph()->vertex(i);
-    Pin* pin = vert->pin();
+    sta::Vertex* vert = _sta->graph()->vertex(i);
+    sta::Pin* pin = vert->pin();
     
     bool isTopPin = _sta->network()->isTopLevelPort(pin);
     // only query for IO/Pins
@@ -760,9 +763,9 @@ void MacroCircuit::FillVertexEdge() {
 //           bool clk_gating_hold);
     
     
-    Corner* corner = _sta->corners()->findCorner(0);
+    sta::Corner* corner = _sta->corners()->findCorner(0);
 
-    PinSet* pSet = new PinSet;
+    sta::PinSet* pSet = new sta::PinSet;
     pSet->insert(pin);
 
 //    InstanceSet* instSet = new InstanceSet;
@@ -773,22 +776,22 @@ void MacroCircuit::FillVertexEdge() {
 //    bool own_pts);
     
     // Get Pin direction
-    PortDirection* dir = _sta->network()->direction(pin);
+    sta::PortDirection* dir = _sta->network()->direction(pin);
 
-    ExceptionFrom* from = (!dir->isAnyOutput())? 
+    sta::ExceptionFrom* from = (!dir->isAnyOutput())? 
       _sta->sdc()->makeExceptionFrom(pSet, NULL, NULL, 
-        RiseFallBoth::riseFall()) : NULL;
+        sta::RiseFallBoth::riseFall()) : NULL;
 
-    ExceptionTo* to = (dir->isAnyOutput())? 
+    sta::ExceptionTo* to = (dir->isAnyOutput())? 
       _sta->sdc()->makeExceptionTo(pSet, NULL, NULL, 
-        RiseFallBoth::riseFall(), 
-        RiseFallBoth::riseFall()) : NULL;
+        sta::RiseFallBoth::riseFall(), 
+        sta::RiseFallBoth::riseFall()) : NULL;
 
-    PathEndSeq *ends = _sta->findPathEnds(from, NULL, to, //from, thru, to
+    sta::PathEndSeq *ends = _sta->findPathEnds(from, NULL, to, //from, thru, to
         false,
-        corner, MinMaxAll::max(), // corner, delay_min_max
+        corner, sta::MinMaxAll::max(), // corner, delay_min_max
         INT_MAX, 1, false, //group_count, endpoint_count, unique_pins
-        -INF, INF, //slack_min, slack_max
+        -sta::INF, sta::INF, //slack_min, slack_max
         false, NULL, //sort_by_slack, group_name
         true, true, // setup, hold
         true, true, // recovery, removal
@@ -799,7 +802,7 @@ void MacroCircuit::FillVertexEdge() {
       continue;
     }
 
-    PathEndSeq::Iterator tmpIter(ends), pathEndIter(ends), pathEndIter2(ends);
+    sta::PathEndSeq::Iterator tmpIter(ends), pathEndIter(ends), pathEndIter2(ends);
     int edgeCnt = 0;
     while( tmpIter.hasNext() ) {
       tmpIter.next();
@@ -811,29 +814,27 @@ void MacroCircuit::FillVertexEdge() {
 //    cout << "Total Possible Path: " << edgeCnt << endl;
 
     while( pathEndIter.hasNext()) {
-      PathEnd *end = pathEndIter.next();
+      sta::PathEnd *end = pathEndIter.next();
       //TimingPathPrint( _sta, end );
 
-      PathExpanded expanded(end->path(), _sta);
+      sta::PathExpanded expanded(end->path(), _sta);
 
       // get Un-clockpin 
       int startIdx = 0;
-      PathRef *startPath = expanded.path(startIdx);
+      sta::PathRef *startPath = expanded.path(startIdx);
       while( startIdx < (int)expanded.size()-1 && startPath->isClock(_sta->search())) {
         startPath = expanded.path(++startIdx);
       }
 
-      PathRef *endPath = expanded.path(expanded.size()-1);
-
+      sta::PathRef *endPath = expanded.path(expanded.size()-1);
       sta::Vertex *startVert = startPath->vertex(_sta);
       sta::Vertex *endVert = endPath->vertex(_sta);
 
-      Pin* startPin = startVert->pin();
-      Pin* endPin = endVert->pin();
+      sta::Pin* startPin = startVert->pin();
+      sta::Pin* endPin = endVert->pin();
 
 //      cout << _sta->network()->pathName(startPin) << " -> " << _sta->network()->pathName(endPin) << endl;
       MacroPlace::Vertex* startVertPtr = GetVertex( startPin );
-
       MacroPlace::Vertex* endVertPtr = GetVertex( endPin );
 
 
@@ -1944,4 +1945,6 @@ CircuitInfo::CircuitInfo( CircuitInfo& orig, MacroPlace::Partition& part ) :
 
       lx(part.lx), ly(part.ly), ux(part.lx+part.width), uy(part.ly+part.height),
       siteSizeX(orig.siteSizeX), siteSizeY(orig.siteSizeY) {}
+
+}
 
