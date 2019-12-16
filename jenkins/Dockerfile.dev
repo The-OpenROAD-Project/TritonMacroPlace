@@ -18,17 +18,15 @@ ENV PATH=/opt/rh/rh-mongodb32/root/usr/bin:$PATH \
     C_INCLUDE_PATH=/opt/rh/rh-mongodb32/root/usr/include \
     CPLUS_INCLUDE_PATH=/opt/rh/rh-mongodb32/root/usr/include
 
+# install swig
 RUN wget http://prdownloads.sourceforge.net/swig/swig-4.0.1.tar.gz && \
-    tar zxvf swig-4.0.1.tar.gz && \
+    tar zxf swig-4.0.1.tar.gz && \
     cd swig-4.0.1 && \
     ./configure --prefix=/usr/local --without-pcre && \
     make && make install
 
-#RUN yum -y install centos-release-scl
-#RUN yum install -y gcc gcc-c++ wget git zlib-devel tcl-devel tk-devel swig bison flex boost-devel
-
 # Installing cmake for build dependency
-#RUN wget https://cmake.org/files/v3.9/cmake-3.9.0-Linux-x86_64.sh && \
-#    chmod +x cmake-3.9.0-Linux-x86_64.sh  && \
-#    ./cmake-3.9.0-Linux-x86_64.sh --skip-license --prefix=/usr/local
+RUN wget https://cmake.org/files/v3.9/cmake-3.9.0-Linux-x86_64.sh && \
+    chmod +x cmake-3.9.0-Linux-x86_64.sh  && \
+    ./cmake-3.9.0-Linux-x86_64.sh --skip-license --prefix=/usr/local
 
