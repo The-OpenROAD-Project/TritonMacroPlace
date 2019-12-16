@@ -27,10 +27,12 @@ class CircuitInfo;
 class MacroCircuit {
   public:
     MacroCircuit();
-    MacroCircuit(odb::dbDatabase* db, EnvFile* env, CircuitInfo* cinfo);
+    MacroCircuit(odb::dbDatabase* db, sta::Sta* sta, EnvFile* env, CircuitInfo* cinfo);
     
     void Init(odb::dbDatabase* db, 
-        EnvFile* env, CircuitInfo* cinfo);
+        sta::Sta* sta, 
+        EnvFile* env, 
+        CircuitInfo* cinfo);
     
     std::vector<MacroPlace::Vertex> vertexStor;
 
@@ -95,8 +97,8 @@ class MacroCircuit {
 
   private:
     odb::dbDatabase* _db;
-    EnvFile* _env;
     sta::Sta* _sta;
+    EnvFile* _env;
 
     double lx, ly, ux, uy;
 

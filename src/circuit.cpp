@@ -36,31 +36,34 @@ using std::string;
 MacroCircuit::MacroCircuit() :
   gHaloX(0), gHaloY(0), 
   gChannelX(0), gChannelY(0), 
-  _db(0), _env(0),
+  _db(0), _sta(0), _env(0),
   lx(0), ly(0), ux(0), uy(0),
   netTable(0) {}
 
 MacroCircuit::MacroCircuit(
     odb::dbDatabase* db,
+    sta::Sta* sta,
     EnvFile* env,
     CircuitInfo* cinfo) :
   gHaloX(0), gHaloY(0), 
   gChannelX(0), gChannelY(0), 
   _db(db), _env(env),
-
+  _sta(sta),
   lx(0), ly(0), ux(0), uy(0),
   netTable(0) {
 
-  Init(db, env, cinfo);
+  Init(db, sta, env, cinfo);
 }
 
 void MacroCircuit::Init( 
     odb::dbDatabase* db, 
+    sta::Sta* sta,
     EnvFile* env, 
     CircuitInfo* cinfo) {
   
   _db = db; 
   _env = env;
+  _sta = sta;
 
   lx = cinfo->lx;
   ly = cinfo->ly;

@@ -82,7 +82,7 @@ void mplace_external::set_plot_enable(bool mode) {
 
 bool mplace_external::place_macros() {
   odb::dbDatabase* db = odb::dbDatabase::getDatabase(db_id);
-  PlaceMacros(db, env, mckt, solCount);
+  PlaceMacros(db, NULL, env, mckt, solCount);
   return true;
 }
 

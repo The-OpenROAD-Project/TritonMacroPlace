@@ -36,11 +36,14 @@ static void CutRoundUp( CircuitInfo& cInfo, double& cutLine, bool isHorizontal )
 static void PrintAllSets(FILE* fp, CircuitInfo& cInfo, 
     vector< vector<Partition> >& allSets);
 
+static void UpdateOpendbCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt); 
+
 
 namespace MacroPlace { 
 
 void 
-PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt, int& solCount) {
+PlaceMacros(dbDatabase* db, sta::Sta* sta,
+    EnvFile& env, MacroCircuit& mckt, int& solCount) {
 
   dbTech* tech = db->getTech();
   dbChip* chip = db->getChip(); 
@@ -73,7 +76,7 @@ PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt, int& solCount) {
   cout << "DieBBox: (" << cInfo.lx << " " << cInfo.ly << ") - (" 
     << cInfo.ux << " " << cInfo.uy << ")" << endl;
 
-  mckt.Init(db, &env, &cInfo);   
+  mckt.Init(db, sta, &env, &cInfo);   
   
   //  RandomPlace for special needs. 
   //  Really not recommended to execute this functioning 
@@ -281,9 +284,11 @@ PlaceMacros(dbDatabase* db, EnvFile& env, MacroCircuit& mckt, int& solCount) {
   cout << "PROC: End TritonMacroPlacer" << endl;
 }
 
+}
+
 // 
 // update opendb dataset from mckt.
-void UpdateOpendbCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
+static void UpdateOpendbCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
   dbTech* tech = db->getTech();
   const int dbu = tech->getDbUnitsPerMicron();
   
@@ -292,8 +297,6 @@ void UpdateOpendbCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
         int(curMacro.lx * dbu + 0.5f), int(curMacro.ly * dbu + 0.5f) ) ;
     curMacro.dbInstPtr->setPlacementStatus( dbPlacementStatus::LOCKED ) ;
   }
-}
-
 }
 
 static void CutRoundUp( CircuitInfo& cInfo, double& cutLine, bool isHorizontal ) {
