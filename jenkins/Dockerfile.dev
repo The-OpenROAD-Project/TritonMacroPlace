@@ -20,7 +20,7 @@ FROM centos:centos7 AS base-dependencies
 
 
 RUN yum -y install centos-release-scl
-RUN yum install -y wget git zlib-devel tcl-devel tk-devel swig bison flex boost-devel
+RUN yum install -y gcc gcc-c++ wget git zlib-devel tcl-devel tk-devel swig bison flex boost-devel
 
 # Installing cmake for build dependency
 RUN wget https://cmake.org/files/v3.9/cmake-3.9.0-Linux-x86_64.sh && \
