@@ -1,4 +1,4 @@
-FROM openroad/centos7-tcl8.6 AS builder
+FROM centos:centos7 AS base-dependencies
 
 # install gcc 6
 #RUN yum -y install centos-release-scl && \
