@@ -45,7 +45,11 @@
 #define _SGI_HASHMAP_H
  #ifdef __GNUC__
     #if( __GNUC__ >= 3)
-      #include <hash_map>
+      #if defined __GNUC__ || defined __APPLE__
+        #include <ext/hash_map>
+      #else
+        #include <hash_map>
+      #endif
       #include "uofm_alloc.h"
       #if(GCC_VERSION >= 30100)
         using __gnu_cxx::hash_map;
