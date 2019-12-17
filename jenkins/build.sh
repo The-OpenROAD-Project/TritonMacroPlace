@@ -1,2 +1,2 @@
-docker build -f jenkins/Dockerfile.dev -t tritonmacroplace .
-docker run -v $(pwd):/tritonmacroplace tritonmacroplace bash -c "./tritonmacroplace/jenkins/install.sh"
+docker build --target=base-dependencies -t tritonmp .
+docker run -v $(pwd):/TritonMP tritonmp bash -c "./TritonMP/jenkins/install.sh"

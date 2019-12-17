@@ -1,3 +1,3 @@
 set -e
-docker run -v $(pwd):/tritonmacroplace tritonmacroplace bash -c "/tritonmacroplace/test/regression fast"
-docker run -v $(pwd):/tritonmacroplace tritonmacroplace bash -c "cat /tritonmacroplace/test/results/diffs"
+docker run -v $(pwd):/TritonMP tritonmp bash -c "/TritonMP/test/regression fast"
+docker run -v $(pwd):/TritonMP tritonmp bash -c "cat /TritonMP/test/results/diffs"
