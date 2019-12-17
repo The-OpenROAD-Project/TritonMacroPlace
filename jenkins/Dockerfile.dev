@@ -1,29 +1,15 @@
-FROM openroad/centos6-tcl8.6 AS builder
+FROM centos:centos7 AS base-dependencies
 
-# install gcc 6
-RUN yum -y install centos-release-scl && \
-    yum -y install devtoolset-6 devtoolset-6-libatomic-devel
-ENV CC=/opt/rh/devtoolset-6/root/usr/bin/gcc \
-    CPP=/opt/rh/devtoolset-6/root/usr/bin/cpp \
-    CXX=/opt/rh/devtoolset-6/root/usr/bin/g++ \
-    PATH=/opt/rh/devtoolset-6/root/usr/bin:$PATH \
-    LD_LIBRARY_PATH=/opt/rh/devtoolset-6/root/usr/lib64:/opt/rh/devtoolset-6/root/usr/lib:/opt/rh/devtoolset-6/root/usr/lib64/dyninst:/opt/rh/devtoolset-6/root/usr/lib/dyninst:/opt/rh/devtoolset-6/root/usr/lib64:/opt/rh/devtoolset-6/root/usr/lib:$LD_LIBRARY_PATH
+# install gcc 
+RUN yum -y install centos-release-scl 
 
 # install dependencies
-RUN yum install -y wget git zlib-devel tcl-devel tk-devel swig bison flex
+RUN yum install -y gcc gcc-c++ make wget git boost-devel zlib-devel tcl-devel tk-devel swig bison flex
 
-RUN yum install -y wget rh-mongodb32-boost-devel rh-mongodb32-boost-static
-ENV PATH=/opt/rh/rh-mongodb32/root/usr/bin:$PATH \
-    LD_LIBRARY_PATH=/opt/rh/rh-mongodb32/root/usr/lib64:/opt/rh/rh-mongodb32/root/usr/lib:/opt/rh/rh-mongodb32/root/usr/lib64/dyninst:/opt/rh/rh-mongodb32/root/usr/lib/dyninst:/opt/rh/rh-mongodb32/root/usr/lib64:/opt/rh/rh-mongodb32/root/usr/lib:$LD_LIBRARY_PATH \
-    C_INCLUDE_PATH=/opt/rh/rh-mongodb32/root/usr/include \
-    CPLUS_INCLUDE_PATH=/opt/rh/rh-mongodb32/root/usr/include
-
-# install swig
-RUN wget http://prdownloads.sourceforge.net/swig/swig-4.0.1.tar.gz && \
-    tar zxf swig-4.0.1.tar.gz && \
-    cd swig-4.0.1 && \
-    ./configure --prefix=/usr/local --without-pcre && \
-    make && make install
+# Install python dev
+RUN yum install -y https://centos7.iuscommunity.org/ius-release.rpm && \
+    yum update -y && \
+    yum install -y python36u python36u-libs python36u-devel python36u-pip
 
 # Installing cmake for build dependency
 RUN wget https://cmake.org/files/v3.9/cmake-3.9.0-Linux-x86_64.sh && \
