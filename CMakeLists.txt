@@ -64,6 +64,7 @@ set (MPLACE_SRC
   src/macroPlace_wrap.cpp
   src/tritonmp_external.cpp
   src/macroPlace.cpp
+  src/MakeTritonMp.cpp
 )
 
 

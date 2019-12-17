@@ -44,7 +44,7 @@ mplaceTclAppInit(Tcl_Interp *interp) {
     return TCL_OK;
   }
   else if( argc >= 3) {
-    Tcl_Eval(interp, "opendp_external odp; odp help;");
+    Tcl_Eval(interp, "tritonmp_external mp; mp help;");
     exit(1);
   }
   return TCL_OK;
