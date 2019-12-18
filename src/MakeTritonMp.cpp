@@ -2,7 +2,7 @@
 #include "StaMain.hh"
 #include "openroad/OpenRoad.hh"
 #include "tritonmp/MakeTritonMp.h"
-#include "tritonmp/tritonmp_external.h"
+#include "tritonmp/TritonMacroPlace.h"
 
 
 namespace sta {
@@ -15,10 +15,10 @@ extern int Mplace_Init(Tcl_Interp* interp);
 
 namespace ord {
 
-MacroPlace::tritonmp_external * 
+MacroPlace::TritonMacroPlace * 
 makeTritonMp() 
 {
-  return new MacroPlace::tritonmp_external; 
+  return new MacroPlace::TritonMacroPlace; 
 }
 
 void 
@@ -27,12 +27,12 @@ initTritonMp(OpenRoad *openroad)
   Tcl_Interp* tcl_interp = openroad->tclInterp();
   Mplace_Init(tcl_interp);
   sta::evalTclInit(tcl_interp, sta::tritonmp_tcl_inits);
-  openroad->getTritonMp()->set_db(openroad->getDb());
-  openroad->getTritonMp()->set_sta(openroad->getSta());
+  openroad->getTritonMp()->setDb(openroad->getDb());
+  openroad->getTritonMp()->setSta(openroad->getSta());
 }
 
 void
-deleteTritonMp(MacroPlace::tritonmp_external *tritonmp)
+deleteTritonMp(MacroPlace::TritonMacroPlace *tritonmp)
 {
   delete tritonmp;
 }

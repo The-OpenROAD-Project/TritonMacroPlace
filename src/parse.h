@@ -10,14 +10,8 @@ namespace MacroPlace {
 
 class EnvFile {
   public:
-  std::string def;
-  std::string verilog;
-  std::string design;
-  std::string sdc;
   std::string globalConfig;
   std::string localConfig; 
-  std::vector<std::string> lefStor;
-  std::vector<std::string> libStor;
   int searchDepth;
   bool isWestFix;
   bool isPlot;

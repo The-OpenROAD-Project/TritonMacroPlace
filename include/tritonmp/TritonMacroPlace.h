@@ -17,20 +17,19 @@ namespace MacroPlace {
 class MacroCircuit;
 class EnvFile;
 
-class tritonmp_external {
+class TritonMacroPlace {
 public:
-  tritonmp_external ();
-  ~tritonmp_external ();
+  TritonMacroPlace ();
+  ~TritonMacroPlace ();
 
-  void help();
-  void set_db(odb::dbDatabase* db);
-  void set_sta(sta::dbSta* sta);
-  void import_global_config(const char* global_config);
-  void import_local_config(const char* local_config);
+  void setDb(odb::dbDatabase* db);
+  void setSta(sta::dbSta* sta);
+  void setGlobalConfig(const char* globalConfig);
+  void setLocalConfig(const char* localConfig);
   
-  void set_plot_enable(bool mode);
-  bool place_macros();
-  int get_solution_count();
+  void setPlotEnable(bool mode);
+  bool placeMacros();
+  int getSolutionCount();
 
 private:
   odb::dbDatabase* db_;

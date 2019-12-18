@@ -3,21 +3,21 @@
 #define MAKE_TRITONMP
 
 namespace MacroPlace {
-class tritonmp_external;
+class TritonMacroPlace;
 }
 
 namespace ord {
 
 class OpenRoad;
 
-MacroPlace::tritonmp_external *
+MacroPlace::TritonMacroPlace *
 makeTritonMp();
 
 void
 initTritonMp(OpenRoad *openroad);
 
 void
-deleteTritonMp(MacroPlace::tritonmp_external *tritonmp);
+deleteTritonMp(MacroPlace::TritonMacroPlace *tritonmp);
 
 }
 
