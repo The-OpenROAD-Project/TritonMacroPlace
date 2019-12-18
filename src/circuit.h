@@ -15,9 +15,8 @@
 #include "partition.h"
 #include "macro.h"
 
-
 namespace sta { 
-class Sta;
+class dbSta;
 }
 
 namespace MacroPlace{ 
@@ -27,10 +26,10 @@ class CircuitInfo;
 class MacroCircuit {
   public:
     MacroCircuit();
-    MacroCircuit(odb::dbDatabase* db, sta::Sta* sta, EnvFile* env, CircuitInfo* cinfo);
+    MacroCircuit(odb::dbDatabase* db, sta::dbSta* sta, EnvFile* env, CircuitInfo* cinfo);
     
     void Init(odb::dbDatabase* db, 
-        sta::Sta* sta, 
+        sta::dbSta* sta, 
         EnvFile* env, 
         CircuitInfo* cinfo);
     
@@ -97,7 +96,7 @@ class MacroCircuit {
 
   private:
     odb::dbDatabase* _db;
-    sta::Sta* _sta;
+    sta::dbSta* _sta;
     EnvFile* _env;
 
     double lx, ly, ux, uy;

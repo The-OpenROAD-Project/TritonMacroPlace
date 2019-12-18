@@ -8,7 +8,7 @@ class dbDatabase;
 }
 
 namespace sta {
-class Sta;
+class dbSta;
 }
 
 namespace MacroPlace {
@@ -17,7 +17,7 @@ class MacroCircuit;
 class EnvFile;
 
 void
-PlaceMacros(odb::dbDatabase* db, sta::Sta*, 
+PlaceMacros(odb::dbDatabase* db, sta::dbSta*, 
     EnvFile& env, MacroCircuit& mckt, int& solCount);
 
 }

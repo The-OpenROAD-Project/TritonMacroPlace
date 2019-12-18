@@ -9,7 +9,7 @@ class dbDatabase;
 }
 
 namespace sta {
-class Sta;
+class dbSta;
 }
 
 namespace MacroPlace {
@@ -24,7 +24,7 @@ public:
 
   void help();
   void set_db(odb::dbDatabase* db);
-  void set_sta(sta::Sta* sta);
+  void set_sta(sta::dbSta* sta);
   void import_global_config(const char* global_config);
   void import_local_config(const char* local_config);
   
@@ -34,7 +34,7 @@ public:
 
 private:
   odb::dbDatabase* db_;
-  sta::Sta* sta_;
+  sta::dbSta* sta_;
   EnvFile env_;
   MacroCircuit mckt_;
   int solCount_;

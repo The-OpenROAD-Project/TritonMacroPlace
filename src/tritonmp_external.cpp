@@ -18,7 +18,7 @@ void tritonmp_external::help() {}
 void tritonmp_external::set_db(odb::dbDatabase* db) {
   db_ = db;
 }
-void tritonmp_external::set_sta(sta::Sta* sta) {
+void tritonmp_external::set_sta(sta::dbSta* sta) {
   sta_ = sta;
 }
 

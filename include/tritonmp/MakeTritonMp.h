@@ -11,13 +11,13 @@ namespace ord {
 class OpenRoad;
 
 MacroPlace::tritonmp_external *
-makeTritonmp();
+makeTritonMp();
 
 void
-initTritonmp(OpenRoad *openroad);
+initTritonMp(OpenRoad *openroad);
 
 void
-deleteTritonmp(MacroPlace::tritonmp_external *tritonmp);
+deleteTritonMp(MacroPlace::tritonmp_external *tritonmp);
 
 }
 

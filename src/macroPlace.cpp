@@ -39,7 +39,7 @@ static void UpdateOpendbCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt)
 namespace MacroPlace { 
 
 void 
-PlaceMacros(dbDatabase* db, sta::Sta* sta,
+PlaceMacros(dbDatabase* db, sta::dbSta* sta,
     EnvFile& env, MacroCircuit& mckt, int& solCount) {
 
   dbTech* tech = db->getTech();

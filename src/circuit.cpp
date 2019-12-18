@@ -7,7 +7,20 @@
 
 #include "parse.h"
 #include "circuit.h"
-#include "timingSta.h"
+
+#include "Machine.hh"
+#include "Graph.hh"
+#include "Sta.hh"
+#include "Network.hh"
+#include "Liberty.hh"
+#include "Sdc.hh"
+#include "PortDirection.hh"
+#include "Corner.hh"
+#include "PathExpanded.hh"
+#include "PathEnd.hh"
+#include "PathRef.hh"
+#include "Search.hh"
+#include "db_sta/dbSta.hh"
 
 namespace MacroPlace {
 
@@ -42,7 +55,7 @@ MacroCircuit::MacroCircuit() :
 
 MacroCircuit::MacroCircuit(
     odb::dbDatabase* db,
-    sta::Sta* sta,
+    sta::dbSta* sta,
     EnvFile* env,
     CircuitInfo* cinfo) :
   gHaloX(0), gHaloY(0), 
@@ -57,7 +70,7 @@ MacroCircuit::MacroCircuit(
 
 void MacroCircuit::Init( 
     odb::dbDatabase* db, 
-    sta::Sta* sta,
+    sta::dbSta* sta,
     EnvFile* env, 
     CircuitInfo* cinfo) {
   
@@ -285,9 +298,6 @@ void MacroCircuit::FillPinGroup(){
   dbTech* tech = _db->getTech(); 
   const double dbu = tech->getDbUnitsPerMicron();
 
-  _sta = GetStaObject( *_env );
-  cout << "OpenSTA Object Init Done!" << endl;
- 
   int numEdge = _sta->graph()->edgeCount();
   int numVertex = _sta->graph()->vertexCount();
 

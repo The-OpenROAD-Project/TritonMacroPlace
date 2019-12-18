@@ -5,7 +5,6 @@
 #include <set>
 #include <tcl.h>
 
-#include "timingSta.h"
 #include "parse.h"
 #include "circuit.h"
 

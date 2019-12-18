@@ -39,46 +39,46 @@ find_package(FLEX REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Threads REQUIRED)
 
-set (MPLACE_SRC 
-  src/circuit.cpp
-  src/main.cpp
-  src/timingSta.cpp
-  src/partition.cpp
-  src/parse.cpp
-  src/graph.cpp
-  src/macro.cpp
-  src/macroPlace_wrap.cpp
-  src/tritonmp_external.cpp
-  src/macroPlace.cpp
-  src/MakeTritonMp.cpp
-)
-
-
-set (MPLACE_HEADER
-)
-
-############################################################
-# include directories 
-############################################################
 
 ############################################################
 # Create a library 
 ############################################################
 
-add_custom_command(OUTPUT ${MPLACE_HOME}/src/macroPlace_wrap.cpp
-  COMMAND ${SWIG_EXECUTABLE} -tcl8 -c++ -o ${MPLACE_HOME}/src/macroPlace_wrap.cpp -I${MPLACE_HOME}/include ${MPLACE_HOME}/src/macroPlace.i   
+set(MPLACE_WRAP ${CMAKE_CURRENT_BINARY_DIR}/TritonMp_wrap.cc)
+set(MPLACE_TCL_INIT ${CMAKE_CURRENT_BINARY_DIR}/TritonMpTclInitVar.cc)
+
+
+add_custom_command(OUTPUT ${MPLACE_WRAP}
+  COMMAND ${SWIG_EXECUTABLE} -tcl8 -c++ -o ${MPLACE_WRAP} -I${MPLACE_HOME}/include ${MPLACE_HOME}/src/macroPlace.i   
   WORKING_DIRECTORY ${MPLACE_HOME}
   DEPENDS ${MPLACE_HOME}/src/macroPlace.i "src/tritonmp_external.cpp" "include/tritonmp/tritonmp_external.h"
 )
 
-############################################################
-# Create an executable
-############################################################
-add_library( TritonMacroPlace 
-  ${MPLACE_SRC}
+add_custom_command(OUTPUT ${MPLACE_TCL_INIT}
+  COMMAND ${OPENSTA_HOME}/etc/TclEncode.tcl ${MPLACE_TCL_INIT} tritonmp_tcl_inits ${MPLACE_HOME}/src/macroPlace.tcl
+  WORKING_DIRECTORY ${MPLACE_HOME}/src
+  DEPENDS ${MPLACE_HOME}/src/macroPlace.tcl ${OPENSTA_HOME}/etc/TclEncode.tcl
 )
 
-# add_dependencies( TritonMacroPlace sta )
+############################################################
+# Create an library 
+############################################################
+add_library( TritonMacroPlace 
+  src/circuit.cpp
+  src/partition.cpp
+  src/parse.cpp
+  src/graph.cpp
+  src/macro.cpp
+  src/tritonmp_external.cpp
+  src/macroPlace.cpp
+  src/MakeTritonMp.cpp
+  ${MPLACE_WRAP}
+  ${MPLACE_TCL_INIT}
+)
+
+############################################################
+# include directories 
+############################################################
 
 target_include_directories( TritonMacroPlace 
 PUBLIC
@@ -104,15 +104,10 @@ PRIVATE
   ${OPENSTA_HOME}/tcl
   ${OPENSTA_HOME}/util
   ${OPENSTA_HOME}/verilog
+  ${OPENSTA_HOME}/search
+  ${OPENSTA_HOME}/liberty
 
   ${OPENDB_HOME}/include
+  ${OPENROAD_HOME}/include
   )
-
-############################################################
-# Install  
-############################################################
-
-install(FILES ${MPLACE_HEADER} DESTINATION include)
-install(TARGETS TritonMacroPlace DESTINATION bin)
-
 

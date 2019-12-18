@@ -67,23 +67,11 @@
 #include "ReportPath.hh"
 #include "VisitPathGroupVertices.hh"
 
-#ifdef YY_INPUT
-#undef YY_INPUT
-#endif
+//#ifdef YY_INPUT
+//#undef YY_INPUT
+//#endif
 
 #include "parse.h"
-
-// to import Swig
-extern "C" {
-    extern int Sta_Init(Tcl_Interp *interp);
-}
-
-// to import TCL functions
-namespace sta { 
-    extern const char *tcl_inits[];
-}
-
-sta::Sta* GetStaObject(MacroPlace::EnvFile& _env);
 
 
 #endif
