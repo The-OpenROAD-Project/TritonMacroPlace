@@ -3,8 +3,6 @@
 #include "partition.h" 
 #include <opendb/db.h>
 
-#include <boost/icl/interval_map.hpp>
-#include <boost/icl/closed_interval.hpp>
 
 using std::cout;
 using std::endl;
@@ -16,7 +14,6 @@ using std::unordered_set;
 using MacroPlace::Partition;
 
 using namespace MacroPlace;
-using namespace boost::icl;
 using namespace odb;
 
 typedef vector<pair<Partition, Partition>> TwoPartitions;
@@ -350,6 +347,14 @@ static void UpdateMacroPartMap(
   }
 }
 
+
+// only considers lx or ly coordinates for sorting
+static bool 
+SortMacroPair(const std::pair<int, double> &p1, 
+    const std::pair<int, double> &p2 ) {
+  return p1.second < p2.second;
+}
+
 // Two partitioning functions:
 // first : lower part
 // second : upper part
@@ -366,51 +371,44 @@ static vector<pair<Partition, Partition>> GetPart(
   // Return vector
   vector<pair<Partition, Partition>> ret;
   
-  typedef std::set<int> MacroSetT;
-  interval_map<double, MacroSetT> macroMap;
-
   double maxWidth = DBL_MIN;
   double maxHeight = DBL_MIN;
-
+  
+  // segment stor
+  // first: macroStor index
+  // second: lx or ly values
+  vector<std::pair<int, double>> segStor;
+  
   // in parent partition, traverse macros
-  //
   for(auto& curMacro: partition.macroStor) {
-    MacroSetT macroInfo;
-    macroInfo.insert( &curMacro - &partition.macroStor[0]);
-    
-    macroMap.add( 
-        make_pair(
-          interval<double>::closed(
-            (isHorizontal)? curMacro.lx : curMacro.ly,
-            (isHorizontal)? curMacro.lx + curMacro.w : 
-                curMacro.ly + curMacro.h ), macroInfo));
+    segStor.push_back( 
+        std::make_pair( (isHorizontal)? curMacro.lx : curMacro.ly, 
+          &curMacro - &partition.macroStor[0] ));
+
     maxWidth = ( maxWidth < curMacro.w)? curMacro.w: maxWidth;
     maxHeight = ( maxHeight < curMacro.h)? curMacro.h: maxHeight;
   }
 
   double cutLineLimit = (isHorizontal)? maxWidth * 0.25 : maxHeight * 0.25;
-
-
   double prevPushLimit = DBL_MIN;
   bool isFirst = true;
   vector<double> cutLineStor;
  
   // less than 4
   if( partition.macroStor.size() <= 4 ) {
-    for( interval_map<double, MacroSetT>::iterator 
-        it = macroMap.begin();
-        it != macroMap.end(); *it++) {
-      interval<double>::type macroInterval = it->first;
-      MacroSetT result = it->second;
+    sort(segStor.begin(), segStor.end(), SortMacroPair);
 
+    // first : macroStor index
+    // second : macro lower coordinates
+    for(auto& segPair: segStor) {
       if( isFirst ) {
-        cutLineStor.push_back( macroInterval.lower() );
-        prevPushLimit = macroInterval.lower();
+        cutLineStor.push_back( segPair.second );
+        prevPushLimit = segPair.second;
         isFirst = false;
       }
-      else if( abs(macroInterval.lower()-prevPushLimit) > cutLineLimit ) {
-        cutLineStor.push_back( macroInterval.lower() );
-        prevPushLimit = macroInterval.lower();
+      else if( abs(segPair.second -prevPushLimit) > cutLineLimit ) {
+        cutLineStor.push_back( segPair.second );
+        prevPushLimit = segPair.second;
       }
     }
   }
