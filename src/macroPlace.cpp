@@ -46,8 +46,6 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
   dbChip* chip = db->getChip(); 
   dbBlock* block = chip->getBlock();
 
-  env.design = block->getConstName();
-
   dbSet<dbRow> rows = block->getRows();
   if( rows.size() == 0 ) { 
     cout << "ERROR: DEF must contain ROW"<< endl;

@@ -21,11 +21,11 @@ void TritonMacroPlace::setSta(sta::dbSta* sta) {
 }
 
 void TritonMacroPlace::setGlobalConfig(const char* globalConfig) {
-  env_.globalConfig = global_config;
+  env_.globalConfig = globalConfig;
 }
 
 void TritonMacroPlace::setLocalConfig(const char* localConfig) {
-  env_.localConfig = local_config;
+  env_.localConfig = localConfig;
 }
 void TritonMacroPlace::setPlotEnable(bool mode) {
   env_.isPlot = mode;
