@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
 
-project(TritonFPlan)
-
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -16,27 +14,15 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-set(MPLACE_HOME ${PROJECT_SOURCE_DIR} )
-set(OPENSTA_HOME
-  ${PROJECT_SOURCE_DIR}/module/OpenSTA
-)
-set(EIGEN_HOME
-  ${PROJECT_SOURCE_DIR}/module/eigen 
-)
-set(ABKCOMMON_HOME
-  ${PROJECT_SOURCE_DIR}/module/ABKCommon 
-)
-set(PARQUET_HOME
-  ${PROJECT_SOURCE_DIR}/module/ParquetFP
-)
-set(OPENDB_HOME 
-  ${PROJECT_SOURCE_DIR}/module/OpenDB
-)
+set(OPENSTA_HOME ${PROJECT_SOURCE_DIR}/src/OpenSTA )
+set(EIGEN_HOME ${PROJECT_SOURCE_DIR}/src/eigen )
+set(OPENDB_HOME ${PROJECT_SOURCE_DIR}/src/OpenDB )
 
-add_subdirectory(${OPENSTA_HOME})
+set(ABKCOMMON_HOME ${MPLACE_HOME}/module/ABKCommon )
+set(PARQUET_HOME ${MPLACE_HOME}/module/ParquetFP )
+
 add_subdirectory(${ABKCOMMON_HOME})
 add_subdirectory(${PARQUET_HOME})
-add_subdirectory(${OPENDB_HOME})
 
 set(ENV{TYPE_CALL} library)
 
@@ -88,13 +74,17 @@ add_custom_command(OUTPUT ${MPLACE_HOME}/src/macroPlace_wrap.cpp
 ############################################################
 # Create an executable
 ############################################################
-add_executable( mplace
+add_library( TritonMacroPlace 
   ${MPLACE_SRC}
 )
 
-add_dependencies( mplace sta )
+# add_dependencies( TritonMacroPlace sta )
 
-target_include_directories( mplace
+target_include_directories( TritonMacroPlace 
+PUBLIC
+  ${MPLACE_HOME}/src
+  ${MPLACE_HOME}/include
+
 PRIVATE
   ${BOOST_INCLUDEDIR}
 
@@ -116,24 +106,6 @@ PRIVATE
   ${OPENSTA_HOME}/verilog
 
   ${OPENDB_HOME}/include
-
-  ${MPLACE_HOME}/include
-  ${MPLACE_HOME}/src
-  )
-
-target_link_libraries( mplace
-  PUBLIC
-  OpenSTA
-
-  ParquetFP
-  ABKCommon
-
-  ${ZLIB_LIBRARIES}
-  ${TCL_LIB}
-  Threads::Threads
-  
-  # at standalone mode
-  opendb
   )
 
 ############################################################
@@ -141,6 +113,6 @@ target_link_libraries( mplace
 ############################################################
 
 install(FILES ${MPLACE_HEADER} DESTINATION include)
-install(TARGETS mplace DESTINATION bin)
+install(TARGETS TritonMacroPlace DESTINATION bin)
 
 

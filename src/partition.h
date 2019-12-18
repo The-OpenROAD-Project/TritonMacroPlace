@@ -5,17 +5,18 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <boost/functional/hash.hpp>
 
 namespace MacroPlace {
 
-template <class T> struct MyHash;
 class MacroCircuit;
 class Macro;
 
 enum PartClass {
   S, N, W, E, NW, NE, SW, SE, ALL, None
 };
+
+struct PartClassHash;
+struct PartClassEqual;
 
 class Partition {
   public: 
@@ -41,8 +42,9 @@ class Partition {
     // assign operator overloading
     Partition& operator= (const Partition& prev);
 
-    void FillNetlistTable(MacroCircuit& _mckt,
-        std::unordered_map<PartClass, std::vector<int>, MyHash<PartClass>>& macroPartMap);
+    void FillNetlistTable(MacroCircuit& _mckt,  
+        std::unordered_map<PartClass, std::vector<int>, 
+        PartClassHash, PartClassEqual>& macroPartMap);
 
     void Dump();
 
@@ -69,17 +71,16 @@ class Partition {
     void FillNetlistTableDesc();
 }; 
 
-template<>
-struct MyHash< MacroPlace::PartClass > {
-
-  std::size_t operator()( const MacroPlace::PartClass & k ) const {
-
-    using boost::hash_combine;
-    size_t seed = 0;
-    hash_combine(seed, (int)k);
-    return seed; 
+struct PartClassHash { 
+  std::size_t operator()(const MacroPlace::PartClass &k) const {
+    return k;
   }
 };
+struct PartClassEqual {
+  bool operator()(const MacroPlace::PartClass &p1, const MacroPlace::PartClass &p2) const {
+    return p1 == p2;
+  }
+}; 
 
 }
 

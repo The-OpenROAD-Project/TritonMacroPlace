@@ -29,7 +29,7 @@ static void UpdateMacroPartMap(
     MacroCircuit& mckt,
     MacroPlace::Partition& part, 
     unordered_map<MacroPlace::PartClass, vector<int>, 
-    MyHash<MacroPlace::PartClass>>& macroPartMap );
+    PartClassHash, PartClassEqual> &macroPartMap );
 
 
 static void CutRoundUp( CircuitInfo& cInfo, double& cutLine, bool isHorizontal );
@@ -106,7 +106,7 @@ PlaceMacros(dbDatabase* db, sta::Sta* sta,
   // Fill the MacroPlace for ALL circuits
 
   unordered_map< PartClass, vector<int>, 
-    MyHash<PartClass>> globalMacroPartMap;
+    PartClassHash, PartClassEqual> globalMacroPartMap;
   UpdateMacroPartMap( mckt, layout, globalMacroPartMap );
   layout.FillNetlistTable( mckt, globalMacroPartMap );
   mckt.UpdateNetlist(layout);
@@ -145,7 +145,7 @@ PlaceMacros(dbDatabase* db, sta::Sta* sta,
           // Fill Macro Netlist
           // update macroPartMap
           unordered_map< PartClass, vector<int>, 
-            MyHash<PartClass>> macroPartMap;
+            PartClassHash, PartClassEqual> macroPartMap;
           for(auto& curSet: oneSet) {
             UpdateMacroPartMap( mckt, curSet, macroPartMap );
           }
@@ -169,7 +169,7 @@ PlaceMacros(dbDatabase* db, sta::Sta* sta,
           // Fill Macro Netlist
           // update macroPartMap
           unordered_map< PartClass, vector<int>, 
-            MyHash<PartClass>> macroPartMap;
+            PartClassHash, PartClassEqual> macroPartMap;
           for(auto& curSet: oneSet) {
             UpdateMacroPartMap( mckt, curSet, macroPartMap );
           }
@@ -197,7 +197,7 @@ PlaceMacros(dbDatabase* db, sta::Sta* sta,
             // Fill Macro Netlist
             // update macroPartMap
             unordered_map< PartClass, vector<int>, 
-              MyHash<PartClass>> macroPartMap;
+              PartClassHash, PartClassEqual> macroPartMap;
             for(auto& curSet: oneSet) {
               UpdateMacroPartMap( mckt, curSet, macroPartMap );
             }
@@ -325,7 +325,7 @@ static void UpdateMacroPartMap(
     MacroCircuit& mckt,
     MacroPlace::Partition& part, 
     unordered_map<MacroPlace::PartClass, vector<int>, 
-    MyHash<MacroPlace::PartClass>>& macroPartMap ) {
+    PartClassHash, PartClassEqual>& macroPartMap ) {
 
 
   auto mpPtr = macroPartMap.find( part.partClass );

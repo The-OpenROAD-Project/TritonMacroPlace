@@ -130,8 +130,7 @@ class MacroCircuit {
     
     // pair of <StartVertex*, EndVertex*> --> edgeStor's index
     std::unordered_map< std::pair<MacroPlace::Vertex*, MacroPlace::Vertex*>, 
-
-      int, MyHash<std::pair<void*, void*>> > vertexPairEdgeMap;
+      int, PointerPairHash, PointerPairEqual > vertexPairEdgeMap;
     
     std::pair<void*, MacroPlace::VertexClass> GetPtrClassPair(sta::Pin* pin);
 

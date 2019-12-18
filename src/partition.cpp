@@ -284,7 +284,7 @@ void Partition::WritePlFile( string plName ) {
 
 
 void Partition::FillNetlistTable(MacroCircuit& _mckt, 
-    unordered_map<PartClass, vector<int>, MyHash<PartClass>>& macroPartMap ) {
+    unordered_map<PartClass, vector<int>, PartClassHash, PartClassEqual>& macroPartMap ) {
   tableCnt = (macroStor.size()+4)*(macroStor.size()+4);
   netTable = new double[tableCnt];
   for(int i=0; i<tableCnt; i++) {
