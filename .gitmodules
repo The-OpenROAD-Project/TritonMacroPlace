@@ -1,9 +1,0 @@
-[submodule "module/OpenSTA"]
-	path = module/OpenSTA
-	url = https://github.com/The-OpenROAD-Project/OpenSTA.git
-[submodule "module/eigen"]
-	path = module/eigen
-	url = https://gitlab.com/libeigen/eigen.git
-[submodule "module/OpenDB"]
-	path = module/OpenDB
-	url = https://github.com/The-OpenROAD-Project/OpenDB
