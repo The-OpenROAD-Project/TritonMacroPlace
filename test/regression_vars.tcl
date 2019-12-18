@@ -1,4 +1,3 @@
-# Resizer, LEF/DEF gate resizer
 # Copyright (c) 2019, Parallax Software, Inc.
 # 
 # This program is free software: you can redistribute it and/or modify
@@ -17,12 +16,10 @@
 # Regression variables.
 
 # Application program to run tests on.
-set app "mplace"
-set mplace_dir [find_parent_dir $test_dir]
-set app_path [file join $mplace_dir "build" $app]
+set app "openroad"
+set app_path [file join $openroad_dir "build" "src" $app]
 # Application options.
-#set app_options "-no_init -no_splash -exit"
-set app_options ""
+set app_options "-no_init -no_splash -exit"
 # Log files for each test are placed in result_dir.
 set result_dir [file join $test_dir "results"]
 # Collective diffs.
@@ -127,7 +124,6 @@ record_resizer_tests {
   gcd-mem5-test-01
   gcd-mem5-test-02
 }
-
 # Record tests in $STAX/designs
 record_test_design {
 }

@@ -3,24 +3,18 @@ set design gcd_mem3
 set techDir nangate45-bench/tech/ 
 set designDir nangate45-bench/design/${design}
 
-mplace_external mp
+read_liberty ${techDir}/NangateOpenCellLibrary_typical.lib
+read_liberty ${techDir}/fakeram45_64x7.lib
 
-mp import_lef ${techDir}/NangateOpenCellLibrary.lef
-mp import_lef ${techDir}/fakeram45_64x7.lef
+read_lef ${techDir}/NangateOpenCellLibrary.lef
+read_lef ${techDir}/fakeram45_64x7.lef
 
-mp import_def ${designDir}/${design}.def
-mp import_verilog ${designDir}/${design}.v
-mp import_sdc ${designDir}/${design}.sdc
+read_def ${designDir}/${design}.def
+read_sdc ${designDir}/${design}.sdc
 
-mp import_lib ${techDir}/NangateOpenCellLibrary_typical.lib
-mp import_lib ${techDir}/fakeram45_64x7.lib
+find_timing -full_update
+macro_placement -global_config ${designDir}/halo_1.0.cfg
 
-mp import_global_config ${designDir}/halo_1.0.cfg
-mp place_macros
-
-set def_file [make_result_file gcd-mem3-test-02-mplace.def]
-mp export_def $def_file
-
-puts "PossibleSol : [mp get_solution_count]"
+set def_file [make_result_file "gcd-mem3-test-02-mplace.def"]
+write_def $def_file
 report_file $def_file
-exit
