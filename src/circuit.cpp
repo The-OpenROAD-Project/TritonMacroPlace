@@ -92,7 +92,7 @@ void MacroCircuit::Init(
     ParseLocalConfig(_env->localConfig);
   }
 
-  _sta->updateTiming(0);
+  _sta->updateTiming(1);
 
   FillMacroStor(); 
   FillPinGroup(); 
