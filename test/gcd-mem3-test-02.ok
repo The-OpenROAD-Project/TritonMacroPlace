@@ -20,7 +20,7 @@ DieBBox: (0 0) - (58.14 56)
 Extracting Macro Cells... cellHeight: 2800
 Done!
 Extracted # Macros: 3
-OpenSTA numEdge: 2348
+OpenSTA numEdge: 2231
 OpenSTA numVertex: 1259
 
 Pin Group Classification Info: 
