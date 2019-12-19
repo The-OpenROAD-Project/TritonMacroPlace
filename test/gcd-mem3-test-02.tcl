@@ -12,7 +12,6 @@ read_lef ${techDir}/fakeram45_64x7.lef
 read_def ${designDir}/${design}.def
 read_sdc ${designDir}/${design}.sdc
 
-find_timing -full_update
 macro_placement -global_config ${designDir}/halo_1.0.cfg
 
 set def_file [make_result_file "gcd-mem3-test-02-mplace.def"]
