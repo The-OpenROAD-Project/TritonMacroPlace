@@ -29,14 +29,10 @@ set(ENV{TYPE_CALL} library)
 
 ## configure settings
 find_package(TCL REQUIRED)
-
 find_package(ZLIB REQUIRED)
 find_package(SWIG REQUIRED)
-find_package(BISON REQUIRED)
-find_package(FLEX REQUIRED)
 
 # for cimg
-find_package(Boost REQUIRED)
 find_package(Threads REQUIRED)
 
 
@@ -86,8 +82,6 @@ PUBLIC
   ${MPLACE_HOME}/include
 
 PRIVATE
-  ${BOOST_INCLUDEDIR}
-
   ${EIGEN_HOME}
   ${ABKCOMMON_HOME}
   ${PARQUET_HOME}/src
