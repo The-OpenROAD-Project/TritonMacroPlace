@@ -1512,11 +1512,26 @@ int MacroCircuit::GetPathWeightMatrix(
   return mat.coeff(fromIdx, toIdx);
 }
 
+static float getRoundUpFloat( float x, float unit ) { 
+  int roundVal = static_cast<int>(x / unit + 0.5f);
+  return static_cast<float>(roundVal) * unit;
+}
 
 // 
 // Update Macro Location
 // from partition
 void MacroCircuit::UpdateMacroCoordi( MacroPlace::Partition& part) {
+  dbTech* tech = _db->getTech();
+  dbTechLayer* fourLayer = tech->findRoutingLayer( 4 );
+  if( !fourLayer ) {
+    cout << "WARNING: Metal 4 not exist! " << endl;
+    cout << "         Macro snapping will not be applied on Metal4 pitch" << endl;
+  }
+
+  const float pitchX = static_cast<float>(fourLayer->getPitchX()) 
+    / static_cast<float>(tech->getDbUnitsPerMicron());
+  const float pitchY = static_cast<float>(fourLayer->getPitchY()) 
+    / static_cast<float>(tech->getDbUnitsPerMicron());
 
   for(auto& curMacro : part.macroStor) {
     auto mnPtr = macroNameMap.find(curMacro.name);
@@ -1525,10 +1540,14 @@ void MacroCircuit::UpdateMacroCoordi( MacroPlace::Partition& part) {
       exit(1);
     }
 
+    // update macro coordi
+    float macroX = (fourLayer)? getRoundUpFloat( curMacro.lx, pitchX ) : curMacro.lx;
+    float macroY = (fourLayer)? getRoundUpFloat( curMacro.ly, pitchY ) : curMacro.ly;
+
     // Update Macro Location
     int macroIdx = mnPtr->second;
-    macroStor[macroIdx].lx = curMacro.lx;
-    macroStor[macroIdx].ly = curMacro.ly;  
+    macroStor[macroIdx].lx = macroX;
+    macroStor[macroIdx].ly = macroY;
   }
 }
 
