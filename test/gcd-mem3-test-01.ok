@@ -35,11 +35,19 @@ Edge: 1280
 PROC: Begin One Level Partition ... 
 PROC: Begin Partition ... 
 INFO: Partitions' #Macro = 3
-INFO: NumCutline = 1
-INFO: CutLine = 0
+INFO: NumCutline = 3
+INFO: CutLine = 2.065
 INFO: Updated CutLine = 0
 INFO: NumMacro in LowerPart[0] = 0
 INFO: NumMacro in UpperPart[0] = 3
+INFO: CutLine = 25.325
+INFO: Updated CutLine = 0
+INFO: NumMacro in LowerPart[1] = 0
+INFO: NumMacro in UpperPart[1] = 3
+INFO: CutLine = 44.3
+INFO: Updated CutLine = 58.14
+INFO: NumMacro in LowerPart[2] = 3
+INFO: NumMacro in UpperPart[2] = 0
 PROC: End Partition 
 
 PROC: End One Level Partition
@@ -57,20 +65,66 @@ PROC: Begin 2nd Second Level Partition
 PROC: Begin Partition ... 
 INFO: Partitions' #Macro = 3
 INFO: NumCutline = 1
-INFO: CutLine = 0
-INFO: Updated CutLine = 0
+INFO: CutLine = 11.655
+INFO: Updated CutLine = 11.2
 INFO: NumMacro in LowerPart[0] = 0
 INFO: NumMacro in UpperPart[0] = 3
 PROC: End Partition 
 
 PROC: End 2nd Second Level Partition
 
-INFO: Total Extracted Sets = 1
+PROC: Begin Horizontal Cuts
+PROC: Begin 1st Second Level Partition
+PROC: Begin Partition ... 
+INFO: Partitions' #Macro = 0
+INFO: NumCutline = 0
+PROC: End Partition 
+
+PROC: End 1st Second Level Partition
+
+PROC: Begin 2nd Second Level Partition
+PROC: Begin Partition ... 
+INFO: Partitions' #Macro = 3
+INFO: NumCutline = 1
+INFO: CutLine = 11.655
+INFO: Updated CutLine = 11.2
+INFO: NumMacro in LowerPart[0] = 0
+INFO: NumMacro in UpperPart[0] = 3
+PROC: End Partition 
+
+PROC: End 2nd Second Level Partition
+
+PROC: Begin Horizontal Cuts
+PROC: Begin 1st Second Level Partition
+PROC: Begin Partition ... 
+INFO: Partitions' #Macro = 3
+INFO: NumCutline = 1
+INFO: CutLine = 11.655
+INFO: Updated CutLine = 11.2
+INFO: NumMacro in LowerPart[0] = 0
+INFO: NumMacro in UpperPart[0] = 3
+PROC: End Partition 
+
+PROC: End 1st Second Level Partition
+
+PROC: Begin 2nd Second Level Partition
+PROC: Begin Partition ... 
+INFO: Partitions' #Macro = 0
+INFO: NumCutline = 0
+PROC: End Partition 
+
+PROC: End 2nd Second Level Partition
+
+INFO: Total Extracted Sets = 3
 
 Parquet is starting... Done
 Set 1: WWL = 0
+Parquet is starting... Done
+Set 2: WWL = 0
+Parquet is starting... Done
+Set 3: WWL = 0
 PROC: End TritonMacroPlacer
-Total Extracted Solution: 1
+Total Extracted Solution: 3
 VERSION 5.5 ;
 NAMESCASESENSITIVE ON ;
 DIVIDERCHAR "/" ;
