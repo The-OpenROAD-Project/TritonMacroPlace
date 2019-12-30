@@ -36,10 +36,10 @@ PROC: Begin One Level Partition ...
 PROC: Begin Partition ... 
 INFO: Partitions' #Macro = 1
 INFO: NumCutline = 1
-INFO: CutLine = 0
-INFO: Updated CutLine = 0
-INFO: NumMacro in LowerPart[0] = 0
-INFO: NumMacro in UpperPart[0] = 1
+INFO: CutLine = 23.92
+INFO: Updated CutLine = 44.08
+INFO: NumMacro in LowerPart[0] = 1
+INFO: NumMacro in UpperPart[0] = 0
 PROC: End Partition 
 
 PROC: End One Level Partition
@@ -47,20 +47,20 @@ PROC: End One Level Partition
 PROC: Begin Horizontal Cuts
 PROC: Begin 1st Second Level Partition
 PROC: Begin Partition ... 
-INFO: Partitions' #Macro = 0
-INFO: NumCutline = 0
+INFO: Partitions' #Macro = 1
+INFO: NumCutline = 1
+INFO: CutLine = 3.47
+INFO: Updated CutLine = 2.8
+INFO: NumMacro in LowerPart[0] = 0
+INFO: NumMacro in UpperPart[0] = 1
 PROC: End Partition 
 
 PROC: End 1st Second Level Partition
 
 PROC: Begin 2nd Second Level Partition
 PROC: Begin Partition ... 
-INFO: Partitions' #Macro = 1
-INFO: NumCutline = 1
-INFO: CutLine = 0
-INFO: Updated CutLine = 0
-INFO: NumMacro in LowerPart[0] = 0
-INFO: NumMacro in UpperPart[0] = 1
+INFO: Partitions' #Macro = 0
+INFO: NumCutline = 0
 PROC: End Partition 
 
 PROC: End 2nd Second Level Partition
