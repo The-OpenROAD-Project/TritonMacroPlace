@@ -380,8 +380,8 @@ static vector<pair<Partition, Partition>> GetPart(
   // in parent partition, traverse macros
   for(auto& curMacro: partition.macroStor) {
     segStor.push_back( 
-        std::make_pair( (isHorizontal)? curMacro.lx : curMacro.ly, 
-          &curMacro - &partition.macroStor[0] ));
+        std::make_pair( &curMacro - &partition.macroStor[0], 
+          (isHorizontal)? curMacro.lx : curMacro.ly ));
 
     maxWidth = ( maxWidth < curMacro.w)? curMacro.w: maxWidth;
     maxHeight = ( maxHeight < curMacro.h)? curMacro.h: maxHeight;
