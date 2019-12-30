@@ -85,7 +85,7 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
 //    curMacro.Dump();
 //  }
  
-  bool isHorizontal = (cInfo.ux-cInfo.lx) > (cInfo.uy-cInfo.ly);
+  bool isHorizontal = true;
 
   Partition layout(PartClass::ALL, 
       cInfo.lx, cInfo.ly, cInfo.ux-cInfo.lx, cInfo.uy-cInfo.ly);
