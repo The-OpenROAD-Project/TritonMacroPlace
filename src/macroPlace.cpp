@@ -214,7 +214,7 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
 
   solCount = 0;
   int bestSetIdx = 0;
-  double bestWwl = DBL_MIN;
+  double bestWwl = -DBL_MAX;
   for(auto& curSet: allSets) {
     // skip for top-layout partition
     if( curSet.size() == 1) {
