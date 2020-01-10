@@ -80,6 +80,7 @@ Partition& Partition::operator= (const Partition& prev) {
   else {
     netTable = 0;
   }
+  return *this;
 }
 
 void Partition::Dump() {    
@@ -744,7 +745,7 @@ void Partition::PrintSetFormat(FILE* fp) {
     sliceStr = "N";
   }
 
-  fprintf(fp,"  BEGIN SLICE %s %d ;\n", sliceStr.c_str(), macroStor.size() );
+  fprintf(fp,"  BEGIN SLICE %s %ld ;\n", sliceStr.c_str(), macroStor.size() );
   fprintf(fp,"    LX %f ;\n", lx);
   fprintf(fp,"    LY %f ;\n", ly);
   fprintf(fp,"    WIDTH %f ;\n", width);
