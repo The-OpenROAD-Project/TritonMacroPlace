@@ -34,7 +34,7 @@
 #ifndef NETS_H
 #define NETS_H
 
-#include <ABKCommon/sgi_hash_map.h>
+#include <unordered_map>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -61,7 +61,7 @@ namespace parquetfp
    {
    private:
       std::vector<Net> _nets;
-      hash_map<std::string, int, hash<std::string>, equal_to<std::string> > _name2IdxMap;
+     std::unordered_map<std::string, int> _name2IdxMap;
 
    public:
       Nets(const std::string &baseName);
