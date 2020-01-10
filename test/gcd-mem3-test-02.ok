@@ -125,7 +125,7 @@ Parquet is starting... Done
 Set 3: WWL = 0
 PROC: End TritonMacroPlacer
 Total Extracted Solution: 3
-VERSION 5.5 ;
+VERSION 5.8 ;
 NAMESCASESENSITIVE ON ;
 DIVIDERCHAR "/" ;
 BUSBITCHARS "[]" ;

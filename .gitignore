@@ -15,6 +15,7 @@ src/output
 src/output/*
 
 test/*/exp
+test/results
 
 CMakeCache.txt
 CMakeFiles
