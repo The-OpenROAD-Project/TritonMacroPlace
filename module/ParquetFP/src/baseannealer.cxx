@@ -107,7 +107,9 @@ BaseAnnealer::BaseAnnealer(const parquetfp::Command_Line *const params,
         FILE *rnd=fopen("/dev/urandom","r");
         if(rnd)
           {
-           fread(&rndbuf,sizeof(rndbuf),1,rnd);
+           if (fread(&rndbuf,sizeof(rndbuf),1,rnd) != 1) {
+             rndbuf = rand();
+           }
            fclose(rnd);
            sprintf(buf,"%g %d %d",seedtm.getUnixTime(),procID,rndbuf);
           }
