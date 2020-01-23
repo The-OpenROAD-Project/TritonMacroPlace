@@ -2,6 +2,8 @@
 
 ParquetFP based macro cell placer for OpenROAD.
 
+If you want to use this as part of the OpenROAD project you should build it and use it from inside the integrated [openroad app](https://github.com/The-OpenROAD-Project/OpenROAD). The standalone version is available as legacy code.
+
 ## Flows
 * Input: Initial placed DEF of a mixed-size (macros + cells) netlist. Such a DEF is produced by RePlAce (timing-driven, mixed-size mode, aka "TD-MS-RePlAce").
 * Output: A placed DEF with macro placements honoring halos, channels and cell row "snapping".  Approximately ceil((#macros/3)^(3/2)) "sets" corresponding to quadrisections of the initial placed mixed-size DEF are explored and packed using ParquetFP-based annealing. The best resulting floorplan according to a heuristic evaluation function is returned.
