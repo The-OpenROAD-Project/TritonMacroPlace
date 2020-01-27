@@ -104,7 +104,6 @@ PRIVATE
   ${OPENDB_HOME}/include
   ${OPENROAD_HOME}/include
 
-  SYSTEM
   ${TCL_INCLUDE_PATH}
   )
 
