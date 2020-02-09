@@ -103,6 +103,7 @@ PRIVATE
 
   ${OPENDB_HOME}/include
   ${OPENROAD_HOME}/include
+  ${DBSTA_HOME}/include
 
   ${TCL_INCLUDE_PATH}
   )
