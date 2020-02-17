@@ -1,11 +1,11 @@
-Notice 0: Reading LEF file:  nangate45-bench/tech//NangateOpenCellLibrary.lef
+Notice 0: Reading LEF file:  nangate45-bench/tech/NangateOpenCellLibrary.lef
 Notice 0:     Created 22 technology layers
 Notice 0:     Created 27 technology vias
 Notice 0:     Created 134 library cells
-Notice 0: Finished LEF file:  nangate45-bench/tech//NangateOpenCellLibrary.lef
-Notice 0: Reading LEF file:  nangate45-bench/tech//fakeram45_64x7.lef
+Notice 0: Finished LEF file:  nangate45-bench/tech/NangateOpenCellLibrary.lef
+Notice 0: Reading LEF file:  nangate45-bench/tech/fakeram45_64x7.lef
 Notice 0:     Created 1 library cells
-Notice 0: Finished LEF file:  nangate45-bench/tech//fakeram45_64x7.lef
+Notice 0: Finished LEF file:  nangate45-bench/tech/fakeram45_64x7.lef
 Notice 0: 
 Reading DEF file: nangate45-bench/design/gcd_mem5/gcd_mem5.def
 Notice 0: Design: gcd_mem5

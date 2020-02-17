@@ -1,6 +1,6 @@
 source helpers.tcl
 set design gcd_mem3 
-set techDir nangate45-bench/tech/ 
+set techDir nangate45-bench/tech
 set designDir nangate45-bench/design/${design}
 
 read_liberty ${techDir}/NangateOpenCellLibrary_typical.lib
