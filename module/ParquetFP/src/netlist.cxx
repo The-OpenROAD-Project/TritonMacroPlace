@@ -221,7 +221,7 @@ void NetListType::ParseNets(ifstream& infile,
             }
             else
             {
-               printf("ERROR: netDegree in net %d does not tally\n",
+               printf("ERROR: netDegree in net %ul does not tally\n",
                       in_nets.size());
                exit(1);
             }
@@ -279,7 +279,7 @@ void NetListType::ParseNets(ifstream& infile,
             }
             else
             {
-               printf("ERROR: netDegree in net %d does not tally (%d vs. %d).\n",
+               printf("ERROR: netDegree in net %ul does not tally (%d vs. %d).\n",
                       in_nets.size(), degreeCount, netDegree);
                exit(1);
             }            
@@ -334,7 +334,7 @@ void NetListType::ParseNets(ifstream& infile,
    }
    else if (int(in_nets.size()) != numNets)
    {
-      printf("ERROR: # nets does not tally (%d vz. %d).",
+      printf("ERROR: # nets does not tally (%ul vz. %d).",
              in_nets.size(), numNets);
       exit(1);
    }
