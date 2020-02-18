@@ -498,7 +498,7 @@ void Partition::FillNetlistTableIncr() {
     for(size_t j=0; j<macroStor.size()+4; j++) {
       double val = (i + j + 1)* 100;
       if( i == j || 
-          i >= macroStor.size() && j >= macroStor.size() ) {
+          (i >= macroStor.size() && j >= macroStor.size())) {
         val = 0;
       }
       netTable[ i*(macroStor.size()+4) + j] = val;
@@ -515,7 +515,7 @@ void Partition::FillNetlistTableDesc() {
     for(size_t j=0; j<macroStor.size()+4; j++) {
       double val = (2*macroStor.size()+8-(i+j)) * 100;
       if( i == j || 
-          i >= macroStor.size() && j >= macroStor.size() ) {
+          (i >= macroStor.size() && j >= macroStor.size())) {
         val = 0;
       }
       netTable[ i*(macroStor.size()+4) + j] = val;

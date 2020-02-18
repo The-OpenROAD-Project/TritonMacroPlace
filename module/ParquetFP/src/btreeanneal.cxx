@@ -145,8 +145,8 @@ void BTreeAreaWireAnnealer::constructor_core()
   {
     Node &node = theNodes->getNode(i);
     if(_params->noRotation ||
-        !node.isOrientFixed() && node.isHard() &&
-        equalFloat(node.getminAR(), 1.f) && node.allPinsAtCenter)
+       (!node.isOrientFixed() && node.isHard() &&
+        equalFloat(node.getminAR(), 1.f) && node.allPinsAtCenter))
     {
       node.putIsOrientFixed(true);
     }
@@ -267,8 +267,8 @@ bool BTreeAreaWireAnnealer::go()
   {
     Node &node = theNodes->getNode(i);
     if(_params->noRotation ||
-        !node.isOrientFixed() && node.isHard() &&
-        equalFloat(node.getminAR(), 1.f) && node.allPinsAtCenter)
+       (!node.isOrientFixed() && node.isHard() &&
+        equalFloat(node.getminAR(), 1.f) && node.allPinsAtCenter))
     {
       node.putIsOrientFixed(true);
     }
