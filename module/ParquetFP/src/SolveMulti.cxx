@@ -321,7 +321,7 @@ void SolveMulti::go(void)
            annealTime += annealer->annealTime;
            delete annealer;
 
-           _params->FPrep == "BTree";
+           _params->FPrep = "BTree";
            annealer = new BTreeAreaWireAnnealer(_params, _newDB);
        }
    }
