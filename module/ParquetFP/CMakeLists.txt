@@ -10,9 +10,6 @@ set(ABKCOMMON_HOME ${CMAKE_CURRENT_SOURCE_DIR}/../ABKCommon)
 
 message(STATUS "ParquetFP_home: ${PARQUET_HOME}")
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g -ggdb")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
 ############################################################
 # Create a library for PARQUET
 ############################################################

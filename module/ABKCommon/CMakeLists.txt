@@ -8,10 +8,6 @@ cmake_minimum_required(VERSION 2.6)
 set(ABKCOMMON_HOME ${CMAKE_CURRENT_SOURCE_DIR})
 message(STATUS "ABKCommon_home: ${ABKCOMMON_HOME}")
 
-set(CMAKE_CXX_FLAGS "-O3")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -ggdb")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
 ############################################################
 # Create a library for ABKCOMMON
 ############################################################
