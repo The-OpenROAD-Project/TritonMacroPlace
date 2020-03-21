@@ -116,7 +116,7 @@ void MacroCircuit::FillMacroStor() {
   dbBlock* block = chip->getBlock();
   
   dbSet<dbRow> rows = block->getRows();
-  adsRect dieBox;
+  Rect dieBox;
 
   rows.begin()->getBBox(dieBox);
   int cellHeight = dieBox.dy();

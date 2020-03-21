@@ -55,7 +55,7 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
   dbBox* dieBox = block->getBBox();
   int dbu = tech->getDbUnitsPerMicron();
 
-  adsRect rowBox;
+  Rect rowBox;
   rows.begin()->getBBox(rowBox);  
 
   double siteSizeX = 1.0*rowBox.dx()/dbu;
