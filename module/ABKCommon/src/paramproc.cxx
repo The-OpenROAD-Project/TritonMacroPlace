@@ -53,7 +53,6 @@
 
 #include <stdlib.h>
 #include <limits.h>
-#include "abkstring.h"
 #include "paramproc.h"
 #include "abkassert.h"
 static char _uninitialized[]="Uninitialized";
@@ -94,7 +93,7 @@ Param::Param (const char * key, Type pt,int argc, const char * const argv[])
          else
             _on=true;  
 
-         if (abk_strcasecmp(start,_key)==0)
+         if (strcasecmp(start,_key)==0)
          {
               _b=true;
               if (n+1 < argc)

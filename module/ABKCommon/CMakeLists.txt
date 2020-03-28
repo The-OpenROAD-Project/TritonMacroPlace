@@ -18,7 +18,6 @@ set( ABKCOMMON_SRC
   src/abkio.cxx
   src/abkmessagebuf.cxx
   src/abkroot.cxx
-  src/abkstring.cxx
   src/abktimer.cxx
   src/crc32.cxx
   src/errorcheck.cxx
@@ -48,7 +47,6 @@ set (ABKCOMMON_HEADERS
   src/abkmessagebuf.h
   src/abkrand.h
   src/abkseed.h
-  src/abkstring.h
   src/abktempl.h
   src/abktimer.h
   src/abktypes.h

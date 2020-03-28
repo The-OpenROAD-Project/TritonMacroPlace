@@ -76,7 +76,6 @@
 
 #include <utility>
 
-#include "abkstring.h"
 #include "abkconst.h"
 #include "abktypes.h"
 #include "abkassert.h"

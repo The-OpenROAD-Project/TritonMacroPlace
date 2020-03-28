@@ -44,7 +44,6 @@
 // This file implements for MSVC++ certain string functions
 // that are part of the system in UNIX.
 
-#include "abkstring.h"
 #include <ctype.h>
 
 #ifdef WIN32

@@ -70,7 +70,6 @@
 //#include <stl_config.h>
 //#endif 
 
-#include "abkstring.h"
 #include "abkassert.h"
 
 //:(base class) Catches a given parameter from the command line 
