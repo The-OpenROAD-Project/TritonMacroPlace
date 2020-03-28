@@ -1,7 +1,7 @@
 #ifndef __MACRO_PLACER_MACRO__
 #define __MACRO_PLACER_MACRO__ 
 
-#include <iostream>
+#include <string>
 
 namespace sta { 
 class Instance; 
@@ -11,9 +11,7 @@ namespace odb {
 class dbInst;
 }
 
-
 namespace MacroPlace { 
-
 
 class Vertex;
 class Macro {

@@ -8,7 +8,6 @@
 #include <cfloat>
 #include <fstream>
 
-
 using std::cout;
 using std::endl;
 using std::string;
@@ -17,7 +16,6 @@ using std::pair;
 using std::unordered_map;
 
 namespace MacroPlace {
-
 
 Partition::Partition() 
   : partClass(PartClass::None), 
@@ -41,7 +39,6 @@ Partition::~Partition(){
   } 
 }
 
-    
 Partition::Partition(const Partition& prev)   
   : partClass(prev.partClass), 
   lx(prev.lx), ly(prev.ly),
@@ -59,7 +56,6 @@ Partition::Partition(const Partition& prev)
       netTable = 0;
     }
   }
-
 
 Partition& Partition::operator= (const Partition& prev) {
   partClass = prev.partClass;

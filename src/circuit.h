@@ -22,16 +22,16 @@ class dbDatabase;
 
 namespace MacroPlace{ 
 
-class CircuitInfo;
+class Layout;
 
 class MacroCircuit {
   public:
     MacroCircuit();
-    MacroCircuit(odb::dbDatabase* db, sta::dbSta* sta, CircuitInfo* cinfo);
+    MacroCircuit(odb::dbDatabase* db, sta::dbSta* sta, Layout* cinfo);
     
     void Init(odb::dbDatabase* db, 
         sta::dbSta* sta, 
-        CircuitInfo* cinfo);
+        Layout* cinfo);
     
     std::vector<MacroPlace::Vertex> vertexStor;
     std::vector<MacroPlace::Edge> edgeStor;
@@ -168,19 +168,45 @@ class MacroCircuit {
     double* netTable; 
 };
 
-class CircuitInfo {
+class Layout {
   public:
-    double lx, ly, ux, uy;
-    double siteSizeX, siteSizeY;
+    Layout();
+    Layout( double lx, double ly, double ux, double uy );
+    Layout( Layout& orig, MacroPlace::Partition& part );
 
-    CircuitInfo();
+    double lx() const;
+    double ly() const;
+    double ux() const;
+    double uy() const;
 
-    CircuitInfo( double _lx, double _ly, double _ux, double _uy, 
-        double _siteSizeX, double _siteSizeY );
+    void setLx(double lx);
+    void setLy(double ly);
+    void setUx(double ux);
+    void setUy(double uy);
 
-    CircuitInfo( CircuitInfo& orig, MacroPlace::Partition& part );
-
+  private:
+    double lx_, ly_, ux_, uy_;
 };
+
+inline double 
+Layout::lx() const {
+  return lx_;
+}
+
+inline double 
+Layout::ly() const {
+  return ly_;
+}
+
+inline double 
+Layout::ux() const {
+  return ux_;
+}
+
+inline double 
+Layout::uy() const {
+  return uy_;
+}
 
 }
 

@@ -76,8 +76,10 @@ struct PartClassHash {
     return k;
   }
 };
+
 struct PartClassEqual {
-  bool operator()(const MacroPlace::PartClass &p1, const MacroPlace::PartClass &p2) const {
+  bool operator()(const MacroPlace::PartClass &p1, 
+      const MacroPlace::PartClass &p2) const {
     return p1 == p2;
   }
 }; 

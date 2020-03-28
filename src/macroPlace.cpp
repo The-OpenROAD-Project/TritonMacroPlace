@@ -1,4 +1,3 @@
-#include "macroPlace.h"
 #include "circuit.h"
 #include "partition.h" 
 #include <opendb/db.h>
@@ -19,7 +18,9 @@ using namespace odb;
 typedef vector<pair<Partition, Partition>> TwoPartitions;
 
 static vector<pair<Partition, Partition>> GetPart(
-    CircuitInfo &cInfo,  
+    Layout &layout,  
+    const double siteSizeX,
+    const double siteSizeY,
     Partition& partition, 
     bool isHorizontal );
 
@@ -31,10 +32,13 @@ static void UpdateMacroPartMap(
 
 
 static void 
-CutRoundUp( CircuitInfo& cInfo, double& cutLine, bool isHorizontal );
+CutRoundUp( Layout& layout, 
+    const double siteSizeX, 
+    const double siteSizeY, 
+    double& cutLine, bool isHorizontal );
 
 static void 
-PrintAllSets(FILE* fp, CircuitInfo& cInfo, 
+PrintAllSets(FILE* fp, Layout& layout, 
     vector< vector<Partition> >& allSets);
 
 static void 
@@ -62,20 +66,19 @@ MacroCircuit::PlaceMacros(int& solCount) {
   Rect rowBox;
   rows.begin()->getBBox(rowBox);  
 
-  double siteSizeX = 1.0*rowBox.dx()/dbu;
-  double siteSizeY = 1.0*rowBox.dy()/dbu;
+  const double siteSizeX = 1.0*rowBox.dx()/dbu;
+  const double siteSizeY = 1.0*rowBox.dy()/dbu;
 
-  CircuitInfo cInfo( 
+  Layout layout( 
         1.0*dieBox->xMin()/dbu, 1.0*dieBox->yMin()/dbu, 
-        1.0*dieBox->xMax()/dbu, 1.0*dieBox->yMax()/dbu,
-        siteSizeX, siteSizeY ); 
+        1.0*dieBox->xMax()/dbu, 1.0*dieBox->yMax()/dbu ); 
 
   cout << endl;
 
-  cout << "DieBBox: (" << cInfo.lx << " " << cInfo.ly << ") - (" 
-    << cInfo.ux << " " << cInfo.uy << ")" << endl;
+  cout << "DieBBox: (" << layout.lx() << " " << layout.ly() << ") - (" 
+    << layout.ux() << " " << layout.uy() << ")" << endl;
 
-  Init(db_, sta_, &cInfo);   
+  Init(db_, sta_, &layout);   
   
   //  RandomPlace for special needs. 
   //  Really not recommended to execute this functioning 
@@ -86,12 +89,13 @@ MacroCircuit::PlaceMacros(int& solCount) {
 
   bool isHorizontal = true;
 
-  Partition layout(PartClass::ALL, 
-      cInfo.lx, cInfo.ly, cInfo.ux-cInfo.lx, cInfo.uy-cInfo.ly);
-  layout.macroStor = macroStor;
+  Partition topLayout(PartClass::ALL, 
+      layout.lx(), layout.ly(), layout.ux()-layout.lx(), layout.uy()-layout.ly());
+  topLayout.macroStor = macroStor;
 
   cout << "PROC: Begin One Level Partition ... " << endl; 
-  TwoPartitions oneLevelPart = GetPart(cInfo, layout, isHorizontal);
+  TwoPartitions oneLevelPart 
+    = GetPart(layout, siteSizeX, siteSizeY, topLayout, isHorizontal);
   cout << "PROC: End One Level Partition" << endl << endl;
   TwoPartitions eastStor, westStor;
 
@@ -101,14 +105,14 @@ MacroCircuit::PlaceMacros(int& solCount) {
 
   unordered_map< PartClass, vector<int>, 
     PartClassHash, PartClassEqual> globalMacroPartMap;
-  UpdateMacroPartMap( *this, layout, globalMacroPartMap );
-  layout.FillNetlistTable( *this, globalMacroPartMap );
+  UpdateMacroPartMap( *this, topLayout, globalMacroPartMap );
+  topLayout.FillNetlistTable( *this, globalMacroPartMap );
 
-  UpdateNetlist(layout);
+  UpdateNetlist(topLayout);
  
   // push to the outer vector 
   vector<Partition> layoutSet;
-  layoutSet.push_back(layout);
+  layoutSet.push_back(topLayout);
 
   // push
   allSets.push_back(layoutSet);
@@ -116,15 +120,17 @@ MacroCircuit::PlaceMacros(int& solCount) {
   for(auto& curSet : oneLevelPart ) {
     if( isHorizontal ) {
       cout << "PROC: Begin Horizontal Cuts" << endl;
-      CircuitInfo eastInfo(cInfo, curSet.first);
-      CircuitInfo westInfo(cInfo, curSet.second);
+      Layout eastInfo(layout, curSet.first);
+      Layout westInfo(layout, curSet.second);
 
       cout << "PROC: Begin 1st Second Level Partition" << endl;
-      TwoPartitions eastStor = GetPart(eastInfo, curSet.first, !isHorizontal);
+      TwoPartitions eastStor 
+        = GetPart(eastInfo, siteSizeX, siteSizeY, curSet.first, !isHorizontal);
       cout << "PROC: End 1st Second Level Partition" << endl << endl;
 
       cout << "PROC: Begin 2nd Second Level Partition" << endl;
-      TwoPartitions westStor = GetPart(westInfo, curSet.second, !isHorizontal);
+      TwoPartitions westStor 
+        = GetPart(westInfo, siteSizeX, siteSizeY, curSet.second, !isHorizontal);
       cout << "PROC: End 2nd Second Level Partition" << endl << endl;
 
      
@@ -216,7 +222,7 @@ MacroCircuit::PlaceMacros(int& solCount) {
   int bestSetIdx = 0;
   double bestWwl = -DBL_MAX;
   for(auto& curSet: allSets) {
-    // skip for top-layout partition
+    // skip for top-topLayout partition
     if( curSet.size() == 1) {
       continue;
     }
@@ -266,29 +272,37 @@ MacroCircuit::PlaceMacros(int& solCount) {
 
 // 
 // update opendb dataset from mckt.
-static void UpdateOpendbCoordi(dbDatabase* db, MacroCircuit& mckt) {
+static void 
+UpdateOpendbCoordi(dbDatabase* db, MacroCircuit& mckt) {
   dbTech* tech = db->getTech();
   const int dbu = tech->getDbUnitsPerMicron();
   
   for(auto& curMacro : mckt.macroStor) {
     curMacro.dbInstPtr->setLocation( 
-        int(curMacro.lx * dbu + 0.5f), int(curMacro.ly * dbu + 0.5f) ) ;
+        static_cast<int>(round(curMacro.lx * dbu)), 
+        static_cast<int>(round(curMacro.ly * dbu))) ;
     curMacro.dbInstPtr->setPlacementStatus( dbPlacementStatus::LOCKED ) ;
   }
 }
 
-static void CutRoundUp( CircuitInfo& cInfo, double& cutLine, bool isHorizontal ) {
+static void 
+CutRoundUp( 
+    Layout& layout,
+    const double siteSizeX, 
+    const double siteSizeY,  
+    double& cutLine, bool isHorizontal ) {
+
   if( isHorizontal ) {
-    int integer = (1.0* cutLine / cInfo.siteSizeX) + 0.5f;
-    cutLine = integer * cInfo.siteSizeX;
-    cutLine = (cutLine > cInfo.ux)? cInfo.ux : cutLine;
-    cutLine = (cutLine < cInfo.lx)? cInfo.lx : cutLine;
+    int integer = static_cast<int>( round( static_cast<float>(cutLine) / siteSizeX) );
+    cutLine = integer * siteSizeX;
+    cutLine = fmin(cutLine, layout.ux());
+    cutLine = fmax(cutLine, layout.lx());
   }
   else {
-    int integer = (1.0* cutLine / cInfo.siteSizeY) + 0.5f;
-    cutLine = integer * cInfo.siteSizeY;
-    cutLine = (cutLine > cInfo.uy)? cInfo.uy : cutLine;
-    cutLine = (cutLine < cInfo.ly)? cInfo.ly : cutLine;
+    int integer = static_cast<int>( round( static_cast<float>(cutLine) / siteSizeY) );
+    cutLine = integer * siteSizeY;
+    cutLine = fmin(cutLine, layout.uy());
+    cutLine = fmax(cutLine, layout.ly());
   }
 }
 
@@ -342,7 +356,9 @@ SortMacroPair(const std::pair<int, double> &p1,
 // 
 // cutLine is sweeping from lower to upper coordinates in x / y
 static vector<pair<Partition, Partition>> GetPart(
-    CircuitInfo &cInfo,  
+    Layout &layout,  
+    const double siteSizeX,
+    const double siteSizeY,
     Partition& partition, 
     bool isHorizontal ) {
   cout << "PROC: Begin Partition ... " << endl;
@@ -398,8 +414,8 @@ static vector<pair<Partition, Partition>> GetPart(
     int hardLimit = int( sqrt( 1.0*partition.macroStor.size()/3.0 ) + 0.5f);
     for(int i=0; i<=hardLimit; i++) {
       cutLineStor.push_back( (isHorizontal)? 
-          cInfo.lx + 1.0*(cInfo.ux - cInfo.lx)/hardLimit * i :
-          cInfo.ly + 1.0*(cInfo.uy - cInfo.ly)/hardLimit * i );
+          layout.lx() + (layout.ux() - layout.lx())/hardLimit * i :
+          layout.ly() + (layout.uy() - layout.ly())/hardLimit * i );
     }
   }
   cout << "INFO: NumCutline = " << cutLineStor.size() << endl;
@@ -413,7 +429,7 @@ static vector<pair<Partition, Partition>> GetPart(
   
   for(auto& cutLine : cutLineStor ) {
     cout << "INFO: CutLine = " << cutLine << endl;
-    CutRoundUp(cInfo, cutLine, isHorizontal);
+    CutRoundUp(layout, siteSizeX, siteSizeY, cutLine, isHorizontal);
     cout << "INFO: Updated CutLine = " << cutLine << endl;
 
    

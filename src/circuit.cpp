@@ -59,7 +59,7 @@ MacroCircuit::MacroCircuit() :
 MacroCircuit::MacroCircuit(
     odb::dbDatabase* db,
     sta::dbSta* sta,
-    CircuitInfo* cinfo) :
+    Layout* cinfo) :
   gHaloX(0), gHaloY(0), 
   gChannelX(0), gChannelY(0), 
   db_(db), 
@@ -103,15 +103,15 @@ MacroCircuit::setPlotEnable(bool mode) {
 void MacroCircuit::Init( 
     odb::dbDatabase* db, 
     sta::dbSta* sta,
-    CircuitInfo* cinfo) {
+    Layout* cinfo) {
   
   db_ = db; 
   sta_ = sta;
 
-  lx = cinfo->lx;
-  ly = cinfo->ly;
-  ux = cinfo->ux;
-  uy = cinfo->uy;
+  lx = cinfo->lx();
+  ly = cinfo->ly();
+  ux = cinfo->ux();
+  uy = cinfo->uy();
 
   // parsing from cfg file
   // global config
@@ -1543,19 +1543,35 @@ MacroCircuit::GetVertex( sta::Pin *pin ) {
 }
 
 
-CircuitInfo::CircuitInfo() : lx(FLT_MIN), ly(FLT_MIN), 
-      ux(FLT_MIN), uy(FLT_MIN),
-      siteSizeX(FLT_MIN), siteSizeY(FLT_MIN) {}
+Layout::Layout() 
+  : lx_(0), ly_(0), ux_(0), uy_(0) {}
     
-CircuitInfo::CircuitInfo( double _lx, double _ly, double _ux, double _uy, 
-        double _siteSizeX, double _siteSizeY ) :
-      lx(_lx), ly(_ly), ux(_ux), uy(_uy),
-      siteSizeX(_siteSizeX), siteSizeY(_siteSizeY) {}
+Layout::Layout( double lx, double ly, 
+    double ux, double uy) 
+  : lx_(lx), ly_(ly), ux_(ux), uy_(uy) {}
+      
+Layout::Layout( Layout& orig, MacroPlace::Partition& part ) 
+  : lx_(part.lx), ly_(part.ly), ux_(part.lx+part.width), uy_(part.ly+part.height) {}
 
-CircuitInfo::CircuitInfo( CircuitInfo& orig, MacroPlace::Partition& part ) :
-      lx(part.lx), ly(part.ly), ux(part.lx+part.width), uy(part.ly+part.height),
-      siteSizeX(orig.siteSizeX), siteSizeY(orig.siteSizeY) {}
+void
+Layout::setLx(double lx) {
+  lx_ = lx;
+}
 
+void
+Layout::setLy(double ly) {
+  ly_ = ly;
+}
+
+void
+Layout::setUx(double ux) {
+  ux_ = ux;
+}
+
+void
+Layout::setUy(double uy) {
+  uy_ = uy;
+}
 
 ///////////////////////////////////////////////////
 //  static funcs
