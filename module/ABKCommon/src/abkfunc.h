@@ -128,26 +128,3 @@ inline bool greaterThanFloat(const float a, const float b)
 {
    return (a > b) && !equalFloat(a,b);
 }
-
-#include <iostream>
-
-inline void compilerCheck(void)
-{
-  double doubleInf = std::numeric_limits<double>::infinity();
-  double doubleMax = std::numeric_limits<double>::max();
-  float  floatInf = std::numeric_limits<float>::infinity();
-  float  floatMax = std::numeric_limits<float>::max();
-
-  if(doubleInf < doubleMax || floatInf < floatMax)
-  {
-    std::cout << std::endl << std::endl
-              << "                 ****** WARNING ******" << std::endl
-              << "  This binary has detected a bug in the code produced by your" << std::endl
-              << "current compiler. This may be a bug in the compiler or shared" << std::endl
-              << "libraries on your machine. It is likely that binaries compiled" << std::endl
-              << "in this setup may not behave properly. If you insist on using" << std::endl
-              << "this binary which may behave unexpectedly, you must remove this" << std::endl
-              << "bug check and recompile." << std::endl << std::endl;
-    //exit(0);
-  }
-}

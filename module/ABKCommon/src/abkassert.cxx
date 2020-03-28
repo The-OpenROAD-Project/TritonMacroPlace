@@ -52,8 +52,9 @@
 #endif
 
 #include <stdio.h>
-#include  "abkassert.h"
-#include  "pathDelims.h"
+#include <string.h>
+#include "abkassert.h"
+#include "Pathdelims.h"
 
 
 void abkassert_stop_here() {}

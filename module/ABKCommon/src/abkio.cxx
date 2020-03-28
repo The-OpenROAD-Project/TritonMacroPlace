@@ -49,6 +49,7 @@
 #include <iomanip>
 #include <ctype.h>
 #include <stdio.h>
+#include <string.h>
 #include "abkassert.h"
 #include "abkio.h"
 #define eh eathash

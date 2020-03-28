@@ -20,7 +20,6 @@ set( ABKCOMMON_SRC
   src/abkroot.cxx
   src/abktimer.cxx
   src/crc32.cxx
-  src/errorcheck.cxx
   src/infolines.cxx
   src/mmapStreamBuf.cxx
   src/paramproc.cxx
