@@ -134,7 +134,6 @@ inline bool greaterThanFloat(const float a, const float b)
 }
 
 #include <iostream>
-#include "abklimits.h"
 
 inline void compilerCheck(void)
 {

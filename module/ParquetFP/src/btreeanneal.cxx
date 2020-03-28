@@ -49,7 +49,6 @@
 #include "skyline.h"
 
 #include <ABKCommon/abkcommon.h>
-#include <ABKCommon/abklimits.h>
 #include <cmath>
 #include <cfloat>
 #include <algorithm>

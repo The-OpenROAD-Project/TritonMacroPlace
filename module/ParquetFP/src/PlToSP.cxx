@@ -31,7 +31,6 @@
 ***************************************************************************/
 
 
-#include <ABKCommon/abklimits.h>
 #include "FPcommon.h"
 #include "PlToSP.h"
 

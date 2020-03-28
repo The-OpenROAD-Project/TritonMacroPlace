@@ -44,7 +44,6 @@ set (ABKCOMMON_HEADERS
   src/abkCRC32.h
   src/abkfunc.h
   src/abkio.h
-  src/abklimits.h
   src/abkMD5.h
   src/abkmessagebuf.h
   src/abkrand.h

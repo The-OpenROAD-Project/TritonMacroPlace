@@ -34,7 +34,6 @@
 // 040608 hhchan modified how it plots:
 //                  plot terminals only when plotNets, "set size ratio -1"
 
-#include "ABKCommon/abklimits.h"
 #include "ABKCommon/abkcommon.h"
 #include "FPcommon.h"
 #include "DB.h"
