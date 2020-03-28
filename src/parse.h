@@ -23,7 +23,6 @@ class EnvFile {
   void RaiseError(std::string str);
   bool IsFilled();
   void Print();
-  
 };
 
 }

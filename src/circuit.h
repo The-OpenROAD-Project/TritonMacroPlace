@@ -2,13 +2,10 @@
 #define __MACRO_PLACER_CIRCUIT__ 
 
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
-
-#include <opendb/db.h>
 
 #include "parse.h"
 #include "graph.h"
@@ -17,6 +14,10 @@
 
 namespace sta { 
 class dbSta;
+}
+
+namespace odb {
+class dbDatabase;
 }
 
 namespace MacroPlace{ 
@@ -90,14 +91,13 @@ class MacroCircuit {
     // return weighted wire-length to get best solution
     double GetWeightedWL();
 
-
     // 
     void StubPlacer(double snapGrid);
 
   private:
-    odb::dbDatabase* _db;
-    sta::dbSta* _sta;
-    EnvFile* _env;
+    odb::dbDatabase* db_;
+    sta::dbSta* sta_;
+    EnvFile* env_;
 
     double lx, ly, ux, uy;
 
@@ -110,8 +110,6 @@ class MacroCircuit {
     
     void UpdateVertexToMacroStor();
     void UpdateInstanceToMacroStor();
-//    std::unordered_map<MacroPlace::Edge*, int> edgeMap;
-
 
     // either Pin*, Inst* -> vertexStor's index.
     std::unordered_map<void*, int> pinInstVertexMap;
@@ -131,32 +129,30 @@ class MacroCircuit {
     std::unordered_map< std::pair<MacroPlace::Vertex*, MacroPlace::Vertex*>, 
       int, PointerPairHash, PointerPairEqual > vertexPairEdgeMap;
     
-    std::pair<void*, MacroPlace::VertexClass> GetPtrClassPair(sta::Pin* pin);
-
-
-    MacroPlace::Vertex* GetVertex(sta::Pin* pin); 
-
-
     int GetPathWeight( MacroPlace::Vertex* from, 
-
         MacroPlace::Vertex* to, int limit );
 
     // Matrix version
     int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
         MacroPlace::Vertex* from, 
-
         MacroPlace::Vertex* to );
 
     
     // Matrix version
     int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
         MacroPlace::Vertex* from, 
-
         int toIdx );
     
     // Matrix version
     int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
         int fromIdx, int toIdx );
+
+    MacroPlace::Vertex* 
+      GetVertex( sta::Pin *pin );
+
+    std::pair<void*, VertexType> 
+      GetPtrClassPair( sta::Pin* pin );
+
 
     double* netTable; 
 };
@@ -175,10 +171,11 @@ class CircuitInfo {
 
 };
 
-bool ParseArgv(int argc, char** argv, EnvFile& _env);
+bool ParseArgv(int argc, char** argv, EnvFile& env);
 void PrintUsage();
 
 // for string escape
+//
 inline bool ReplaceStringInPlace( std::string& subject, 
     const std::string& search,
     const std::string& replace) {

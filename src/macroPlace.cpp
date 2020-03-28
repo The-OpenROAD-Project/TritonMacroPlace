@@ -2,7 +2,7 @@
 #include "circuit.h"
 #include "partition.h" 
 #include <opendb/db.h>
-
+#include <unordered_set>
 
 using std::cout;
 using std::endl;
@@ -262,9 +262,9 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
 
   /*
   // Writing functions for Sets file
-  FILE* fp = fopen(_env.output.c_str(), "w");
+  FILE* fp = fopen(env_.output.c_str(), "w");
   if( fp == NULL) { 
-    cout << "ERROR: cannot open " << _env.output << " to write output file" << endl;
+    cout << "ERROR: cannot open " << env_.output << " to write output file" << endl;
     exit(1);
   } 
 
@@ -275,7 +275,7 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
 
   // ParquetFormat print
   // only top-level formats
-//  layout.PrintParquetFormat(_env.output);
+//  layout.PrintParquetFormat(env_.output);
   cout << "PROC: End TritonMacroPlacer" << endl;
 }
 
