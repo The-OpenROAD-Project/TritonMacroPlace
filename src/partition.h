@@ -42,7 +42,7 @@ class Partition {
     // assign operator overloading
     Partition& operator= (const Partition& prev);
 
-    void FillNetlistTable(MacroCircuit& _mckt,  
+    void FillNetlistTable(MacroCircuit& mckt,  
         std::unordered_map<PartClass, std::vector<int>, 
         PartClassHash, PartClassEqual>& macroPartMap);
 

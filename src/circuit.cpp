@@ -1459,17 +1459,11 @@ void MacroCircuit::UpdateNetlist(MacroPlace::Partition& layout) {
 #define NORTH_IDX (macroStor.size()+2)
 #define SOUTH_IDX (macroStor.size()+3)
 
-#define GLOBAL_EAST_IDX (_mckt.macroStor.size())
-#define GLOBAL_WEST_IDX (_mckt.macroStor.size()+1)
-#define GLOBAL_NORTH_IDX (_mckt.macroStor.size()+2)
-#define GLOBAL_SOUTH_IDX (_mckt.macroStor.size()+3)
-
 double MacroCircuit::GetWeightedWL() {
   double wwl = 0.0f;
 
   double width = ux - lx;
   double height = uy - ly; 
-
 
   for(size_t i=0; i<macroStor.size()+4; i++) {
     for(size_t j=0; j<macroStor.size()+4; j++) {
