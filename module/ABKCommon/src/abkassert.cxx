@@ -54,7 +54,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "abkassert.h"
-#include "Pathdelims.h"
+#include "pathDelims.h"
 
 
 void abkassert_stop_here() {}
