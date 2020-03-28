@@ -11,6 +11,7 @@
 #include "graph.h"
 #include "partition.h"
 #include "macro.h"
+#include "hashUtil.h"
 
 namespace sta { 
 class dbSta;
