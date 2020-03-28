@@ -52,7 +52,7 @@
 class BitBoard  
 {
        std::vector<unsigned> _bitIndicesSet;
-       bit_vector       _boardSpace;
+       std::vector<bool>     _boardSpace;
 
     public:
 
@@ -60,7 +60,7 @@ class BitBoard
        const std::vector<unsigned>& getIndicesOfSetBits() const
        { return _bitIndicesSet; }
        //To get the Indices of Bits which have been set to 1;
-       const bit_vector& getBoardSpace() const
+       const std::vector<bool>& getBoardSpace() const
        { return _boardSpace; }
        //To get the bit sequence;
        unsigned getSize()       const { return _boardSpace.size();    }

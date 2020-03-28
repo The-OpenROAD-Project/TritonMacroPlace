@@ -49,7 +49,6 @@ set (ABKCOMMON_HEADERS
   src/abkseed.h
   src/abktempl.h
   src/abktimer.h
-  src/abktypes.h
   src/abkversion.h
   src/config.h
   src/infolines.h

@@ -55,7 +55,6 @@
 // 980822 mm  corrected MemUsage() to work with Solaris 2.6
 
 #include "infolines.h"
-#include "abktypes.h"
 #include "abkassert.h"
 #include "uofm_alloc.h"
 
