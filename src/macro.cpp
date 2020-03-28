@@ -1,4 +1,5 @@
 #include "macro.h"
+#include <iostream>
 
 namespace MacroPlace{ 
 

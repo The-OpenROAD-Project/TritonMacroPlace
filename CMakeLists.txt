@@ -54,12 +54,12 @@ add_custom_command(OUTPUT ${MPLACE_TCL_INIT}
 add_library( TritonMacroPlace 
   src/circuit.cpp
   src/partition.cpp
-  src/parse.cpp
   src/graph.cpp
   src/macro.cpp
   src/TritonMacroPlace.cpp
   src/macroPlace.cpp
   src/MakeTritonMp.cpp
+  src/hashUtil.cpp
   ${MPLACE_WRAP}
   ${MPLACE_TCL_INIT}
 )

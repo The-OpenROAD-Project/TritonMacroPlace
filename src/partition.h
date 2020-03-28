@@ -42,7 +42,7 @@ class Partition {
     // assign operator overloading
     Partition& operator= (const Partition& prev);
 
-    void FillNetlistTable(MacroCircuit& _mckt,  
+    void FillNetlistTable(MacroCircuit& mckt,  
         std::unordered_map<PartClass, std::vector<int>, 
         PartClassHash, PartClassEqual>& macroPartMap);
 
@@ -76,8 +76,10 @@ struct PartClassHash {
     return k;
   }
 };
+
 struct PartClassEqual {
-  bool operator()(const MacroPlace::PartClass &p1, const MacroPlace::PartClass &p2) const {
+  bool operator()(const MacroPlace::PartClass &p1, 
+      const MacroPlace::PartClass &p2) const {
     return p1 == p2;
   }
 }; 

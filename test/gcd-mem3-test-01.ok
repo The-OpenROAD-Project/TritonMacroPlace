@@ -17,8 +17,7 @@ Notice 0: Finished DEF file: nangate45-bench/design/gcd_mem3/gcd_mem3.def
 Warning: gcd_mem3.sdc, 5 current_design for other than top cell not supported.
 
 DieBBox: (0 0) - (58.14 56)
-Extracting Macro Cells... cellHeight: 2800
-Done!
+Extracting Macro Cells... Done!
 Extracted # Macros: 3
 OpenSTA numEdge: 2231
 OpenSTA numVertex: 1259

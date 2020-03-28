@@ -2,49 +2,46 @@
 #define __MACRO_PLACER_CIRCUIT__ 
 
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-#include <opendb/db.h>
-
-#include "parse.h"
 #include "graph.h"
 #include "partition.h"
 #include "macro.h"
+#include "hashUtil.h"
 
 namespace sta { 
 class dbSta;
 }
 
+namespace odb {
+class dbDatabase;
+}
+
 namespace MacroPlace{ 
 
-class CircuitInfo;
+class Layout;
 
 class MacroCircuit {
   public:
     MacroCircuit();
-    MacroCircuit(odb::dbDatabase* db, sta::dbSta* sta, EnvFile* env, CircuitInfo* cinfo);
+    MacroCircuit(odb::dbDatabase* db, sta::dbSta* sta, Layout* cinfo);
     
     void Init(odb::dbDatabase* db, 
         sta::dbSta* sta, 
-        EnvFile* env, 
-        CircuitInfo* cinfo);
+        Layout* cinfo);
     
     std::vector<MacroPlace::Vertex> vertexStor;
-
     std::vector<MacroPlace::Edge> edgeStor;
 
     
     // macro Information
     std::vector<MacroPlace::Macro> macroStor;
 
-
     // pin Group Information
     std::vector<MacroPlace::PinGroup> pinGroupStor;
-
 
     // pin Group Map;
     // Pin* --> pinGroupStor's index.
@@ -82,22 +79,36 @@ class MacroCircuit {
     // plotting 
     void Plot(std::string outputFile, std::vector<MacroPlace::Partition>& set);
 
-
     // netlist  
     void UpdateNetlist(MacroPlace::Partition& layout);
-
 
     // return weighted wire-length to get best solution
     double GetWeightedWL();
 
-
-    // 
     void StubPlacer(double snapGrid);
 
+
+    // changing..... 
+    void setDb(odb::dbDatabase* db);
+    void setSta(sta::dbSta* sta);
+
+    void setGlobalConfig(const char* globalConfig);
+    void setLocalConfig(const char* localConfig);
+    void setPlotEnable(bool mode);
+
+    void PlaceMacros(int& solCount);
+
+    void reset();
+
+
   private:
-    odb::dbDatabase* _db;
-    sta::dbSta* _sta;
-    EnvFile* _env;
+    odb::dbDatabase* db_;
+    sta::dbSta* sta_;
+
+    std::string globalConfig_;
+    std::string localConfig_;
+
+    bool isPlot_;
 
     double lx, ly, ux, uy;
 
@@ -110,8 +121,6 @@ class MacroCircuit {
     
     void UpdateVertexToMacroStor();
     void UpdateInstanceToMacroStor();
-//    std::unordered_map<MacroPlace::Edge*, int> edgeMap;
-
 
     // either Pin*, Inst* -> vertexStor's index.
     std::unordered_map<void*, int> pinInstVertexMap;
@@ -131,65 +140,72 @@ class MacroCircuit {
     std::unordered_map< std::pair<MacroPlace::Vertex*, MacroPlace::Vertex*>, 
       int, PointerPairHash, PointerPairEqual > vertexPairEdgeMap;
     
-    std::pair<void*, MacroPlace::VertexClass> GetPtrClassPair(sta::Pin* pin);
-
-
-    MacroPlace::Vertex* GetVertex(sta::Pin* pin); 
-
-
     int GetPathWeight( MacroPlace::Vertex* from, 
-
         MacroPlace::Vertex* to, int limit );
 
     // Matrix version
     int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
         MacroPlace::Vertex* from, 
-
         MacroPlace::Vertex* to );
 
     
     // Matrix version
     int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
         MacroPlace::Vertex* from, 
-
         int toIdx );
     
     // Matrix version
     int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
         int fromIdx, int toIdx );
 
+    MacroPlace::Vertex* 
+      GetVertex( sta::Pin *pin );
+
+    std::pair<void*, VertexType> 
+      GetPtrClassPair( sta::Pin* pin );
+
+
     double* netTable; 
 };
 
-class CircuitInfo {
+class Layout {
   public:
-    double lx, ly, ux, uy;
-    double siteSizeX, siteSizeY;
+    Layout();
+    Layout( double lx, double ly, double ux, double uy );
+    Layout( Layout& orig, MacroPlace::Partition& part );
 
-    CircuitInfo();
+    double lx() const;
+    double ly() const;
+    double ux() const;
+    double uy() const;
 
-    CircuitInfo( double _lx, double _ly, double _ux, double _uy, 
-        double _siteSizeX, double _siteSizeY );
+    void setLx(double lx);
+    void setLy(double ly);
+    void setUx(double ux);
+    void setUy(double uy);
 
-    CircuitInfo( CircuitInfo& orig, MacroPlace::Partition& part );
-
+  private:
+    double lx_, ly_, ux_, uy_;
 };
 
-bool ParseArgv(int argc, char** argv, EnvFile& _env);
-void PrintUsage();
+inline double 
+Layout::lx() const {
+  return lx_;
+}
 
-// for string escape
-inline bool ReplaceStringInPlace( std::string& subject, 
-    const std::string& search,
-    const std::string& replace) {
-  size_t pos = 0;
-  bool isFound = false;
-  while ((pos = subject.find(search, pos)) != std::string::npos) {
-    subject.replace(pos, search.length(), replace);
-    pos += replace.length();
-    isFound = true; 
-  }
-  return isFound; 
+inline double 
+Layout::ly() const {
+  return ly_;
+}
+
+inline double 
+Layout::ux() const {
+  return ux_;
+}
+
+inline double 
+Layout::uy() const {
+  return uy_;
 }
 
 }

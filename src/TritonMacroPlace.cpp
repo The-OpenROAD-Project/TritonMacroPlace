@@ -1,38 +1,37 @@
 #include "tritonmp/TritonMacroPlace.h"
-#include "macroPlace.h"
-#include "parse.h"
+#include "circuit.h"
 
 namespace MacroPlace {
 
-using std::string;
-using std::cout;
-using std::endl;
-using std::to_string; 
 using namespace odb;
 
-TritonMacroPlace::TritonMacroPlace() : db_(0), sta_(0), solCount_(0) {} 
+TritonMacroPlace::TritonMacroPlace() : solCount_(0) {
+  std::unique_ptr<MacroCircuit> mckt(new MacroCircuit());
+  mckt_ = std::move(mckt);
+} 
+
 TritonMacroPlace::~TritonMacroPlace() {}
 
 void TritonMacroPlace::setDb(odb::dbDatabase* db) {
-  db_ = db;
+  mckt_->setDb(db);
 }
 void TritonMacroPlace::setSta(sta::dbSta* sta) {
-  sta_ = sta;
+  mckt_->setSta(sta);
 }
 
 void TritonMacroPlace::setGlobalConfig(const char* globalConfig) {
-  env_.globalConfig = globalConfig;
+  mckt_->setGlobalConfig(globalConfig);
 }
 
 void TritonMacroPlace::setLocalConfig(const char* localConfig) {
-  env_.localConfig = localConfig;
+  mckt_->setLocalConfig(localConfig);
 }
 void TritonMacroPlace::setPlotEnable(bool mode) {
-  env_.isPlot = mode;
+  mckt_->setPlotEnable(mode);
 }
 
 bool TritonMacroPlace::placeMacros() {
-  PlaceMacros(db_, sta_, env_, mckt_, solCount_);
+  mckt_->PlaceMacros(solCount_);
   return true;
 }
 
