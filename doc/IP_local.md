@@ -7,10 +7,6 @@
 #### Specify IP master name (IP LEF Name example: XYZ_1024XXX) for each parameter.
 * Syntax set ::parameter IP_REFERENCE value
 
-#### IP-specific Row Height. This is the height of a single height standard cell. Also, the height of SITE. 
-
-      set ::ROW_HEIGHT XYZ_1024XXX 0.400
-
 #### IP-specific halo Width for vertical edge of macros. This is halo width value (placement blockage) to be used for specified IP along the vertical edge. This is essential to ensure proper routing to macro pins.
 
       set ::HALO_WIDTH_V XYZ_1024XXX 2
