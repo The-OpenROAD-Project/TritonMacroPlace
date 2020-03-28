@@ -102,5 +102,5 @@
  remove sgi_hash_set.h
  remove abkstring.h
  remove abklimiits.h
+ remove numbits.cxx
  remove all sun conditions
-

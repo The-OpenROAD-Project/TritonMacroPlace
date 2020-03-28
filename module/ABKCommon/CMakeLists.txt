@@ -23,7 +23,6 @@ set( ABKCOMMON_SRC
   src/errorcheck.cxx
   src/infolines.cxx
   src/mmapStreamBuf.cxx
-  src/numbits.cxx
   src/paramproc.cxx
   src/pathDelims.cxx
   src/platfDepend.cxx
