@@ -7,7 +7,7 @@ ParquetFP based macro cell placer for OpenROAD.
 * Output: A placed DEF with macro placements honoring halos, channels and cell row "snapping".  Approximately ceil((#macros/3)^(3/2)) "sets" corresponding to quadrisections of the initial placed mixed-size DEF are explored and packed using ParquetFP-based annealing. The best resulting floorplan according to a heuristic evaluation function is returned.
 
 ## How to Download and Build?
-- If you want to use this as part of the OpenROAD project you should build it and use it from inside the integrated [OpenROAD app](https://github.com/The-OpenROAD-Project/OpenROAD). The standalone version is available as a legacy code in [standalone branch](https://github.com/The-OpenROAD-Project/TritonMacroPlace/tree/standalone).
+- If you want to use this as part of the OpenROAD project you should build it and use it from inside the integrated [OpenROAD app](https://github.com/The-OpenROAD-Project/OpenROAD). 
 - For OpenROAD-flow users, manuals for released binaries are available in readthedocs. [(Getting-Started)](https://openroad.readthedocs.io/en/latest/user/getting-started.html)
 - For developers, manuals for building a binary is available in OpenROAD app repo. [(OpenROAD app)](https://github.com/The-OpenROAD-Project/OpenROAD) 
 - Note that TritonMacroPlace is a submodule of OpenROAD repo, and take a place as the **"macro_placement"** command. 
