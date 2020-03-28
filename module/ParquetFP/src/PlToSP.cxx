@@ -94,7 +94,7 @@ void Pl2SP::naiveAlgo(void)
    {
      for(unsigned j=0; j<size; ++j)
        { 
-         if(fabs(_yloc[j]-currHeight)<0.0001)
+         if(std::abs(_yloc[j]-currHeight)<0.0001)
 	   {
 	     tempRE.index = j;
 	     tempRE.xloc = _xloc[j];

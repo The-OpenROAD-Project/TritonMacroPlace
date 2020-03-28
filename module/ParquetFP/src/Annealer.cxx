@@ -1358,7 +1358,7 @@ int Annealer::makeIndexSoftBlMove(const vector<unsigned>& A,
       newWidth = area/newHeight;
    }
 
-   if(fabs(minAR-maxAR) < 0.0000001)
+   if(std::abs(minAR-maxAR) < 0.0000001)
    {
       newHeight = origHeight;
       newWidth = origWidth;

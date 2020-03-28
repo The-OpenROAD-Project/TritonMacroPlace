@@ -58,14 +58,14 @@ inline bool equalDouble(const double a, const double b)
    //standard def of equality
    if(a == b) return true;
 
-   double absdiff = fabs(a-b);
+   double absdiff = std::abs(a-b);
    const double fraction = 1.e-6;
 
    //special case for a = 0 or b = 0
    if(((a == 0.) || (b == 0.)) && (absdiff < fraction)) return true;
 
-   double absa = fabs(a);
-   double absb = fabs(b);
+   double absa = std::abs(a);
+   double absb = std::abs(b);
 
    // difference insignificant compared to a and b
    return ((absdiff < fraction*absa) && (absdiff < fraction*absb));
@@ -96,14 +96,14 @@ inline bool equalFloat(const float a, const float b)
    //standard def of equality
    if(a == b) return true;
 
-   float absdiff = fabsf(a-b);
+   float absdiff = std::abs(a-b);
    const float fraction = 1.e-6f;
 
    //special case for a = 0 or b = 0
    if(((a == 0.) || (b == 0.)) && (absdiff < fraction)) return true;
 
-   float absa = fabsf(a);
-   float absb = fabsf(b);
+   float absa = std::abs(a);
+   float absb = std::abs(b);
 
    // difference insignificant compared to a and b
    return ((absdiff < fraction*absa) && (absdiff < fraction*absb));

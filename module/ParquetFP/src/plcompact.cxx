@@ -128,7 +128,7 @@ bool ShiftLegalizer::legalizeBlock(int currBlk)
    for (int i = 0; i < ShiftBlock::DIR_NUM; i++)
    {
       // if overlap occurs
-      if (fabs(shiftinfo[i].shiftRangeMin) > _epsilon)
+      if (std::abs(shiftinfo[i].shiftRangeMin) > _epsilon)
       {
          bool tempSuccess = shiftDecider(ShiftBlock::Directions(i),
                                          shiftinfo, decision);
@@ -158,7 +158,7 @@ bool ShiftLegalizer::legalizeBlock(int currBlk)
       for (int i = 0; i < ShiftBlock::DIR_NUM; i++)
       {
          // if overlap occurs
-         if (fabs(shiftinfo_rotated[i].shiftRangeMin) > _epsilon)
+         if (std::abs(shiftinfo_rotated[i].shiftRangeMin) > _epsilon)
          {
             bool tempSuccess = shiftDecider(ShiftBlock::Directions(i),
                                             shiftinfo_rotated, decision);

@@ -257,7 +257,7 @@ void AnalytSolve::solveSOR()
        overshoot = ychange*1.7f;
        _yloc[i] += overshoot;
        
-       indChange = fabs(xchange) + fabs(ychange);
+       indChange = std::abs(xchange) + std::abs(ychange);
        
        change += indChange;
      }

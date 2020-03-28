@@ -62,7 +62,7 @@ int main()
   RandomUnsigned ru2(2,5,ruSeed);
   RandomDouble   rd2(2,5,rdSeed);
 
-  if (fabs(dsum/50000-3.5)<1e-1 && fabs(sum/50000-3)<1e-1) 
+  if (std::abs(dsum/50000-3.5)<1e-1 && std::abs(sum/50000-3)<1e-1) 
        std::cout << " Averages correct "<<std::endl;
   else std::cout << " Averages incorrect "<<std::endl;
   double oldsum=sum, olddsum=dsum;

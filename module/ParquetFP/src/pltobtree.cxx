@@ -206,7 +206,7 @@ float Pl2BTree::BuildTreeRecord::getDistance(const BuildTreeRecord& btr1,
 bool Pl2BTree::BuildTreeRecord::operator <(const BuildTreeRecord& btr) const
 {
    float difference = distance - btr.distance;
-   if (fabs(difference) < _epsilon)
+   if (std::abs(difference) < _epsilon)
    {
       if (xEnd < btr.xStart + _epsilon) // break ties by x-span (L > R)
          return true;

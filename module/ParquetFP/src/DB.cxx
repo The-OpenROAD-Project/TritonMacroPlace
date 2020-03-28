@@ -466,7 +466,7 @@ DB::DB(DB& db2, bool compressDB)
                            float poffsetX = 0, poffsetY = 0;
                            poffsetX = netPin->getXOffset();
                            poffsetY = netPin->getYOffset();
-                           if(!(fabs(poffsetX-0) < 1e-5 && fabs(poffsetY-0) < 1e-5))
+                           if(!(std::abs(poffsetX-0) < 1e-5 && std::abs(poffsetY-0) < 1e-5))
                                atleast1PinOffsetNotZero = true;
 
                            if(!netPin->getType())
@@ -1221,11 +1221,11 @@ float DB::evalHPWL(bool useWts, bool scaleTerms)
 
             if(useWts)
             {
-              HPWL+= net->getWeight()*(fabsf(pin1Locx - pin0Locx) + fabsf(pin1Locy - pin0Locy));
+              HPWL+= net->getWeight()*(std::abs(pin1Locx - pin0Locx) + std::abs(pin1Locy - pin0Locy));
             }
             else
             {
-              HPWL+= fabsf(pin1Locx - pin0Locx) + fabsf(pin1Locy - pin0Locy);
+              HPWL+= std::abs(pin1Locx - pin0Locx) + std::abs(pin1Locy - pin0Locy);
             }
 
 //            if(HPWL == numeric_limits<float>::infinity())
@@ -2067,13 +2067,13 @@ float DB::evalSteiner(bool useWts, bool scaleTerms)
      {
        if(useWts)
        {
-         total += net->getWeight()*(fabsf(pointsOnNet[0].x-pointsOnNet[1].x)+
-                                    fabsf(pointsOnNet[0].y-pointsOnNet[1].y));
+         total += net->getWeight()*(std::abs(pointsOnNet[0].x-pointsOnNet[1].x)+
+                                    std::abs(pointsOnNet[0].y-pointsOnNet[1].y));
        }
        else
        {
-         total += fabsf(pointsOnNet[0].x-pointsOnNet[1].x)+
-                  fabsf(pointsOnNet[0].y-pointsOnNet[1].y);
+         total += std::abs(pointsOnNet[0].x-pointsOnNet[1].x)+
+                  std::abs(pointsOnNet[0].y-pointsOnNet[1].y);
        }
      }
      else if(pointsOnNet.size() == 3)

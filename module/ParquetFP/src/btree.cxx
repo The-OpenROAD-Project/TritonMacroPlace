@@ -617,14 +617,14 @@ void BTree::contour_evaluate() // assume the tree is set
 //#define FLT_EPSILON numeric_limits< float >::epsilon()
 inline float get_snap_coordinates(float input, float snapVal) {
   // snap Value is zero, then simply return input values.
-  if( fabs( snapVal ) <= FLT_EPSILON ) {
+  if( std::abs( snapVal ) <= FLT_EPSILON ) {
     return input;
   }
 
   // otherwise, calculate the coordinates
   float calVal = input / snapVal; 
   int roundVal = calVal;
-  if( fabs( (float)roundVal - calVal ) <= FLT_EPSILON ) {
+  if( std::abs( (float)roundVal - calVal ) <= FLT_EPSILON ) {
     return input;
   }
   else {
@@ -635,14 +635,14 @@ inline float get_snap_coordinates(float input, float snapVal) {
 //#define FLT_EPSILON numeric_limits< float >::epsilon()
 inline float get_snap_coordinates_gap(float input, float snapVal) {
   // snap Value is zero, then simply return input values.
-  if( fabs( snapVal ) <= FLT_EPSILON ) {
+  if( std::abs( snapVal ) <= FLT_EPSILON ) {
     return 0;
   }
 
   // otherwise, calculate the coordinates
   float calVal = input / snapVal; 
   int roundVal = calVal;
-  if( fabs( (float)roundVal - calVal ) <= FLT_EPSILON ) {
+  if( std::abs( (float)roundVal - calVal ) <= FLT_EPSILON ) {
     return 0;
   }
   else {
