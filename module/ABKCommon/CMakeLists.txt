@@ -69,13 +69,6 @@ set (ABKCOMMON_HEADERS
 
 add_library( ABKCommon STATIC ${ABKCOMMON_SRC} )
 
-set_target_properties( ABKCommon
-  PROPERTIES
-  ARCHIVE_OUTPUT_DIRECTORY ${ABKCOMMON_HOME}/lib
-  LIBRARY_OUTPUT_DIRECTORY ${ABKCOMMON_HOME}/lib
-  RUNTIME_OUTPUT_DIRECTORY ${ABKCOMMON_HOME}/lib
-)
-
 # include directory settings
 target_include_directories( ABKCommon
   PUBLIC
