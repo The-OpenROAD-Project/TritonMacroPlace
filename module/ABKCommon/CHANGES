@@ -96,3 +96,5 @@
                    in client code.
  5.4  020824   ilm ported to g++ 3.1.1
                ilm fixed to abkguess3()
+
+03/28/2020 cherry remove all sgi code

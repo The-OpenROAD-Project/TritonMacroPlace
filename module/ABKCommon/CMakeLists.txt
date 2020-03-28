@@ -17,7 +17,6 @@ set( ABKCOMMON_SRC
   src/abkfunc.cxx
   src/abkio.cxx
   src/abkmessagebuf.cxx
-  src/abkrand_templ.cxx
   src/abkroot.cxx
   src/abkstring.cxx
   src/abktimer.cxx
@@ -81,7 +80,7 @@ set_target_properties( ABKCommon
 target_include_directories( ABKCommon
   PUBLIC
   ${ABKCOMMON_HOME}
-  src/
+  src
   )
 
 # add_dependencies( cABKCommonzlib cABKCommon )
