@@ -56,9 +56,6 @@ set (ABKCOMMON_HEADERS
   src/mmapStreamBuf.h
   src/paramproc.h
   src/pathDelims.h
-  src/sgi_hash_map.h
-  src/sgi_hash_set.h
-  src/sgi_stl_compat.h
   src/uofm_alloc.h
   src/verbosity.h
 )
@@ -79,4 +76,3 @@ target_include_directories( ABKCommon
 
 install(FILES ${ABKCOMMON_HEADERS} DESTINATION include)
 install(TARGETS ABKCommon DESTINATION lib)
-

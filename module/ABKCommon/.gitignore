@@ -2,3 +2,9 @@ build
 TAGS
 *~
 *.a
+
+# these should be in /test subdir
+diffs.notime
+expectedout.notime
+newout
+newout.notime
