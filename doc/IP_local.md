@@ -4,24 +4,25 @@
 * For IPs without any local (IP-specific) parameters, global values are used for macro placement.
 * The values in this file do not correspond to any foundry enablement.
 
-#### Specify IP master name (IP LEF Name example: XYZ_1024XXX) for each parameter.
-* Syntax set ::parameter IP_REFERENCE value
+1. Specify IP master name (IP LEF Name example: XYZ_1024XXX) for each parameter.
 
-#### IP-specific halo Width for vertical edge of macros. This is halo width value (placement blockage) to be used for specified IP along the vertical edge. This is essential to ensure proper routing to macro pins.
+        set ::parameter IP_REFERENCE value
 
-      set ::HALO_WIDTH_V XYZ_1024XXX 2
+2. IP-specific halo Width for vertical edge of macros. This is halo width value (placement blockage) to be used for specified IP along the vertical edge. This is essential to ensure proper routing to macro pins.
 
-#### IP-specific halo Width for horizontal edge of macros. This is halo width value (placement blockage) to be used for specified IP along the horizontal edge. This is essential to ensure proper routing to macro pins.
+        set ::HALO_WIDTH_V XYZ_1024XXX 2
 
-      set ::HALO_WIDTH_H XYZ_1024XXX 2
+3. IP-specific halo Width for horizontal edge of macros. This is halo width value (placement blockage) to be used for specified IP along the horizontal edge. This is essential to ensure proper routing to macro pins.
 
-#### IP-specific channel width for vertical edge of macros. This is channel width value to be used for specified IP along the vertical edge. This is essential for buffer placement and PDN connectivity of these cells.
+        set ::HALO_WIDTH_H XYZ_1024XXX 2
 
-      set ::CHANNEL_WIDTH_V XYZ_1024XXX 30 
+4. IP-specific channel width for vertical edge of macros. This is channel width value to be used for specified IP along the vertical edge. This is essential for buffer placement and PDN connectivity of these cells.
 
-#### IP-specific channel width for horizontal edge of macros. This is channel width value to be used for specified IP along the horizontal edge. This is essential for buffer placement and PDN connectivity of these cells.
+        set ::CHANNEL_WIDTH_V XYZ_1024XXX 30 
 
-      set ::CHANNEL_WIDTH_H XYZ_1024XXX 25
+5. IP-specific channel width for horizontal edge of macros. This is channel width value to be used for specified IP along the horizontal edge. This is essential for buffer placement and PDN connectivity of these cells.
+
+        set ::CHANNEL_WIDTH_H XYZ_1024XXX 25
 
 #### Example
 * [example_IP_local.cfg](example_IP_local.cfg)
