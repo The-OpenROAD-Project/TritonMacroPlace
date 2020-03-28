@@ -17,6 +17,7 @@ using namespace MacroPlace;
 using namespace odb;
 
 typedef vector<pair<Partition, Partition>> TwoPartitions;
+
 static vector<pair<Partition, Partition>> GetPart(
     CircuitInfo &cInfo,  
     Partition& partition, 
@@ -29,21 +30,24 @@ static void UpdateMacroPartMap(
     PartClassHash, PartClassEqual> &macroPartMap );
 
 
-static void CutRoundUp( CircuitInfo& cInfo, double& cutLine, bool isHorizontal );
-static void PrintAllSets(FILE* fp, CircuitInfo& cInfo, 
+static void 
+CutRoundUp( CircuitInfo& cInfo, double& cutLine, bool isHorizontal );
+
+static void 
+PrintAllSets(FILE* fp, CircuitInfo& cInfo, 
     vector< vector<Partition> >& allSets);
 
-static void UpdateOpendbCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt); 
+static void 
+UpdateOpendbCoordi(dbDatabase* db, MacroCircuit& mckt); 
 
 
 namespace MacroPlace { 
 
 void 
-PlaceMacros(dbDatabase* db, sta::dbSta* sta,
-    EnvFile& env, MacroCircuit& mckt, int& solCount) {
+MacroCircuit::PlaceMacros(int& solCount) {
 
-  dbTech* tech = db->getTech();
-  dbChip* chip = db->getChip(); 
+  dbTech* tech = db_->getTech();
+  dbChip* chip = db_->getChip(); 
   dbBlock* block = chip->getBlock();
 
   dbSet<dbRow> rows = block->getRows();
@@ -71,25 +75,20 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
   cout << "DieBBox: (" << cInfo.lx << " " << cInfo.ly << ") - (" 
     << cInfo.ux << " " << cInfo.uy << ")" << endl;
 
-  mckt.Init(db, sta, &env, &cInfo);   
+  Init(db_, sta_, &cInfo);   
   
   //  RandomPlace for special needs. 
   //  Really not recommended to execute this functioning 
-  if( env.isRandomPlace == true ) {
-    double snapGrid = 0.02f;
-    mckt.StubPlacer(snapGrid);
-  }
+  //if( mckt.isRandomPlace() == true ) {
+  //  double snapGrid = 0.02f;
+  //  mckt.StubPlacer(snapGrid);
+  //}
 
-//  mckt.GetMacroStor(ckt);
-//  for(auto& curMacro: mckt.macroStor) {
-//    curMacro.Dump();
-//  }
- 
   bool isHorizontal = true;
 
   Partition layout(PartClass::ALL, 
       cInfo.lx, cInfo.ly, cInfo.ux-cInfo.lx, cInfo.uy-cInfo.ly);
-  layout.macroStor = mckt.macroStor;
+  layout.macroStor = macroStor;
 
   cout << "PROC: Begin One Level Partition ... " << endl; 
   TwoPartitions oneLevelPart = GetPart(cInfo, layout, isHorizontal);
@@ -102,9 +101,10 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
 
   unordered_map< PartClass, vector<int>, 
     PartClassHash, PartClassEqual> globalMacroPartMap;
-  UpdateMacroPartMap( mckt, layout, globalMacroPartMap );
-  layout.FillNetlistTable( mckt, globalMacroPartMap );
-  mckt.UpdateNetlist(layout);
+  UpdateMacroPartMap( *this, layout, globalMacroPartMap );
+  layout.FillNetlistTable( *this, globalMacroPartMap );
+
+  UpdateNetlist(layout);
  
   // push to the outer vector 
   vector<Partition> layoutSet;
@@ -142,11 +142,11 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
           unordered_map< PartClass, vector<int>, 
             PartClassHash, PartClassEqual> macroPartMap;
           for(auto& curSet: oneSet) {
-            UpdateMacroPartMap( mckt, curSet, macroPartMap );
+            UpdateMacroPartMap( *this, curSet, macroPartMap );
           }
 
           for(auto& curSet: oneSet) {
-            curSet.FillNetlistTable( mckt, macroPartMap );
+            curSet.FillNetlistTable( *this, macroPartMap );
           }
 
           allSets.push_back( oneSet );
@@ -166,11 +166,11 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
           unordered_map< PartClass, vector<int>, 
             PartClassHash, PartClassEqual> macroPartMap;
           for(auto& curSet: oneSet) {
-            UpdateMacroPartMap( mckt, curSet, macroPartMap );
+            UpdateMacroPartMap( *this, curSet, macroPartMap );
           }
 
           for(auto& curSet: oneSet) {
-            curSet.FillNetlistTable( mckt, macroPartMap );
+            curSet.FillNetlistTable( *this, macroPartMap );
           }
 
           allSets.push_back( oneSet );
@@ -194,11 +194,11 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
             unordered_map< PartClass, vector<int>, 
               PartClassHash, PartClassEqual> macroPartMap;
             for(auto& curSet: oneSet) {
-              UpdateMacroPartMap( mckt, curSet, macroPartMap );
+              UpdateMacroPartMap( *this, curSet, macroPartMap );
             }
 
             for(auto& curSet: oneSet) {
-              curSet.FillNetlistTable( mckt, macroPartMap );
+              curSet.FillNetlistTable( *this, macroPartMap );
             }
 
             allSets.push_back( oneSet );
@@ -230,7 +230,7 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
         break;
       }
       // Update mckt frequently
-      mckt.UpdateMacroCoordi(curPart);
+      UpdateMacroCoordi(curPart);
     }
     if( isFailed ) {
       continue;
@@ -238,10 +238,10 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
 
     // update partitons' macro info
     for(auto& curPart : curSet) { 
-      curPart.UpdateMacroCoordi(mckt);
+      curPart.UpdateMacroCoordi(*this);
     }
       
-    double curWwl = mckt.GetWeightedWL();
+    double curWwl = GetWeightedWL();
     cout << "Set " << &curSet - &allSets[0] << ": WWL = " << curWwl << endl;
 
     if( curWwl > bestWwl ) {
@@ -255,27 +255,10 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
   std::vector<MacroPlace::Partition> bestSet = allSets[bestSetIdx];
 
   for( auto& curBestPart: bestSet) { 
-    mckt.UpdateMacroCoordi(curBestPart);
+    UpdateMacroCoordi(curBestPart);
   }
-  UpdateOpendbCoordi(db, env, mckt); 
-
-
-  /*
-  // Writing functions for Sets file
-  FILE* fp = fopen(env_.output.c_str(), "w");
-  if( fp == NULL) { 
-    cout << "ERROR: cannot open " << env_.output << " to write output file" << endl;
-    exit(1);
-  } 
-
-  // Generate *.sets file
-  PrintAllSets(fp, cInfo, allSets);
-  fclose(fp);
-  */
-
-  // ParquetFormat print
-  // only top-level formats
-//  layout.PrintParquetFormat(env_.output);
+  UpdateOpendbCoordi(db_, *this); 
+  
   cout << "PROC: End TritonMacroPlacer" << endl;
 }
 
@@ -283,7 +266,7 @@ PlaceMacros(dbDatabase* db, sta::dbSta* sta,
 
 // 
 // update opendb dataset from mckt.
-static void UpdateOpendbCoordi(dbDatabase* db, EnvFile& env, MacroCircuit& mckt) {
+static void UpdateOpendbCoordi(dbDatabase* db, MacroCircuit& mckt) {
   dbTech* tech = db->getTech();
   const int dbu = tech->getDbUnitsPerMicron();
   
@@ -589,8 +572,7 @@ static vector<pair<Partition, Partition>> GetPart(
     for(auto& curMacro : lowerPart.macroStor) {
       lowerMacroArea += curMacro.w * curMacro.h;
     }
-//    cout << upperMacroArea << " " << upperArea << endl;
-//    cout << lowerMacroArea << " " << lowerArea << endl;
+    
     // impossible partitioning
     if( upperMacroArea > upperArea || lowerMacroArea > lowerArea) {
       cout << "PROC: Impossible partition, continue" << endl;
@@ -611,24 +593,3 @@ static vector<pair<Partition, Partition>> GetPart(
   
   return ret; 
 }
-
-/*
-static void PrintAllSets(FILE* fp, CircuitInfo& cInfo, 
-    vector< vector<Partition> >& allSets) {
-  cout << "Writing sets file... ";
-  for(auto& curSet : allSets) {
-    fprintf(fp,"BEGIN SET ;\n" );
-    fprintf(fp,"  WIDTH %f ;\n", cInfo.ux - cInfo.lx );
-    fprintf(fp,"  HEIGHT %f ;\n", cInfo.uy - cInfo.ly );
-    for(auto& curSlice : curSet) {
-      if( curSlice.macroStor.size() == 0) {
-        continue;
-      }
-      curSlice.PrintSetFormat(fp);
-    }
-    fprintf(fp,"END SET ;\n");
-  }
-  fflush(fp);
-  cout << "Done!" << endl;
-}
-*/

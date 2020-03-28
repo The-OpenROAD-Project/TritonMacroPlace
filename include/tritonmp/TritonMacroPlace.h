@@ -1,8 +1,7 @@
 #ifndef __MACRO_PLACER_EXTERNAL__
 #define __MACRO_PLACER_EXTERNAL__
 
-#include "parse.h"
-#include "circuit.h"
+#include <memory>
 
 namespace odb {
 class dbDatabase;
@@ -15,8 +14,8 @@ class dbSta;
 namespace MacroPlace {
 
 class MacroCircuit;
-class EnvFile;
 
+// TODO merge TritonMacroPlace and MacroCircuit class
 class TritonMacroPlace {
 public:
   TritonMacroPlace ();
@@ -32,10 +31,7 @@ public:
   int getSolutionCount();
 
 private:
-  odb::dbDatabase* db_;
-  sta::dbSta* sta_;
-  EnvFile env_;
-  MacroCircuit mckt_;
+  std::unique_ptr<MacroCircuit> mckt_;
   int solCount_;
 }; 
 

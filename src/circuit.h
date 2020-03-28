@@ -7,7 +7,6 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-#include "parse.h"
 #include "graph.h"
 #include "partition.h"
 #include "macro.h"
@@ -28,25 +27,21 @@ class CircuitInfo;
 class MacroCircuit {
   public:
     MacroCircuit();
-    MacroCircuit(odb::dbDatabase* db, sta::dbSta* sta, EnvFile* env, CircuitInfo* cinfo);
+    MacroCircuit(odb::dbDatabase* db, sta::dbSta* sta, CircuitInfo* cinfo);
     
     void Init(odb::dbDatabase* db, 
         sta::dbSta* sta, 
-        EnvFile* env, 
         CircuitInfo* cinfo);
     
     std::vector<MacroPlace::Vertex> vertexStor;
-
     std::vector<MacroPlace::Edge> edgeStor;
 
     
     // macro Information
     std::vector<MacroPlace::Macro> macroStor;
 
-
     // pin Group Information
     std::vector<MacroPlace::PinGroup> pinGroupStor;
-
 
     // pin Group Map;
     // Pin* --> pinGroupStor's index.
@@ -84,21 +79,36 @@ class MacroCircuit {
     // plotting 
     void Plot(std::string outputFile, std::vector<MacroPlace::Partition>& set);
 
-
     // netlist  
     void UpdateNetlist(MacroPlace::Partition& layout);
-
 
     // return weighted wire-length to get best solution
     double GetWeightedWL();
 
-    // 
     void StubPlacer(double snapGrid);
+
+
+    // changing..... 
+    void setDb(odb::dbDatabase* db);
+    void setSta(sta::dbSta* sta);
+
+    void setGlobalConfig(const char* globalConfig);
+    void setLocalConfig(const char* localConfig);
+    void setPlotEnable(bool mode);
+
+    void PlaceMacros(int& solCount);
+
+    void reset();
+
 
   private:
     odb::dbDatabase* db_;
     sta::dbSta* sta_;
-    EnvFile* env_;
+
+    std::string globalConfig_;
+    std::string localConfig_;
+
+    bool isPlot_;
 
     double lx, ly, ux, uy;
 
@@ -171,24 +181,6 @@ class CircuitInfo {
     CircuitInfo( CircuitInfo& orig, MacroPlace::Partition& part );
 
 };
-
-bool ParseArgv(int argc, char** argv, EnvFile& env);
-void PrintUsage();
-
-// for string escape
-//
-inline bool ReplaceStringInPlace( std::string& subject, 
-    const std::string& search,
-    const std::string& replace) {
-  size_t pos = 0;
-  bool isFound = false;
-  while ((pos = subject.find(search, pos)) != std::string::npos) {
-    subject.replace(pos, search.length(), replace);
-    pos += replace.length();
-    isFound = true; 
-  }
-  return isFound; 
-}
 
 }
 

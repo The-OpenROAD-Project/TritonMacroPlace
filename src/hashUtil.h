@@ -1,8 +1,11 @@
 #ifndef __MACRO_PLACER_HASH_UTIL__
 #define __MACRO_PLACER_HASH_UTIL__
 
-namespace MacroPlace {
+#include <cstdlib>
+#include <utility>
+#include <functional>
 
+namespace MacroPlace {
 
 struct PointerPairHash {
   std::size_t operator()(const std::pair<void*, void*> &k) const;

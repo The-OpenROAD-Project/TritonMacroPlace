@@ -6,7 +6,6 @@
 #include <string>
 #include <unordered_set> 
 
-#include "parse.h"
 #include "circuit.h"
 
 #include "Machine.hh"
@@ -53,33 +52,60 @@ isTerminal(MacroPlace::Vertex* vert,
 MacroCircuit::MacroCircuit() :
   gHaloX(0), gHaloY(0), 
   gChannelX(0), gChannelY(0), 
-  db_(0), sta_(0), env_(0),
+  db_(0), sta_(0), 
   lx(0), ly(0), ux(0), uy(0),
   netTable(0) {}
 
 MacroCircuit::MacroCircuit(
     odb::dbDatabase* db,
     sta::dbSta* sta,
-    EnvFile* env,
     CircuitInfo* cinfo) :
   gHaloX(0), gHaloY(0), 
   gChannelX(0), gChannelY(0), 
-  db_(db), env_(env),
+  db_(db), 
   sta_(sta),
   lx(0), ly(0), ux(0), uy(0),
   netTable(0) {
 
-  Init(db, sta, env, cinfo);
+  Init(db, sta, cinfo);
+}
+
+void
+MacroCircuit::reset() {
+  // TODO
+}
+
+void 
+MacroCircuit::setDb(odb::dbDatabase* db) {
+  db_ = db; 
+}
+
+void
+MacroCircuit::setSta(sta::dbSta* sta) {
+  sta_ = sta; 
+}
+
+void
+MacroCircuit::setGlobalConfig(const char* globalConfig) {
+  globalConfig_ = globalConfig;
+}
+
+void
+MacroCircuit::setLocalConfig(const char* localConfig) {
+  localConfig_ = localConfig; 
+}
+
+void 
+MacroCircuit::setPlotEnable(bool mode) {
+  isPlot_ = true;
 }
 
 void MacroCircuit::Init( 
     odb::dbDatabase* db, 
     sta::dbSta* sta,
-    EnvFile* env, 
     CircuitInfo* cinfo) {
   
   db_ = db; 
-  env_ = env;
   sta_ = sta;
 
   lx = cinfo->lx;
@@ -89,10 +115,10 @@ void MacroCircuit::Init(
 
   // parsing from cfg file
   // global config
-  ParseGlobalConfig(env_->globalConfig);
+  ParseGlobalConfig(globalConfig_);
   // local config (optional)
-  if( env_->localConfig != "" ) {
-    ParseLocalConfig(env_->localConfig);
+  if( localConfig_ != "" ) {
+    ParseLocalConfig(localConfig_);
   }
 
   sta_->updateTiming(0);
@@ -260,7 +286,8 @@ void MacroCircuit::FillPinGroup(){
       }
     } 
     if( !isFound ) {
-      cout << "**ERROR: PIN " << bTerm->getConstName() << " is not PLACED in Border!!" << endl;
+      cout << "**ERROR: PIN " << bTerm->getConstName() 
+        << " is not PLACED in Border!!" << endl;
       cout << "INFO: Place Information: " << placeX << " " << placeY << endl; 
       cout << "INFO: Border Information: " << dbuLx << " " << dbuLy 
            << " " << dbuUx << " " << dbuUy << endl;
@@ -384,7 +411,6 @@ void MacroCircuit::FillVertexEdge() {
       sta::Instance* inst = sta_->network()->instance(pin);
       sta::LibertyCell* libCell = sta_->network()->libertyCell(inst);
       if( !libCell -> hasSequentials() && macroInstMap.find(inst) == macroInstMap.end() ) {
-//        cout << "is not: " << sta_->network()->pathName(pin) << endl; 
         continue;
       }
     }
@@ -427,8 +453,6 @@ void MacroCircuit::FillVertexEdge() {
           continue;
         }
 
-//        cout << sta_->network()->pathName(pin) << " -> " << sta_->network()->pathName(adjPin) << endl;
-
         /*
          * previous
         auto mapPtr = vertexPairEdgeMap.find( make_pair(curVertex , adjVertex) );
@@ -451,12 +475,10 @@ void MacroCircuit::FillVertexEdge() {
       delete fanout;
     }
     else {
-//      cout << "FanIn!" << endl;
       sta::PinSet *fanin = sta_->findFaninPins(&pinStor, false, true ,
           500, 700,
           false, false);
       for(auto& adjPin: *fanin) {
-//        cout <<  sta_->network()->pathName(adjPin) << " -> " << sta_->network()->pathName(pin) << endl;
         // Skip For Non-FF Pin 
         if( !sta_->network()->isTopLevelPort(adjPin) ) {
           sta::Instance* inst = sta_->network()->instance(adjPin);
@@ -787,7 +809,6 @@ void MacroCircuit::FillMacroPinAdjMatrix() {
               continue;
             }
             vertexWeight[idx2] += pathWeight * vertexWeight[idx1];
-//            vertexWeight[idx2] += vertexWeight[idx1];
 
             // update vertexCover only when vertex is FFs.
             if( vertexCover[idx2] == EmptyVert ) { 
@@ -813,8 +834,6 @@ void MacroCircuit::FillMacroPinAdjMatrix() {
           T(macroPinAdjMatrixMap[startVertIdx], 
             macroPinAdjMatrixMap[curCandiVert], 
             vertexWeight[curCandiVert]));
-//      cout << startVertIdx << " -> " << curCandiVert << " : " 
-//        << vertexWeight[curCandiVert] << endl;
     }
   } 
 
@@ -836,42 +855,12 @@ void MacroCircuit::FillMacroConnection() {
     searchVertIdx.push_back( macroVertIdx );
   }
 
-
-//  cout << "searchVertSize: " << searchVertIdx.size() << endl;
   // macroNetlistWeight Initialize
   macroWeight.resize(searchVertIdx.size());
   for(size_t i=0; i<searchVertIdx.size(); i++) {
     macroWeight[i] = vector<int> (searchVertIdx.size(), 0);
   }
 
-  /*
-  auto startTime = std::chrono::system_clock::now();
-
-  SMatrix calMatrix = adjMatrix;
-  if( env_->searchDepth == 2) {
-    calMatrix = calMatrix * calMatrix; 
-  }
-  else if( env_->searchDepth == 3) {
-    calMatrix = calMatrix * calMatrix; 
-    calMatrix = calMatrix * adjMatrix; 
-  }
-  else if( env_->searchDepth == 4) {
-    calMatrix = calMatrix * calMatrix; 
-    calMatrix = calMatrix * calMatrix; 
-  }
-  else if(env_->searchDepth == 5){
-    calMatrix = calMatrix * calMatrix; 
-    calMatrix = calMatrix * calMatrix; 
-    calMatrix = calMatrix * adjMatrix; 
-  }
-  cout << "SMatrix calculation Done!!" << endl;
-  auto endTime = std::chrono::system_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime);
-  
-  cout << "SMatrix calculation runtime: " << elapsed.count() << "s" << endl;
-*/
-
-//  auto startTime = std::chrono::system_clock::now();
   for(auto& curVertex1: searchVertIdx) {
     for(auto& curVertex2: searchVertIdx) {
       if( curVertex1 == curVertex2 ) { 
@@ -886,10 +875,6 @@ void MacroCircuit::FillMacroConnection() {
         continue;
       }
      
-//      cout << "[ " << curMacro1.name << " --> " << curMacro2.name << " ]" <<endl; 
-//      cout << "[ " << curMacro1.ptr << " --> " << curMacro2.ptr << " ]" <<endl;
-    
-
       void* ptr1 = vertexStor[curVertex1].ptr();
       void* ptr2 = vertexStor[curVertex2].ptr();
 
@@ -897,14 +882,12 @@ void MacroCircuit::FillMacroConnection() {
         ((PinGroup*)ptr1)->name() : sta_->network()->pathName((sta::Instance*)ptr1);
       string name2 = (class2 == VertexType::PinGroupType)?
         ((PinGroup*)ptr2)->name() : sta_->network()->pathName((sta::Instance*)ptr2);
-      // cout << "[ " << name1 << " --> " << name2 << " ]" <<endl;
 
       macroWeight[macroPinAdjMatrixMap[curVertex1]][macroPinAdjMatrixMap[curVertex2]] 
         = GetPathWeightMatrix( 
             macroPinAdjMatrix, 
             macroPinAdjMatrixMap[curVertex1], 
             macroPinAdjMatrixMap[curVertex2]);
-//      cout << GetPathWeight( curVertex1, curVertex2, 3) << endl;
     }
   }
 }
