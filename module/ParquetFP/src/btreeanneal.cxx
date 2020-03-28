@@ -68,10 +68,6 @@ using std::cin;
 using std::vector;
 
 
-#if defined(sun)
-#define fabsf(x) ((x >= 0.f) ? x : -x)
-#endif
-
 static void getObstaclesFromDB(DB *const db, BasePacking &out);
 
 // ========================================================
@@ -229,21 +225,21 @@ void BTreeAreaWireAnnealer::constructor_core()
     }
 
     int theta = in_curr_solution.tree[i].orient;
-    if (fabs(in_curr_solution.width(i) - blockinfo.currDimensions[i].width[theta]) > 1e-6)
+    if (std::abs(in_curr_solution.width(i) - blockinfo.currDimensions[i].width[theta]) > 1e-6)
     {
       printf("ctor: width of block[%d] is not consistent.  in_curr_soln: %.2f vs. blockinfo: %.2f\n",
           i, in_curr_solution.width(i), blockinfo.currDimensions[i].width[theta]);
       cin.get();
     }
 
-    if (fabs(in_curr_solution.height(i) - blockinfo.currDimensions[i].height[theta]) > 1e-6)
+    if (std::abs(in_curr_solution.height(i) - blockinfo.currDimensions[i].height[theta]) > 1e-6)
     {
       printf("ctor: height of block[%d] is not consistent.  in_curr_soln: %.2f vs. blockinfo: %.2f\n",
           i, in_curr_solution.height(i), blockinfo.currDimensions[i].height[theta]);
       cin.get();
     }
 
-    if (_params->minWL && fabs(in_curr_solution.width(i) - _db->getNodes()->getNodeWidth(i)) > 1e-6)
+    if (_params->minWL && std::abs(in_curr_solution.width(i) - _db->getNodes()->getNodeWidth(i)) > 1e-6)
     {
       printf("ctor: width of block[%d] is not consistent.  in_curr_solution: %.2f vs._db: %.2f\n",
           i, in_curr_solution.width(i), _db->getNodes()->getNodeWidth(i));
@@ -1009,7 +1005,7 @@ bool BTreeAreaWireAnnealer::anneal()
           cin.get();
         }
 
-        if (fabs(in_curr_solution.width(i) - blockinfo.currDimensions[i].width[theta]) > 1e-6)
+        if (std::abs(in_curr_solution.width(i) - blockinfo.currDimensions[i].width[theta]) > 1e-6)
         {
           printf("round[%d]: width of block[%d] is not consistent.  in_curr_soln: %.2f vs. blockinfo: %.2f move: %d prevMove: %d\n",
               count, i, in_curr_solution.width(i), blockinfo.currDimensions[i].width[theta], move, prev_move);
@@ -1018,7 +1014,7 @@ bool BTreeAreaWireAnnealer::anneal()
           cin.get();
         }
 
-        if (fabs(in_curr_solution.height(i) - blockinfo.currDimensions[i].height[theta]) > 1e-6)
+        if (std::abs(in_curr_solution.height(i) - blockinfo.currDimensions[i].height[theta]) > 1e-6)
         {
           printf("round[%d]: height of block[%d] is not consistent.  in_curr_soln: %.2f vs. blockinfo: %.2f move: %d prevMove: %d\n",
               count, i, in_curr_solution.height(i), blockinfo.currDimensions[i].height[theta], move, prev_move);
@@ -1027,7 +1023,7 @@ bool BTreeAreaWireAnnealer::anneal()
           cin.get();
         }
 
-        if (minWL && fabs(in_curr_solution.width(i) - _db->getNodes()->getNodeWidth(i)) > 1e-6)
+        if (minWL && std::abs(in_curr_solution.width(i) - _db->getNodes()->getNodeWidth(i)) > 1e-6)
         {
           printf("round[%d]: width of block[%d] is not consistent.  in_curr_solution: %.2f vs._db: %.2f move: %d\n",
               count, i, in_curr_solution.width(i), _db->getNodes()->getNodeWidth(i), move);

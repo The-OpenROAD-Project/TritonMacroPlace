@@ -209,7 +209,7 @@ void Timer::start(double limitInSec)
 #ifndef WIN32
     abkfatal(time(&realTime1)!=-1,"Can't get time");
 #endif
-#if defined(sun) || defined (linux)
+#if defined (linux)
     abkfatal(getrusage(RUSAGE_SELF,&_ru)!=-1," Can't get time");
     UserTime1 = _ru.ru_utime.tv_sec+1e-6*_ru.ru_utime.tv_usec;
     SysTime1  = _ru.ru_stime.tv_sec+1e-6*_ru.ru_stime.tv_usec;
@@ -229,7 +229,7 @@ void Timer::stop()
     abkfatal(time(&realTime2)!=-1,"Can't get time\n");
 #endif
 
-#if defined(sun) || defined(linux)
+#if defined(linux)
     abkfatal(getrusage(RUSAGE_SELF,&_ru)!=-1," Can't get time");
     UserTime2 = _ru.ru_utime.tv_sec+1e-6*_ru.ru_utime.tv_usec;
     SysTime2  = _ru.ru_stime.tv_sec+1e-6*_ru.ru_stime.tv_usec;
@@ -256,7 +256,7 @@ double Timer::getUserTime() const
 {
    abkfatal(status == TIMER_OFF || status==TIMER_SPLIT,
        "Have to stop timer to get a reading\n");
-#if defined(sun) || defined(linux)
+#if defined(linux)
     return (UserTime2-UserTime1);
 #elif defined(WIN32)
     return (_winTimes->getUserTime2() - _winTimes->getUserTime1())*1.0e-7;
@@ -272,7 +272,7 @@ double Timer::getSysTime() const
 {
    abkfatal(status == TIMER_OFF || status==TIMER_SPLIT,
        "Have to stop timer to get a reading\n");
-#if defined(sun) || defined(linux)
+#if defined(linux)
     return (SysTime2-SysTime1);
 #elif defined(WIN32)
     return (_winTimes->getKerTime2() - _winTimes->getKerTime1())*1.0e-7;
@@ -285,7 +285,7 @@ double Timer::getCombTime() const
 {
    abkfatal(status == TIMER_OFF || status==TIMER_SPLIT,
        "Have to stop timer to get a reading\n");
-#if defined(sun) || defined(linux)
+#if defined(linux)
     return (UserTime2-UserTime1)+(SysTime2-SysTime1);
 #elif defined(WIN32)
     return
@@ -318,7 +318,7 @@ double Timer::getUnixTime() const
 
 std::ostream& operator<<(std::ostream& os, const Timer& tm)
 {
-#if defined(sun) || defined(WIN32) || defined(linux)
+#if defined(WIN32) || defined(linux)
     CPUNormalizer cpunorm;
     double userSec=tm.getUserTime(),
            normSec=tm.getUserTime() * cpunorm.getNormalizingFactor();

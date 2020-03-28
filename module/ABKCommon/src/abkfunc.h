@@ -91,10 +91,6 @@ inline bool greaterThanDouble(const double a, const double b)
    return (a > b) && !equalDouble(a,b);
 }
 
-#if defined(sun)
-#define fabsf(x) ((x >= 0.f) ? x : -x)
-#endif
-
 inline bool equalFloat(const float a, const float b)
 {
    //standard def of equality

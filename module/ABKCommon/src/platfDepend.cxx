@@ -69,15 +69,11 @@
 #include <cstdlib>
 #include <cstring>
 
-#if defined(sun) || defined(__SUNPRO_CC)
- #include <sys/systeminfo.h>
-#endif
-
 #ifdef linux
  #include <sys/utsname.h>
 #endif     
 
-#if defined(linux) || defined(sun) || defined(__SUNPRO_CC)
+#if defined(linux)
 #include <sys/param.h>
 #include <sys/types.h>
 #include <stdlib.h>
@@ -157,7 +153,7 @@ double winMemUsage(void)
 void abk_dump_stack()
 {
     return;
-#if defined(linux) || defined(sun) || defined(__SUNPRO_CC)
+#if defined(linux)
     printf("\n  --- ABK GROUP DELIBERATE STACK DUMP  ----------- \n\n");
     fflush(stdout);
     char s[160];
@@ -180,7 +176,7 @@ void abk_dump_stack()
 
 void abk_call_debugger()
 {
-#if defined(linux) || defined(sun) || defined(__SUNPRO_CC)
+#if defined(linux)
     unsigned ProcId=getpid();
     printf("\n  --- ATTACHING DEBUGGER to process %d ", ProcId);
     printf(" (an ABKGROUP utility) --- \n\n");
@@ -207,24 +203,11 @@ double getPeakMemoryUsage()
 	return winMemUsage();
 #endif
 
-#if ! (defined(sun) || defined(linux) || defined(__SUNPRO_CC))
+#if ! defined(linux)
   return -1;
 #endif
 
-#if defined(sun) || defined(__SUNPRO_CC)
-  char procFileName[20];
-  unsigned pid=getpid();
-  sprintf(procFileName,"/proc/%d/as",pid);
-  struct stat buf;
-  if (stat(procFileName,&buf))  // no such file on Solaris 2.5 and earlier
-  {                             // so we stat another file now
-    char procFileNameOld[20];
-    sprintf(procFileNameOld,"/proc/%d",pid);
-    if (stat(procFileNameOld,&buf)) 
-        return -1.0;
-  }
-  return (1./(1024.*1024.)) * static_cast<double>(buf.st_size);
-#elif defined(linux)
+#if defined(linux)
   char buf[1000];
   ifstream ifs("/proc/self/stat");
   for(unsigned k=0; k!=23; k++) ifs >> buf;
@@ -240,7 +223,7 @@ static double getMemoryUsageEstimate();
 MemUsage::MemUsage()
 {
   _peak=getPeakMemoryUsage();
-  #if (defined(sun) || defined(__SUNPRO_CC) || defined(linux))
+  #if defined(linux)
     _estimate=_peak;
     return ;
   #endif
@@ -280,7 +263,7 @@ MemChange::MemChange()
 
 MemChange::operator double() const
 {
-#if defined(sun) || defined(linux) || defined(__SUNPRO_CC)
+#if defined(linux)
   return getPeakMemoryUsage()-_memUsageMark;
 #else
   return -1.0;
@@ -289,15 +272,7 @@ MemChange::operator double() const
 
 Platform::Platform()
 {
-#if defined(sun) || defined(__SUNPRO_CC)
-  Str31 sys, rel, arch, platf;
-  sysinfo(SI_SYSNAME, sys, 31);
-  sysinfo(SI_RELEASE, rel, 31);
-  sysinfo(SI_ARCHITECTURE,arch, 31);
-  sysinfo(SI_PLATFORM,platf, 31);
-  _infoLine= new char[strlen(sys)+strlen(rel)+strlen(arch)+strlen(platf)+30];
-  sprintf(_infoLine,"# Platform     : %s %s %s %s \n",sys,rel,arch,platf);
-#elif defined(linux)
+#if defined(linux)
   struct utsname buf;
   uname(&buf);
   _infoLine= new char[strlen(buf.sysname)+strlen(buf.release)
@@ -313,14 +288,13 @@ Platform::Platform()
 #endif
 }
 
-#if !defined(sun) && !defined(linux) && !defined(_MSC_VER)
+#if !defined(linux) && !defined(_MSC_VER)
 extern  int gethostname(char*, int);
 #endif
 
 User::User()
 {
 
-//#if defined(linux) || defined(sun) || defined(__SUNPRO_CC)
 #if defined(linux) 
   char host[100]; 
   gethostname(host,31);
@@ -368,7 +342,7 @@ double getMemoryUsageEstimate()
 	return winMemUsage();
 #endif
 
-#if ! (defined(linux) || defined(sun) || defined(__SUNPRO_CC))
+#if ! defined(linux)
         return -1;
 #endif
         static long prevMem=0;
@@ -438,7 +412,7 @@ double getMemoryUsageEstimate()
 
 UserHomeDir::UserHomeDir()
 {
-#if defined(sun) || defined(linux)
+#if defined(linux)
   struct passwd *pwrec;
   pwrec=getpwuid(getuid());
   if(pwrec==NULL) {
@@ -481,32 +455,7 @@ ExecLocation::ExecLocation()
     }
 #endif
 
-#if defined(sun) || defined(__SUNPRO_CC)
-  pid_t pid=getpid();
-  char tempfname[100]="";
-  sprintf(tempfname,"/tmp/atempf%d",static_cast<int>(pid));
-  sprintf(buf,"/usr/proc/bin/ptree %d | tail -4 > %s",
-				  static_cast<int>(pid),tempfname);
-  system(buf);
-  { ifstream ifs(tempfname); ifs >> buf; ifs >> buf;}
-  unlink(tempfname);
-  if (buf[0]!='/')
-  {
-    if (strrchr(buf,'/')==NULL) 
-    { getcwd(buf,1000); _infoLine = new char[strlen(buf)+1];
-      strcpy(_infoLine,buf); return; }
-    else
-    { 
-      char buf1[500]="",buf2[1000]="";
-      getcwd(buf1,500);
-      strncpy(buf2,buf,500);
-      sprintf(buf,"%s/%s",buf1,buf2);
-    }
-  }
-  char *lastDelim=strrchr(buf,'/');
-  if (lastDelim==NULL) sprintf(buf,"Cannot find");
-  else                 *lastDelim='\0';
-#elif defined(_MSC_VER)
+#if defined(_MSC_VER)
   ::GetModuleFileName(NULL,buf,995);
   char drv[_MAX_DRIVE],dir[_MAX_DIR],fname[_MAX_FNAME],ext[_MAX_EXT];
   _splitpath(buf,drv,dir,fname,ext);

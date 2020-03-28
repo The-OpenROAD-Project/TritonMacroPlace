@@ -188,20 +188,9 @@ class Tausworthe : public RandomRoot
 		    if (otherPoint<0)
 		        otherPoint += _bufferSize;
 		
-		#if defined(__SUNPRO_CC)
-		//|| defined(__GNUC__)
-		    /* SUN compiler doesn't use "mutable" */
-		    retval = const_cast<unsigned*>(_buffer)
-		          [const_cast<Tausworthe*>(this)->_cursor] ^=
-		        const_cast<unsigned*>(_buffer)[otherPoint];
-		    if (++(const_cast<Tausworthe*>(this)->_cursor) >= _bufferSize)
-		        const_cast<Tausworthe*>(this)->_cursor=0;
-		
-		#else
 		    retval = _buffer[_cursor] ^= _buffer[otherPoint];
 		    if (++_cursor >= _bufferSize)
 		        _cursor=0;
-		#endif
 		
 		    return retval;
 		    }

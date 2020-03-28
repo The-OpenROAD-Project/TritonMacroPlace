@@ -84,10 +84,7 @@
 class WinTimes;
 #endif 
 
-#if defined(sun)
- #include <sys/resource.h>
- extern "C" int getrusage(int who, struct rusage *rusage);
-#elif defined(linux)
+#if defined(linux)
  #include <sys/resource.h>
 #endif      
 
@@ -98,7 +95,7 @@ class Timer
     time_t  realTime1, realTime2;
 #endif
     double  UserTime1, UserTime2;
-#if defined(linux) || defined(sun)
+#if defined(linux)
     double  SysTime1,  SysTime2;
 #endif
     double  timeLimit;
@@ -110,14 +107,14 @@ class Timer
 #else
     inline double getRealTimeOnTheFly();
     inline double getUserTimeOnTheFly();
-#if defined(sun) || defined(linux)
+#if defined(linux)
     inline double  getSysTimeOnTheFly();
 #endif
     inline double getCombTimeOnTheFly();
 
 #endif  //WIN32
 
-#if defined(sun) || defined (linux)
+#if defined (linux)
    struct rusage _ru;
 #endif
 
@@ -175,7 +172,7 @@ inline double Timer::getRealTimeOnTheFly()
 
 inline double Timer::getUserTimeOnTheFly() 
 { 
-#if defined(sun) || defined(gnu)
+#if defined(gnu)
    abkfatal(getrusage(RUSAGE_SELF,&_ru)!=-1,"Can't get time");
    return _ru.ru_utime.tv_sec+1e-6*_ru.ru_utime.tv_usec - UserTime1;
 #else
@@ -183,7 +180,7 @@ inline double Timer::getUserTimeOnTheFly()
 #endif
 }
 
-#if defined(sun) || defined(linux)
+#if defined(linux)
 inline double Timer::getSysTimeOnTheFly() 
 { 
   abkfatal(getrusage(RUSAGE_SELF,&_ru)!=-1,"Can't get time");
@@ -193,7 +190,7 @@ inline double Timer::getSysTimeOnTheFly()
 
 inline double Timer::getCombTimeOnTheFly() 
 { 
-#if defined(sun) || defined(linux)
+#if defined(linux)
    abkfatal(getrusage(RUSAGE_SELF,&_ru)!=-1,"Can't get time");
    return   _ru.ru_utime.tv_sec+1e-6*_ru.ru_utime.tv_usec - UserTime1
            +_ru.ru_stime.tv_sec+1e-6*_ru.ru_stime.tv_usec - SysTime1;
