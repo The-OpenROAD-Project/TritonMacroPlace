@@ -13,7 +13,7 @@ ParquetFP based macro cell placer for OpenROAD.
 - Note that TritonMacroPlace is a submodule of OpenROAD repo, and take a place as the **"macro_placement"** command. 
 
 
-## OpenROAD Tcl Usage (global_placement)
+## OpenROAD Tcl Usage (macro_placement)
 
 ```
 macro_placement -global_config <global_config_file>
