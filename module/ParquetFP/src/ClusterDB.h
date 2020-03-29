@@ -34,7 +34,7 @@
 #ifndef CLUSTERDB_H
 #define CLUSTERDB_H
 
-#include <Ctainers/bitBoard.h>
+#include "Ctainers/bitBoard.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
