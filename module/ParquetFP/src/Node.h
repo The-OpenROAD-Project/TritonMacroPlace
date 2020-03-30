@@ -41,7 +41,6 @@
 namespace parquetfp
 {
    class Nets;
-   class PinOffsetCache;
 
    struct NodePin
    {
