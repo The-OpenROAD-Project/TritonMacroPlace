@@ -22,7 +22,6 @@ set( PARQUET_SRC
   src/ClusterDB.cxx
   src/CommandLine.cxx
   src/DB.cxx
-#  src/debug.cxx
   src/FPcommon.cxx
   src/mixedpacking.cxx
   src/mixedpackingfromdb.cxx
@@ -31,8 +30,6 @@ set( PARQUET_SRC
   src/Nets.cxx
   src/Node.cxx
   src/Nodes.cxx
-  src/Parquet.cxx
-#   src/pinCache.cxx
   src/plcompact.cxx
   src/plsptobtree.cxx
   src/pltobtree.cxx
@@ -42,6 +39,13 @@ set( PARQUET_SRC
   src/SolveMulti.cxx
   src/SPeval.cxx
 )
+
+# unused
+#  src/debug.cxx
+#  src/Parquet.h
+#  src/Parquet.cxx
+#  src/pinCache.h
+#  src/pinCache.cxx
 
 set ( PARQUET_HEADER
   src/allparquet.h
@@ -68,9 +72,7 @@ set ( PARQUET_HEADER
   src/Nets.h
   src/Node.h
   src/Nodes.h
-  src/Parquet.h
   src/parsers.h
-  src/pinCache.h
   src/plcompact.h
   src/plsptobtree.h
   src/pltobtree.h
