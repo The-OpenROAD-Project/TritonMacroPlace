@@ -1,6 +1,6 @@
 #include "circuit.h"
 #include "partition.h" 
-#include <opendb/db.h>
+#include "opendb/db.h"
 #include <unordered_set>
 
 using std::cout;
@@ -403,7 +403,7 @@ static vector<pair<Partition, Partition>> GetPart(
         prevPushLimit = segPair.second;
         isFirst = false;
       }
-      else if( abs(segPair.second -prevPushLimit) > cutLineLimit ) {
+      else if( std::abs(segPair.second -prevPushLimit) > cutLineLimit ) {
         cutLineStor.push_back( segPair.second );
         prevPushLimit = segPair.second;
       }
