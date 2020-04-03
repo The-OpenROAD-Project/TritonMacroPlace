@@ -237,6 +237,8 @@ MacroCircuit::PlaceMacros(int& solCount) {
     }
     solCount++;
   }
+  
+  log_->infoInt( "NumFinalSols", solCount);
 
   // bestset DEF writing
   std::vector<MacroPlace::Partition> bestSet = allSets[bestSetIdx];
