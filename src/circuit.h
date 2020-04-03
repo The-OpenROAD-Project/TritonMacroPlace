@@ -42,7 +42,7 @@ class MacroCircuit {
 
     // pin Group Map;
     // Pin* --> pinGroupStor's index.
-    std::unordered_map<sta::Pin*, int> pinGroupMap;
+    std::unordered_map<sta::Pin*, int> staToPinGroup;
 
     // macro name -> macroStor's index.
     std::unordered_map<std::string, int> macroNameMap;

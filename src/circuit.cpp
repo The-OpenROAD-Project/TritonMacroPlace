@@ -21,7 +21,9 @@
 #include "PathEnd.hh"
 #include "PathRef.hh"
 #include "Search.hh"
+
 #include "db_sta/dbSta.hh"
+#include "db_sta/dbNetwork.hh"
 
 namespace MacroPlace {
 
@@ -31,6 +33,7 @@ using std::vector;
 using std::pair;
 using std::make_pair;
 using std::string;
+using std::to_string;
 using std::cout;
 using std::endl;
 
@@ -39,6 +42,8 @@ typedef Eigen::SparseMatrix<int, Eigen::RowMajor> SMatrix;
 typedef Eigen::Triplet<int> T;
 
 using namespace odb;
+
+using sta::VertexIterator;
 
 
 static bool
@@ -171,9 +176,7 @@ void MacroCircuit::FillMacroStor() {
   log_->procBegin("Extracting Macro Cells");
 
   dbTech* tech = db_->getTech();
-
-  dbChip* chip = db_->getChip();
-  dbBlock* block = chip->getBlock();
+  dbBlock* block = db_->getChip()->getBlock();
   
   dbSet<dbRow> rows = block->getRows();
 
@@ -238,24 +241,24 @@ void MacroCircuit::FillMacroStor() {
     log_->error("Cannot find any macros in this design.\n", 3);
     exit(1);
   }
+
   log_->procEnd("Extracting Macro Cells");
   log_->infoInt("NumMacros", macroStor.size());
 }
 
-static bool isWithIn( int val, int min, int max ) {
+static bool 
+isWithIn( int val, int min, int max ) {
   return (( min <= val ) && ( val <= max ));
 }
 
 
-void MacroCircuit::FillPinGroup(){
+void 
+MacroCircuit::FillPinGroup(){
   dbTech* tech = db_->getTech(); 
   const double dbu = tech->getDbUnitsPerMicron();
 
-  int numEdge = sta_->graph()->edgeCount();
-  int numVertex = sta_->graph()->vertexCount();
-
-  log_->infoInt("NumEdgeInSta", numEdge);
-  log_->infoInt("NumVertexInSta", numVertex);
+  log_->infoInt("NumEdgeInSta", sta_->graph()->edgeCount());
+  log_->infoInt("NumVertexInSta", sta_->graph()->vertexCount());
 
   int dbuLx = static_cast<int>(round(lx_ * dbu));
   int dbuLy = static_cast<int>(round(ly_ * dbu));
@@ -264,10 +267,16 @@ void MacroCircuit::FillPinGroup(){
 
   using MacroPlace::PinGroupLocation;
 
-  unordered_map<string, PinGroupLocation> pinGroupStrMap;
+  // this is always four array.
+  pinGroupStor.resize(4);
 
-  dbChip* chip = db_->getChip();
-  dbBlock* block = chip->getBlock();
+  // save PG-Class info in below
+  pinGroupStor[static_cast<int>(East)].setPinGroupLocation(East);
+  pinGroupStor[static_cast<int>(West)].setPinGroupLocation(West);
+  pinGroupStor[static_cast<int>(North)].setPinGroupLocation(North);
+  pinGroupStor[static_cast<int>(South)].setPinGroupLocation(South);
+  
+  dbBlock* block = db_->getChip()->getBlock();
 
   for(dbBTerm* bTerm : block->getBTerms()) {
     
@@ -280,98 +289,81 @@ void MacroCircuit::FillPinGroup(){
 
     // pin placement status
     dbPlacementStatus ppStatus = bTerm->getFirstPinPlacementStatus();
-    int placeX = 0, placeY = 0; 
 
+    // unplaced BTerms 
     if( ppStatus == dbPlacementStatus::UNPLACED ||
         ppStatus == dbPlacementStatus::NONE ) {
       string msg = string(bTerm->getConstName()) 
         + " toplevel port is not placed!\n";
       msg += "       TritonMP will regard " 
-        + string(bTerm->getConstName()) + " is placed in (0, 0)";
+        + string(bTerm->getConstName()) + " is placed on West side"; 
       log_->warn(msg, 1);
+          
+      // update pinGroups on West 
+      sta::Pin* pin = sta_->getDbNetwork()->dbToSta(bTerm);
+      pinGroupStor[static_cast<int>(West)].addPin(pin);
+      staToPinGroup[pin] = static_cast<int>(West);
     } 
     else {
+      int placeX = 0, placeY = 0;
       bTerm->getFirstPinLocation(placeX, placeY);
+      PinGroupLocation pgLoc;
+
+      bool isAxisFound = false;
+      for(dbBPin* bPin : bTerm->getBPins()) {
+        int boxLx = bPin->getBox()->xMin();
+        int boxLy = bPin->getBox()->yMin(); 
+        int boxUx = bPin->getBox()->xMax();
+        int boxUy = bPin->getBox()->yMax();
+
+        if( isWithIn( dbuLx, boxLx, boxUx ) ) {
+          pgLoc = West;
+          isAxisFound = true;
+          break;
+        }
+        else if( isWithIn( dbuUx, boxLx, boxUx ) ) {
+          pgLoc = East;
+          isAxisFound = true;
+          break;
+        }
+        else if( isWithIn( dbuLy, boxLy, boxUy ) ) {
+          pgLoc = South;
+          isAxisFound = true;
+          break;
+        }
+        else if( isWithIn( dbuUy, boxLy, boxUy ) ) {
+          pgLoc = North;
+          isAxisFound = true;
+          break;
+        }
+      } 
+      if( isAxisFound ) {
+        // update pinGroups 
+        sta::Pin* pin = sta_->getDbNetwork()->dbToSta(bTerm);
+        pinGroupStor[static_cast<int>(pgLoc)].addPin(pin);
+        staToPinGroup[pin] = static_cast<int>(pgLoc);
+      }
+      else {
+        cout << "**ERROR: PIN " << bTerm->getConstName() 
+          << " is not PLACED in Border!!" << endl;
+        cout << "INFO: Place Information: " << placeX << " " << placeY << endl; 
+        cout << "INFO: Border Information: " << dbuLx << " " << dbuLy 
+          << " " << dbuUx << " " << dbuUy << endl;
+        exit(1);
+      } 
     }
-    
-    bool isFound = false;
-    for(dbBPin* bPin : bTerm->getBPins()) {
-      int boxLx = bPin->getBox()->xMin();
-      int boxLy = bPin->getBox()->yMin(); 
-      int boxUx = bPin->getBox()->xMax();
-      int boxUy = bPin->getBox()->yMax();
-    
-      if( isWithIn( dbuLx, boxLx, boxUx ) ) {
-        pinGroupStrMap[ bTerm->getConstName() ] = PinGroupLocation::West; 
-        isFound = true;
-        break;
-      }
-      else if( isWithIn( dbuUx, boxLx, boxUx ) ) {
-        pinGroupStrMap[ bTerm->getConstName() ] = PinGroupLocation::East; 
-        isFound = true;
-        break;
-      }
-      else if( isWithIn( dbuLy, boxLy, boxUy ) ) {
-        pinGroupStrMap[ bTerm->getConstName() ] = PinGroupLocation::South; 
-        isFound = true;
-        break;
-      }
-      else if( isWithIn( dbuUy, boxLy, boxUy ) ) {
-        pinGroupStrMap[ bTerm->getConstName() ] = PinGroupLocation::North; 
-        isFound = true;
-        break;
-      }
-    } 
-    if( !isFound ) {
-      cout << "**ERROR: PIN " << bTerm->getConstName() 
-        << " is not PLACED in Border!!" << endl;
-      cout << "INFO: Place Information: " << placeX << " " << placeY << endl; 
-      cout << "INFO: Border Information: " << dbuLx << " " << dbuLy 
-           << " " << dbuUx << " " << dbuUy << endl;
-      exit(1);
-    } 
   }
 
-  // this is always four array.
-  pinGroupStor.resize(4);
-
-  // save PG-Class info in below
-  pinGroupStor[(int)PinGroupLocation::East].setPinGroupLocation(East);
-  pinGroupStor[(int)PinGroupLocation::West].setPinGroupLocation(West);
-  pinGroupStor[(int)PinGroupLocation::North].setPinGroupLocation(North);
-  pinGroupStor[(int)PinGroupLocation::South].setPinGroupLocation(South);
-
-  for(int i=1; i<=numVertex; i++) {
-    sta::Vertex* vert = sta_->graph()->vertex(i);
-    sta::Pin* pin = vert->pin();
-    if( !sta_->network()->isTopLevelPort(pin) ) {
-      continue;
-    }
-    
-    auto pgPtr = pinGroupStrMap.find(sta_->network()->pathName(pin));
-    if( pgPtr == pinGroupStrMap.end() ) {
-      cout << "**ERROR: PIN " << sta_->network()->pathName(pin) 
-        << " not exist in pinGroupStrMap" << endl;
-      exit(1);
-    }
-
-    int idx = (int)pgPtr->second;
-    pinGroupStor[idx].addPin(pin);
-    pinGroupMap.insert( make_pair(pin, idx) );
-  }
-  
-  log_->infoInt("NumEastPins", pinGroupStor[(int)PinGroupLocation::East].pins().size());
-  log_->infoInt("NumWestPins", pinGroupStor[(int)PinGroupLocation::West].pins().size());
-  log_->infoInt("NumNorthPins", pinGroupStor[(int)PinGroupLocation::North].pins().size());
-  log_->infoInt("NumSouthPins", pinGroupStor[(int)PinGroupLocation::South].pins().size());
+  log_->infoInt("NumEastPins", pinGroupStor[static_cast<int>(East)].pins().size());
+  log_->infoInt("NumWestPins", pinGroupStor[static_cast<int>(West)].pins().size());
+  log_->infoInt("NumNorthPins", pinGroupStor[static_cast<int>(North)].pins().size());
+  log_->infoInt("NumSouthPins", pinGroupStor[static_cast<int>(South)].pins().size());
 }
 
 void MacroCircuit::FillVertexEdge() {
   log_->procBegin("Generating Sequential Graph"); 
 
-  int numVertex = sta_->graph()->vertexCount();
   Eigen::setNbThreads(8);
-
   unordered_set<sta::Instance*> instMap;
 
   // Fill Vertex for Four IO cases.
@@ -384,9 +376,11 @@ void MacroCircuit::FillVertexEdge() {
   }
 
   // Fill Vertex for FF/Macro cells 
-  for(int i=1; i<=numVertex; i++) {
-    sta::Vertex* vert = sta_->graph()->vertex(i); 
-    sta::Pin* pin = vert->pin();
+  VertexIterator vIter1(sta_->graph());
+
+  while(vIter1.hasNext()) {
+    sta::Vertex* staVertex = vIter1.next();
+    sta::Pin* pin = staVertex->pin();
    
     // skip for top-level port 
     bool isTopPin = sta_->network()->isTopLevelPort(pin);
@@ -430,9 +424,11 @@ void MacroCircuit::FillVertexEdge() {
   vector< T > tripletList;
 
   // Query Get_FanIn/ Get_FanOut
-  for(int i=1; i<=numVertex; i++) {
-    sta::Vertex* vert = sta_->graph()->vertex(i);
-    sta::Pin* pin = vert->pin();
+  VertexIterator vIter2(sta_->graph());
+
+  while(vIter2.hasNext()) {
+    sta::Vertex* staVertex = vIter2.next();
+    sta::Pin* pin = staVertex->pin();
     
     bool isTopPin = sta_->network()->isTopLevelPort(pin);
     // !!!!!!!!!!!!!!!!
@@ -523,9 +519,11 @@ void MacroCircuit::FillVertexEdge() {
     }
   }
   // Query find_timing_paths 
-  for(int i=1; i<=numVertex; i++) {
-    sta::Vertex* vert = sta_->graph()->vertex(i);
-    sta::Pin* pin = vert->pin();
+  VertexIterator vIter3(sta_->graph());
+
+  while(vIter3.hasNext()) {
+    sta::Vertex* staVertex = vIter3.next();
+    sta::Pin* pin = staVertex->pin();
     
     bool isTopPin = sta_->network()->isTopLevelPort(pin);
     // only query for IO/Pins
@@ -865,10 +863,12 @@ void MacroCircuit::UpdateVertexToMacroStor() {
 
 // macroStr & macroInstMap update
 void MacroCircuit::UpdateInstanceToMacroStor() {
-  sta::VertexId numVertex = sta_->graph()->vertexCount();
-  for(size_t i=1; i<=numVertex; i++) {
-    sta::Vertex* vert = sta_->graph()->vertex(i);
-    sta::Pin* pin = vert->pin();
+  VertexIterator vIter(sta_->graph());
+
+  while(vIter.hasNext()) {
+    sta::Vertex* staVertex = vIter.next();
+    sta::Pin* pin = staVertex->pin();
+
     if( sta_->network()->isTopLevelPort(pin) ) {
       continue;
     }
@@ -894,8 +894,8 @@ MacroCircuit::GetPtrClassPair( sta::Pin* pin ) {
 
   // toplevel pin
   if( isTopPin ) {
-    auto pgPtr = pinGroupMap.find( pin );
-    if( pgPtr == pinGroupMap.end()) {
+    auto pgPtr = staToPinGroup.find( pin );
+    if( pgPtr == staToPinGroup.end()) {
       cout << "ERROR: " << sta_->network()->pathName(pin) << " not exists in PinGroupMap" << endl;
       exit(1);
     }
