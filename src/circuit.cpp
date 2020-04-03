@@ -7,6 +7,7 @@
 #include <unordered_set> 
 
 #include "circuit.h"
+#include "logger.h"
 
 #include "Machine.hh"
 #include "Graph.hh"
@@ -28,10 +29,10 @@ using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 using std::pair;
-using std::cout;
-using std::endl;
 using std::make_pair;
 using std::string;
+using std::cout;
+using std::endl;
 
 using Eigen::VectorXf;
 typedef Eigen::SparseMatrix<int, Eigen::RowMajor> SMatrix;
@@ -48,31 +49,44 @@ static bool
 isTerminal(MacroPlace::Vertex* vert, 
     MacroPlace::Vertex* target);
 
+static size_t 
+TrimWhiteSpace(char *out, size_t len, 
+    const char *str);
 
-MacroCircuit::MacroCircuit() :
-  gHaloX(0), gHaloY(0), 
-  gChannelX(0), gChannelY(0), 
-  db_(0), sta_(0), 
-  lx(0), ly(0), ux(0), uy(0),
-  netTable(0) {}
+
+MacroCircuit::MacroCircuit() 
+  : db_(nullptr), sta_(nullptr), 
+  log_(nullptr),
+  isPlot_(false),
+  lx_(0), ly_(0), ux_(0), uy_(0),
+  siteSizeX_(0), siteSizeY_(0),
+  haloX_(0), haloY_(0), 
+  channelX_(0), channelY_(0), 
+  netTable_(nullptr),
+  verbose_(1) {}
 
 MacroCircuit::MacroCircuit(
     odb::dbDatabase* db,
-    sta::dbSta* sta,
-    Layout* cinfo) :
-  gHaloX(0), gHaloY(0), 
-  gChannelX(0), gChannelY(0), 
-  db_(db), 
-  sta_(sta),
-  lx(0), ly(0), ux(0), uy(0),
-  netTable(0) {
+    sta::dbSta* sta)
+  : MacroCircuit() {
 
-  Init(db, sta, cinfo);
+  db_ = db;
+  sta_ = sta;
+  init();
 }
 
 void
 MacroCircuit::reset() {
-  // TODO
+  db_ = nullptr;
+  sta_ = nullptr;
+  isPlot_ = false;
+  lx_ = ly_ = ux_ = uy_ = 0;
+  siteSizeX_ = siteSizeY_ = 0; 
+  haloX_ = haloY_ = 0;
+  channelX_ = channelY_ = 0;
+  netTable_ = nullptr;
+  globalConfig_ = localConfig_ = "";
+  verbose_ = 1;
 }
 
 void 
@@ -100,18 +114,35 @@ MacroCircuit::setPlotEnable(bool mode) {
   isPlot_ = true;
 }
 
-void MacroCircuit::Init( 
-    odb::dbDatabase* db, 
-    sta::dbSta* sta,
-    Layout* cinfo) {
-  
-  db_ = db; 
-  sta_ = sta;
+void
+MacroCircuit::setVerboseLevel(int verbose) {
+  verbose_ = verbose;
+}
 
-  lx = cinfo->lx();
-  ly = cinfo->ly();
-  ux = cinfo->ux();
-  uy = cinfo->uy();
+void MacroCircuit::init() {
+  log_ = std::make_shared<Logger>("MAPL", verbose_);
+
+  dbBlock* block = db_->getChip()->getBlock();
+
+  dbSet<dbRow> rows = block->getRows();
+  if( rows.size() == 0 ) { 
+    log_->error("DEF must contain ROW", 1);
+    exit(1);
+  }
+
+  dbBox* dieBox = block->getBBox();
+  const int dbu = db_->getTech()->getDbUnitsPerMicron();
+
+  Rect rowBox;
+  rows.begin()->getBBox(rowBox);  
+
+  siteSizeX_ = static_cast<double>(rowBox.dx())/dbu;
+  siteSizeY_ = static_cast<double>(rowBox.dy())/dbu;
+
+  lx_ = static_cast<double>(dieBox->xMin())/dbu;
+  ly_ = static_cast<double>(dieBox->yMin())/dbu;
+  ux_ = static_cast<double>(dieBox->xMax())/dbu;
+  uy_ = static_cast<double>(dieBox->yMax())/dbu;
 
   // parsing from cfg file
   // global config
@@ -137,7 +168,7 @@ void MacroCircuit::Init(
 
 
 void MacroCircuit::FillMacroStor() {
-  cout << "Extracting Macro Cells... ";
+  log_->procBegin("Extracting Macro Cells");
 
   dbTech* tech = db_->getTech();
 
@@ -162,26 +193,27 @@ void MacroCircuit::FillMacroStor() {
     dbPlacementStatus dps = inst->getPlacementStatus();
     if( dps == dbPlacementStatus::NONE ||
         dps == dbPlacementStatus::UNPLACED ) {
-      cout << "ERROR:  Macro: " << inst->getConstName() << " is Unplaced." << endl;
-      cout << "        Please use TD-MS-RePlAce to get a initial solution " << endl;
-      cout << "        before executing TritonMacroPlace" << endl;
+      string msg = "  Macro : " + string(inst->getConstName()) + " is Unplaced.\n";
+      msg += "        Please use TD-MS-RePlAce to get a initial solution\n";
+      msg += "        before executing TritonMacroPlace\n";
+      log_->error(msg, 2);
       exit(1); 
     }
     
     double curHaloX =0, curHaloY = 0, curChannelX = 0, curChannelY = 0;
     auto mlPtr = macroLocalMap.find( inst->getConstName() );
     if( mlPtr == macroLocalMap.end() ) {
-      curHaloX = gHaloX;
-      curHaloY = gHaloY; 
-      curChannelX = gChannelX;
-      curChannelY = gChannelY;
+      curHaloX = haloX_;
+      curHaloY = haloY_; 
+      curChannelX = channelX_;
+      curChannelY = channelY_;
     }
     else {
       MacroLocalInfo& m = mlPtr->second;
-      curHaloX = (m.GetHaloX() == 0)? gHaloX : m.GetHaloX();
-      curHaloY = (m.GetHaloY() == 0)? gHaloY : m.GetHaloY();
-      curChannelX = (m.GetChannelX() == 0)? gChannelX : m.GetChannelX();
-      curChannelY = (m.GetChannelY() == 0)? gChannelY : m.GetChannelY();
+      curHaloX = (m.GetHaloX() == 0)? haloX_ : m.GetHaloX();
+      curHaloY = (m.GetHaloY() == 0)? haloY_ : m.GetHaloY();
+      curChannelX = (m.GetChannelX() == 0)? channelX_ : m.GetChannelX();
+      curChannelY = (m.GetChannelY() == 0)? channelY_ : m.GetChannelY();
     }
 
     macroNameMap[ inst->getConstName() ] = macroStor.size();
@@ -203,11 +235,11 @@ void MacroCircuit::FillMacroStor() {
   }
 
   if( macroStor.size() == 0 ) {
-    cout << "ERROR: Cannot find any macros in this design. " << endl;
+    log_->error("Cannot find any macros in this design.\n", 3);
     exit(1);
   }
-  cout << "Done!" << endl;
-  cout << "Extracted # Macros: " << macroStor.size() << endl;
+  log_->procEnd("Extracting Macro Cells");
+  log_->infoInt("NumMacros", macroStor.size());
 }
 
 static bool isWithIn( int val, int min, int max ) {
@@ -222,13 +254,13 @@ void MacroCircuit::FillPinGroup(){
   int numEdge = sta_->graph()->edgeCount();
   int numVertex = sta_->graph()->vertexCount();
 
-  cout << "OpenSTA numEdge: " << numEdge << endl;
-  cout << "OpenSTA numVertex: " << numVertex << endl;
+  log_->infoInt("NumEdgeInSta", numEdge);
+  log_->infoInt("NumVertexInSta", numVertex);
 
-  int dbuLx = int(lx * dbu +0.5f);
-  int dbuLy = int(ly * dbu +0.5f);
-  int dbuUx = int(ux * dbu +0.5f);
-  int dbuUy = int(uy * dbu +0.5f);
+  int dbuLx = static_cast<int>(round(lx_ * dbu));
+  int dbuLy = static_cast<int>(round(ly_ * dbu));
+  int dbuUx = static_cast<int>(round(ux_ * dbu));
+  int dbuUy = static_cast<int>(round(uy_ * dbu));
 
   using MacroPlace::PinGroupLocation;
 
@@ -250,7 +282,7 @@ void MacroCircuit::FillPinGroup(){
     dbPlacementStatus ppStatus = bTerm->getFirstPinPlacementStatus();
     if( ppStatus == dbPlacementStatus::UNPLACED ||
         ppStatus == dbPlacementStatus::NONE ) {
-      cout << "**ERROR: PIN " << bTerm->getConstName() << " is not PLACED" << endl;
+      log_->error("Pin " + string(bTerm->getConstName()) + " is not placed.", 4);
       exit(1);
     } 
    
@@ -322,19 +354,17 @@ void MacroCircuit::FillPinGroup(){
     pinGroupStor[idx].addPin(pin);
     pinGroupMap.insert( make_pair(pin, idx) );
   }
-
-  cout << endl << "Pin Group Classification Info: " << endl;
-  cout << "East: " << pinGroupStor[(int)PinGroupLocation::East].pins().size() << endl;
-  cout << "West: " << pinGroupStor[(int)PinGroupLocation::West].pins().size() << endl;
-  cout << "North: " << pinGroupStor[(int)PinGroupLocation::North].pins().size() << endl;
-  cout << "South: " << pinGroupStor[(int)PinGroupLocation::South].pins().size() << endl;
   
+  log_->infoInt("NumEastPins", pinGroupStor[(int)PinGroupLocation::East].pins().size());
+  log_->infoInt("NumWestPins", pinGroupStor[(int)PinGroupLocation::West].pins().size());
+  log_->infoInt("NumNorthPins", pinGroupStor[(int)PinGroupLocation::North].pins().size());
+  log_->infoInt("NumSouthPins", pinGroupStor[(int)PinGroupLocation::South].pins().size());
 }
 
 void MacroCircuit::FillVertexEdge() {
-  cout << "Generating Sequantial Graph..." << endl; 
-  int numVertex = sta_->graph()->vertexCount();
+  log_->procBegin("Generating Sequential Graph"); 
 
+  int numVertex = sta_->graph()->vertexCount();
   Eigen::setNbThreads(8);
 
   unordered_set<sta::Instance*> instMap;
@@ -429,7 +459,7 @@ void MacroCircuit::FillVertexEdge() {
 
     // Query for get_fanin/get_fanout
     if( dir->isAnyOutput() ) {
-      sta::PinSet *fanout = sta_->findFanoutPins(&pinStor, false, true ,
+      sta::PinSet *fanout = sta_->findFanoutPins(&pinStor, false, true,
           500, 700,
           false, false);
       for(auto& adjPin: *fanout) {
@@ -453,24 +483,7 @@ void MacroCircuit::FillVertexEdge() {
           continue;
         }
 
-        /*
-         * previous
-        auto mapPtr = vertexPairEdgeMap.find( make_pair(curVertex , adjVertex) );
-        if( mapPtr == vertexPairEdgeMap.end() ) {
-          vertexPairEdgeMap[ make_pair(curVertex, adjVertex) ] = edgeStor.size();
-          edgeStor.push_back( MacroPlace::Edge(curVertex, adjVertex, 1) );
-
-
-          // Vertex Update
-          curVertex->to.push_back(edgeStor.size()-1);
-          adjVertex->from.push_back(edgeStor.size()-1);
-        }
-        else {
-          // increase the edge weight
-          edgeStor[mapPtr->second].weight ++;
-        }*/
         tripletList.push_back(T(vertexPtrMap[curVertex], vertexPtrMap[adjVertex], 1));
-        
       }
       delete fanout;
     }
@@ -499,25 +512,6 @@ void MacroCircuit::FillVertexEdge() {
           continue;
         }
 
-//        cout << sta_->network()->pathName(adjPin) << " -> " << sta_->network()->pathName(pin) << endl;
-
-        /*
-         * previous
-        auto mapPtr = vertexPairEdgeMap.find( make_pair(adjVertex, curVertex) );
-        if( mapPtr == vertexPairEdgeMap.end() ) {
-          vertexPairEdgeMap[ make_pair(adjVertex, curVertex) ] = edgeStor.size();
-          edgeStor.push_back( MacroPlace::Edge(adjVertex, curVertex, 1) );
-
-
-          // Vertex Update
-          curVertex->from.push_back(edgeStor.size()-1);
-          adjVertex->to.push_back(edgeStor.size()-1);
-        }
-        else {
-          // increase the edge weight
-          edgeStor[mapPtr->second].weight ++;
-        }*/
-
         tripletList.push_back(T(vertexPtrMap[curVertex], vertexPtrMap[adjVertex], 1));
       }
       delete fanin;
@@ -533,31 +527,6 @@ void MacroCircuit::FillVertexEdge() {
     if( !isTopPin ) {
       continue;
     }
-
-    /*
-    // Skip For Non-FF Cells
-    if( !isTopPin ) {
-      Instance* inst = sta_->network()->instance(pin);
-      LibertyCell* libCell = sta_->network()->libertyCell(inst);
-      if( !libCell -> hasSequentials() && macroInstMap.find(inst) == macroInstMap.end() ) {
-        continue;
-      }
-    }
-      
-    // skip for output toplevelport;
-    PortDirection* dir = sta_->network()->direction(pin);
-    if( dir->isAnyOutput() ) {
-      if( sta_->network()->isTopLevelPort(pin)) {
-        continue;
-      }
-    }
-    // skip for input Non-FF/Macro pins
-    else {
-      if( !sta_->network()->isTopLevelPort(pin)) {
-        continue;
-      }
-    }
-    */
 
     // Survived
     // FF/Macro with non-clock output pins
@@ -599,7 +568,6 @@ void MacroCircuit::FillVertexEdge() {
         true, true); // clk gating setup, hold
 
     if (ends->empty()) {
-//      cout << "ERROR: NO PATH !" << endl;
       continue;
     }
 
@@ -641,34 +609,15 @@ void MacroCircuit::FillVertexEdge() {
         continue;
       }
 
-//      cout << startVertPtr << " -> " << endVertPtr << endl;
-
-      /*
-       * Previous
-      // Edge Update
-      auto mapPtr = vertexPairEdgeMap.find( make_pair(startVertPtr, endVertPtr) );
-      if( mapPtr == vertexPairEdgeMap.end() ) {
-        vertexPairEdgeMap[ make_pair(startVertPtr, endVertPtr) ] = edgeStor.size();
-        edgeStor.push_back( MacroPlace::Edge(startVertPtr, endVertPtr, 1) );
-
-        // Vertex Update
-        startVertPtr->to.push_back(edgeStor.size()-1);
-        endVertPtr->from.push_back(edgeStor.size()-1);
-      }
-      else {
-        // increase the edge weight
-        edgeStor[mapPtr->second].weight ++;
-      }*/
-        
       tripletList.push_back(T(vertexPtrMap[startVertPtr], vertexPtrMap[endVertPtr], 1));
     }
   }
 
   adjMatrix.setFromTriplets( tripletList.begin(), tripletList.end() );
   
-  cout << "Sequential Graph Building is Done!" << endl;
-  cout << "Vertex: " << vertexStor.size() << endl;
-  cout << "Edge: " << adjMatrix.nonZeros() << endl;
+  log_->procEnd("Generating Sequential Graph"); 
+  log_->infoInt("NumVertexSeqGraph", vertexStor.size());
+  log_->infoInt("NumEdgeSeqGraph", adjMatrix.nonZeros());
 }
 
 void MacroCircuit::CheckGraphInfo() {
@@ -1118,13 +1067,12 @@ void MacroCircuit::UpdateMacroCoordi( MacroPlace::Partition& part) {
 
 // Legalizer for macro locations
 void MacroCircuit::StubPlacer(double snapGrid) {
-//  cout << "Macro Legalizing process... ";
   cout << "Macro Stub Placement process... ";
 
   snapGrid *= 10;
 
-  int sizeX = (int)( (ux - lx) / snapGrid + 0.5f);
-  int sizeY = (int)( (uy - ly) / snapGrid + 0.5f);
+  int sizeX = (int)( (ux_ - lx_) / snapGrid + 0.5f);
+  int sizeY = (int)( (uy_ - ly_) / snapGrid + 0.5f);
 
   int** checker = new int* [sizeX];
   for(int i=0; i<sizeX; i++) {
@@ -1133,25 +1081,22 @@ void MacroCircuit::StubPlacer(double snapGrid) {
       checker[i][j] = -1; // uninitialize
     }
   }
-  cout << "cinfo: " << ux << " " << uy << endl;
-  cout << "GRID Width: " << sizeX << " Height: " << sizeY << endl;
-
 
   bool isOverlap = true;
   do {
 
     for(auto& curMacro: macroStor) { 
       // Macro Projection in (llx, lly, urx, ury)
-      if( curMacro.lx < lx ) curMacro.lx = lx;
-      if( curMacro.ly < ly ) curMacro.ly = ly;
-      if( curMacro.lx + curMacro.w > ux ) curMacro.lx = ux - curMacro.w;
-      if( curMacro.ly + curMacro.h > uy ) curMacro.ly = uy - curMacro.h;
+      if( curMacro.lx < lx_ ) curMacro.lx = lx_;
+      if( curMacro.ly < ly_ ) curMacro.ly = ly_;
+      if( curMacro.lx + curMacro.w > ux_ ) curMacro.lx = ux_ - curMacro.w;
+      if( curMacro.ly + curMacro.h > uy_ ) curMacro.ly = uy_ - curMacro.h;
 
-      if( curMacro.lx < lx || curMacro.lx + curMacro.w > ux ) {
+      if( curMacro.lx < lx_ || curMacro.lx + curMacro.w > ux_ ) {
         cout << "ERROR: Macro Legalizer detects width is not enough" << endl;
         exit(1);
       }
-      if( curMacro.ly < lx || curMacro.ly + curMacro.h > uy ) {
+      if( curMacro.ly < lx_ || curMacro.ly + curMacro.h > uy_ ) {
         cout << "ERROR: Macro Legalizer detects height is not enough" << endl;
         exit(1);
       }
@@ -1214,54 +1159,13 @@ void MacroCircuit::StubPlacer(double snapGrid) {
     }
   } while( isOverlap );
 
-  
-
   cout << "Done" << endl;
 }
 
 
-// Stores the trimmed input string into the given output buffer, which must be
-// large enough to store the result.  If it is too small, the output is
-// truncated.
-
-// referenced from 
-// https://stackoverflow.com/questions/122616/how-do-i-trim-leading-trailing-whitespace-in-a-standard-way 
-
-size_t TrimWhiteSpace(char *out, size_t len, const char *str)
-{
-  if(len == 0)
-    return 0;
-
-  const char *end;
-  size_t out_size;
-
-  // Trim leading space
-  while(isspace((unsigned char)*str)) str++;
-
-  if(*str == 0)  // All spaces?
-  {
-    *out = 0;
-    return 1;
-  }
-
-  // Trim trailing space
-  end = str + strlen(str) - 1;
-  while(end > str && isspace((unsigned char)*end)) end--;
-  end++;
-
-  // Set output size to minimum of trimmed string length and buffer size minus 1
-  out_size = (end - str) < ((int)len-1) ? (end - str) : ((int)len-1);
-
-  // Copy trimmed string and add null terminator
-  memcpy(out, str, out_size);
-  out[out_size] = 0;
-
-  return out_size;
-}
 
 
 void MacroCircuit::ParseGlobalConfig(string fileName) {
-//  cout << "Parsing globalConfig: " << fileName << " ... " ;
   std::ifstream gConfFile (fileName);
   if( !gConfFile.is_open() ) {
     cout << "ERROR: Cannot open file: " << fileName << endl;
@@ -1305,27 +1209,26 @@ void MacroCircuit::ParseGlobalConfig(string fileName) {
       // No Need
     }
     else if( IS_STRING_EXIST( varName, "HALO_WIDTH_V") ) {
-      gHaloY = val;
+      haloY_ = val;
     }
     else if( IS_STRING_EXIST( varName, "HALO_WIDTH_H") ) {
-      gHaloX = val;
+      haloX_ = val;
     }
     else if( IS_STRING_EXIST( varName, "CHANNEL_WIDTH_V") ) {
-      gChannelY = val;
+      channelY_ = val;
     }
     else if( IS_STRING_EXIST( varName, "CHANNEL_WIDTH_H") ) {
-      gChannelX = val;
+      channelX_ = val;
     }
     else {
       cout << "ERROR: Cannot parse : " << varName << endl;
       exit(1);
     }
   }
-//  cout << "Done!" << endl;
+  log_->procEnd("Parsing Global Config");
 }
 
 void MacroCircuit::ParseLocalConfig(string fileName) {
-  cout << "Parsing localConfig: " << fileName << " ... " ;
   std::ifstream gConfFile (fileName);
   if( !gConfFile.is_open() ) {
     cout << "ERROR: Cannot open file: " << fileName << endl;
@@ -1381,7 +1284,7 @@ void MacroCircuit::ParseLocalConfig(string fileName) {
       exit(1);
     }
   }
-  cout << "Done!" << endl;
+  log_->procEnd("Parsing Local Config");
 }
 
 void 
@@ -1403,8 +1306,8 @@ Plot(string fileName, vector<MacroPlace::Partition>& set) {
   gpOut << "set size ratio -1" << endl;
   gpOut << "set title '' " << endl; 
 
-  gpOut << "set xrange[" << lx << ":" << ux << "]" << endl;
-  gpOut << "set yrange[" << ly << ":" << uy << "]" << endl;
+  gpOut << "set xrange[" << lx_ << ":" << ux_ << "]" << endl;
+  gpOut << "set yrange[" << ly_ << ":" << uy_ << "]" << endl;
 
   int objCnt = 0; 
   for(auto& curMacro : macroStor) {
@@ -1440,17 +1343,17 @@ Plot(string fileName, vector<MacroPlace::Partition>& set) {
 
 void MacroCircuit::UpdateNetlist(MacroPlace::Partition& layout) {
 
-  if( netTable ) {
-    delete[] netTable;
-    netTable = 0;
+  if( netTable_ ) {
+    delete[] netTable_;
+    netTable_ = 0;
   }
  
   assert( layout.macroStor.size() == macroStor.size() );
   size_t tableSize = (macroStor.size()+4) * (macroStor.size()+4);
 
-  netTable = new double[tableSize];
+  netTable_ = new double[tableSize];
   for(size_t i=0; i<tableSize; i++) {
-    netTable[i] = layout.netTable[i];
+    netTable_[i] = layout.netTable[i];
   }
 }
 
@@ -1462,8 +1365,8 @@ void MacroCircuit::UpdateNetlist(MacroPlace::Partition& layout) {
 double MacroCircuit::GetWeightedWL() {
   double wwl = 0.0f;
 
-  double width = ux - lx;
-  double height = uy - ly; 
+  double width = ux_ - lx_;
+  double height = uy_ - ly_; 
 
   for(size_t i=0; i<macroStor.size()+4; i++) {
     for(size_t j=0; j<macroStor.size()+4; j++) {
@@ -1473,20 +1376,20 @@ double MacroCircuit::GetWeightedWL() {
 
       double pointX1 = 0, pointY1 = 0;
       if( i == EAST_IDX ) {
-        pointX1 = lx;
-        pointY1 = ly + height /2.0;
+        pointX1 = lx_;
+        pointY1 = ly_ + height /2.0;
       }
       else if( i == WEST_IDX) {
-        pointX1 = lx + width;
-        pointY1 = ly + height /2.0;
+        pointX1 = lx_ + width;
+        pointY1 = ly_ + height /2.0;
       }
       else if( i == NORTH_IDX ) { 
-        pointX1 = lx + width / 2.0;
-        pointY1 = ly + height;
+        pointX1 = lx_ + width / 2.0;
+        pointY1 = ly_ + height;
       }
       else if( i == SOUTH_IDX ) {
-        pointX1 = lx + width / 2.0;
-        pointY1 = ly;
+        pointX1 = lx_ + width / 2.0;
+        pointY1 = ly_;
       }
       else {
         pointX1 = macroStor[i].lx + macroStor[i].w;
@@ -1495,27 +1398,27 @@ double MacroCircuit::GetWeightedWL() {
 
       double pointX2 = 0, pointY2 = 0;
       if( j == EAST_IDX ) {
-        pointX2 = lx;
-        pointY2 = ly + height /2.0;
+        pointX2 = lx_;
+        pointY2 = ly_ + height /2.0;
       }
       else if( j == WEST_IDX) {
-        pointX2 = lx + width;
-        pointY2 = ly + height /2.0;
+        pointX2 = lx_ + width;
+        pointY2 = ly_ + height /2.0;
       }
       else if( j == NORTH_IDX ) { 
-        pointX2 = lx + width / 2.0;
-        pointY2 = ly + height;
+        pointX2 = lx_ + width / 2.0;
+        pointY2 = ly_ + height;
       }
       else if( j == SOUTH_IDX ) {
-        pointX2 = lx + width / 2.0;
-        pointY2 = ly;
+        pointX2 = lx_ + width / 2.0;
+        pointY2 = ly_;
       }
       else {
         pointX2 = macroStor[j].lx + macroStor[j].w;
         pointY2 = macroStor[j].ly + macroStor[j].h;
       }
      
-      wwl += netTable[ i*(macroStor.size())+j ] *
+      wwl += netTable_[ i*(macroStor.size())+j ] *
         sqrt( (pointX1-pointX2)*(pointX1-pointX2) + 
             (pointY1-pointY2)*(pointY1-pointY2) );
     }
@@ -1588,6 +1491,46 @@ isTerminal(MacroPlace::Vertex* vert,
   return ( vert != target && 
       (vert->vertexType() == VertexType::PinGroupType || 
       vert->vertexType() == VertexType::MacroInstType) );
+}
+
+// Stores the trimmed input string into the given output buffer, which must be
+// large enough to store the result.  If it is too small, the output is
+// truncated.
+
+// referenced from 
+// https://stackoverflow.com/questions/122616/how-do-i-trim-leading-trailing-whitespace-in-a-standard-way 
+
+static size_t 
+TrimWhiteSpace(char *out, size_t len, const char *str)
+{
+  if(len == 0)
+    return 0;
+
+  const char *end;
+  size_t out_size;
+
+  // Trim leading space
+  while(isspace((unsigned char)*str)) str++;
+
+  if(*str == 0)  // All spaces?
+  {
+    *out = 0;
+    return 1;
+  }
+
+  // Trim trailing space
+  end = str + strlen(str) - 1;
+  while(end > str && isspace((unsigned char)*end)) end--;
+  end++;
+
+  // Set output size to minimum of trimmed string length and buffer size minus 1
+  out_size = (end - str) < ((int)len-1) ? (end - str) : ((int)len-1);
+
+  // Copy trimmed string and add null terminator
+  memcpy(out, str, out_size);
+  out[out_size] = 0;
+
+  return out_size;
 }
 
 }

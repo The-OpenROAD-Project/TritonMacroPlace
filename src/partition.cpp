@@ -2,6 +2,7 @@
 #include "Parquet.h"
 #include "mixedpackingfromdb.h"
 #include "btreeanneal.h"
+#include "logger.h"
 
 #include <iostream>
 #include <climits>
@@ -530,14 +531,14 @@ void Partition::UpdateMacroCoordi(MacroCircuit& mckt) {
 }
 
 // Call ParquetFP
-bool Partition::DoAnneal() {
+bool Partition::DoAnneal(std::shared_ptr<Logger> log) {
   
   // No macro, no need to execute
   if( macroStor.size() == 0 ) {
     return true;
   }
   
-  cout << "Parquet is starting... " ;
+  log->procBegin("Parquet");
   
   
   // Preprocessing in macroPlacer side
@@ -654,10 +655,9 @@ bool Partition::DoAnneal() {
   // Failed annealing
   if( sol.totalWidth() > width ||
       sol.totalHeight() > height ) {
-    cout << "Failed" << endl;
-    cout << "ParquetBBox: " << sol.totalWidth() << " " << sol.totalHeight() << endl;
-    cout << "SetBBox: " << width << " " << height << endl;
-
+    log->infoString("Parquet BBOX exceed the given area");
+    log->infoFloatSignificantPair("ParquetSolLayout", sol.totalWidth(), sol.totalHeight());
+    log->infoFloatSignificantPair("TargetLayout", width, height);
     return false;
   }
   delete annealer;
@@ -706,7 +706,7 @@ bool Partition::DoAnneal() {
 //      true, 
 //      0, 0, width, height);
 
-  cout << "Done" << endl; 
+  log->procEnd("Parquet");
   return true;
 
 }

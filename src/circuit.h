@@ -13,7 +13,7 @@
 #include "macro.h"
 #include "hashUtil.h"
 
-namespace sta { 
+namespace sta {
 class dbSta;
 }
 
@@ -21,7 +21,7 @@ namespace odb {
 class dbDatabase;
 }
 
-namespace MacroPlace{ 
+namespace MacroPlace {
 
 class Layout;
 class Logger;
@@ -29,16 +29,11 @@ class Logger;
 class MacroCircuit {
   public:
     MacroCircuit();
-    MacroCircuit(odb::dbDatabase* db, sta::dbSta* sta, Layout* cinfo);
-    
-    void Init(odb::dbDatabase* db, 
-        sta::dbSta* sta, 
-        Layout* cinfo);
-    
+    MacroCircuit(odb::dbDatabase* db, sta::dbSta* sta);
+
     std::vector<MacroPlace::Vertex> vertexStor;
     std::vector<MacroPlace::Edge> edgeStor;
 
-    
     // macro Information
     std::vector<MacroPlace::Macro> macroStor;
 
@@ -49,48 +44,43 @@ class MacroCircuit {
     // Pin* --> pinGroupStor's index.
     std::unordered_map<sta::Pin*, int> pinGroupMap;
 
-    // macro name -> macroStor's index. 
-    std::unordered_map<std::string, int> macroNameMap; 
+    // macro name -> macroStor's index.
+    std::unordered_map<std::string, int> macroNameMap;
 
-    // macro idx/idx pair -> give each 
+    // macro idx/idx pair -> give each
     std::vector< std::vector<int> > macroWeight;
 
     std::string GetEdgeName(MacroPlace::Edge* edge);
 
     std::string GetVertexName(MacroPlace::Vertex* vertex);
 
-    
+
     // sta::Instance* --> macroStor's index stor
     std::unordered_map<sta::Instance*, int> macroInstMap;
 
     // Update Macro Location from Partition info
     void UpdateMacroCoordi(MacroPlace::Partition& part);
 
-
     // parsing function
     void ParseGlobalConfig(std::string fileName);
     void ParseLocalConfig(std::string fileName);
 
-    // initialize
-    double gHaloX, gHaloY;
-    double gChannelX, gChannelY;
-
     // save LocalCfg into this structure
     std::unordered_map< std::string, MacroLocalInfo > macroLocalMap;
 
-    // plotting 
+    // plotting
     void Plot(std::string outputFile, std::vector<MacroPlace::Partition>& set);
 
-    // netlist  
+    // netlist
     void UpdateNetlist(MacroPlace::Partition& layout);
 
     // return weighted wire-length to get best solution
     double GetWeightedWL();
 
+
     void StubPlacer(double snapGrid);
 
-
-    // changing..... 
+    // changing.....
     void setDb(odb::dbDatabase* db);
     void setSta(sta::dbSta* sta);
 
@@ -98,10 +88,9 @@ class MacroCircuit {
     void setLocalConfig(const char* localConfig);
     void setPlotEnable(bool mode);
 
+    void setVerboseLevel(int verbose);
+
     void PlaceMacros(int& solCount);
-
-    void reset();
-
 
   private:
     odb::dbDatabase* db_;
@@ -114,7 +103,22 @@ class MacroCircuit {
 
     bool isPlot_;
 
-    double lx, ly, ux, uy;
+    // layout
+    double lx_, ly_, ux_, uy_;
+
+    double siteSizeX_, siteSizeY_;
+
+    // haloX, haloY
+    double haloX_, haloY_;
+
+    // channelX, channelY (TODO)
+    double channelX_, channelY_;
+
+    // netlistTable
+    double* netTable_;
+
+    // verboseLevel
+    int verbose_;
 
     void FillMacroStor();
     void FillPinGroup();
@@ -122,7 +126,7 @@ class MacroCircuit {
     void CheckGraphInfo();
     void FillMacroPinAdjMatrix();
     void FillMacroConnection();
-    
+
     void UpdateVertexToMacroStor();
     void UpdateInstanceToMacroStor();
 
@@ -133,43 +137,42 @@ class MacroCircuit {
 
     // adjacency matrix for whole(macro/pins/FFs) graph
     Eigen::SparseMatrix<int, Eigen::RowMajor> adjMatrix;
-   
-    // vertex idx --> macroPinAdjMatrix idx. 
+
+    // vertex idx --> macroPinAdjMatrix idx.
     std::vector< int > macroPinAdjMatrixMap;
 
     // adjacency matrix for macro/pins graph
     Eigen::SparseMatrix<int, Eigen::RowMajor> macroPinAdjMatrix;
-    
+
     // pair of <StartVertex*, EndVertex*> --> edgeStor's index
-    std::unordered_map< std::pair<MacroPlace::Vertex*, MacroPlace::Vertex*>, 
+    std::unordered_map< std::pair<MacroPlace::Vertex*, MacroPlace::Vertex*>,
       int, PointerPairHash, PointerPairEqual > vertexPairEdgeMap;
-    
-    int GetPathWeight( MacroPlace::Vertex* from, 
+
+    int GetPathWeight( MacroPlace::Vertex* from,
         MacroPlace::Vertex* to, int limit );
 
     // Matrix version
-    int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
-        MacroPlace::Vertex* from, 
+    int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat,
+        MacroPlace::Vertex* from,
         MacroPlace::Vertex* to );
 
-    
     // Matrix version
-    int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
-        MacroPlace::Vertex* from, 
+    int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat,
+        MacroPlace::Vertex* from,
         int toIdx );
-    
+
     // Matrix version
-    int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat, 
+    int GetPathWeightMatrix ( Eigen::SparseMatrix<int, Eigen::RowMajor> & mat,
         int fromIdx, int toIdx );
 
-    MacroPlace::Vertex* 
+    MacroPlace::Vertex*
       GetVertex( sta::Pin *pin );
 
-    std::pair<void*, VertexType> 
+    std::pair<void*, VertexType>
       GetPtrClassPair( sta::Pin* pin );
 
-
-    double* netTable; 
+    void init();
+    void reset();
 };
 
 class Layout {
@@ -192,22 +195,22 @@ class Layout {
     double lx_, ly_, ux_, uy_;
 };
 
-inline double 
+inline double
 Layout::lx() const {
   return lx_;
 }
 
-inline double 
+inline double
 Layout::ly() const {
   return ly_;
 }
 
-inline double 
+inline double
 Layout::ux() const {
   return ux_;
 }
 
-inline double 
+inline double
 Layout::uy() const {
   return uy_;
 }

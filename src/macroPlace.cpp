@@ -1,19 +1,23 @@
 #include "circuit.h"
 #include "partition.h" 
 #include "opendb/db.h"
+#include "logger.h"
 #include <unordered_set>
+#include <memory>
 
-using std::cout;
-using std::endl;
 using std::string;
 using std::vector;
 using std::pair;
 using std::unordered_map;
 using std::unordered_set;
-using MacroPlace::Partition;
+using std::cout;
+using std::endl;
+//using MacroPlace::Partition;
 
 using namespace MacroPlace;
 using namespace odb;
+
+namespace MacroPlace { 
 
 typedef vector<pair<Partition, Partition>> TwoPartitions;
 
@@ -22,7 +26,8 @@ static vector<pair<Partition, Partition>> GetPart(
     const double siteSizeX,
     const double siteSizeY,
     Partition& partition, 
-    bool isHorizontal );
+    bool isHorizontal,
+    std::shared_ptr<Logger> log);
 
 static void UpdateMacroPartMap( 
     MacroCircuit& mckt,
@@ -44,42 +49,12 @@ PrintAllSets(FILE* fp, Layout& layout,
 static void 
 UpdateOpendbCoordi(dbDatabase* db, MacroCircuit& mckt); 
 
-
-namespace MacroPlace { 
-
 void 
 MacroCircuit::PlaceMacros(int& solCount) {
+  init();
+  Layout layout(lx_, ly_, ux_, uy_);
 
-  dbTech* tech = db_->getTech();
-  dbChip* chip = db_->getChip(); 
-  dbBlock* block = chip->getBlock();
 
-  dbSet<dbRow> rows = block->getRows();
-  if( rows.size() == 0 ) { 
-    cout << "ERROR: DEF must contain ROW"<< endl;
-    exit(1);
-  }
-
-  dbBox* dieBox = block->getBBox();
-  int dbu = tech->getDbUnitsPerMicron();
-
-  Rect rowBox;
-  rows.begin()->getBBox(rowBox);  
-
-  const double siteSizeX = 1.0*rowBox.dx()/dbu;
-  const double siteSizeY = 1.0*rowBox.dy()/dbu;
-
-  Layout layout( 
-        1.0*dieBox->xMin()/dbu, 1.0*dieBox->yMin()/dbu, 
-        1.0*dieBox->xMax()/dbu, 1.0*dieBox->yMax()/dbu ); 
-
-  cout << endl;
-
-  cout << "DieBBox: (" << layout.lx() << " " << layout.ly() << ") - (" 
-    << layout.ux() << " " << layout.uy() << ")" << endl;
-
-  Init(db_, sta_, &layout);   
-  
   //  RandomPlace for special needs. 
   //  Really not recommended to execute this functioning 
   //if( mckt.isRandomPlace() == true ) {
@@ -93,10 +68,12 @@ MacroCircuit::PlaceMacros(int& solCount) {
       layout.lx(), layout.ly(), layout.ux()-layout.lx(), layout.uy()-layout.ly());
   topLayout.macroStor = macroStor;
 
-  cout << "PROC: Begin One Level Partition ... " << endl; 
+  log_->procBegin("One Level Partition");
+
   TwoPartitions oneLevelPart 
-    = GetPart(layout, siteSizeX, siteSizeY, topLayout, isHorizontal);
-  cout << "PROC: End One Level Partition" << endl << endl;
+    = GetPart(layout, siteSizeX_, siteSizeY_, topLayout, isHorizontal, log_);
+  
+  log_->procEnd("One Level Partition");
   TwoPartitions eastStor, westStor;
 
   vector< vector<Partition> > allSets;
@@ -119,19 +96,19 @@ MacroCircuit::PlaceMacros(int& solCount) {
 
   for(auto& curSet : oneLevelPart ) {
     if( isHorizontal ) {
-      cout << "PROC: Begin Horizontal Cuts" << endl;
+      log_->procBegin("Horizontal Partition");
       Layout eastInfo(layout, curSet.first);
       Layout westInfo(layout, curSet.second);
 
-      cout << "PROC: Begin 1st Second Level Partition" << endl;
+      log_->procBegin("East Partition");
       TwoPartitions eastStor 
-        = GetPart(eastInfo, siteSizeX, siteSizeY, curSet.first, !isHorizontal);
-      cout << "PROC: End 1st Second Level Partition" << endl << endl;
+        = GetPart(eastInfo, siteSizeX_, siteSizeY_, curSet.first, !isHorizontal, log_);
+      log_->procEnd("East Partition");
 
-      cout << "PROC: Begin 2nd Second Level Partition" << endl;
+      log_->procBegin("West Partition");
       TwoPartitions westStor 
-        = GetPart(westInfo, siteSizeX, siteSizeY, curSet.second, !isHorizontal);
-      cout << "PROC: End 2nd Second Level Partition" << endl << endl;
+        = GetPart(westInfo, siteSizeX_, siteSizeY_, curSet.second, !isHorizontal, log_);
+      log_->procEnd("West Partition");
 
      
       // Zero case handling when eastStor = 0 
@@ -211,12 +188,15 @@ MacroCircuit::PlaceMacros(int& solCount) {
           }
         }
       } 
+      log_->procEnd("Horizontal Partition");
     }
     else {
-      cout << "PROC: Vertical Cuts" << endl;
+      log_->procBegin("Vertical Partition");
+      // TODO
+      log_->procEnd("Vertical Partition");
     }
   }
-  cout << "INFO: Total Extracted Sets = " << allSets.size() -1 << endl << endl;
+  log_->infoInt( "NumExtractedSets", allSets.size() -1);
 
   solCount = 0;
   int bestSetIdx = 0;
@@ -231,7 +211,7 @@ MacroCircuit::PlaceMacros(int& solCount) {
     bool isFailed = false;
     for(auto& curPart : curSet) {
       // Annealing based on ParquetFP Engine
-      if( !curPart.DoAnneal() ) {
+      if( !curPart.DoAnneal(log_) ) {
         isFailed = true;
         break;
       }
@@ -248,7 +228,8 @@ MacroCircuit::PlaceMacros(int& solCount) {
     }
       
     double curWwl = GetWeightedWL();
-    cout << "Set " << &curSet - &allSets[0] << ": WWL = " << curWwl << endl;
+    log_->infoInt("SetId", &curSet - &allSets[0]);
+    log_->infoFloat("WeightedWL", curWwl);
 
     if( curWwl > bestWwl ) {
       bestWwl = curWwl;
@@ -265,10 +246,8 @@ MacroCircuit::PlaceMacros(int& solCount) {
   }
   UpdateOpendbCoordi(db_, *this); 
   
-  cout << "PROC: End TritonMacroPlacer" << endl;
 }
 
-}
 
 // 
 // update opendb dataset from mckt.
@@ -360,16 +339,16 @@ static vector<pair<Partition, Partition>> GetPart(
     const double siteSizeX,
     const double siteSizeY,
     Partition& partition, 
-    bool isHorizontal ) {
-  cout << "PROC: Begin Partition ... " << endl;
-  cout << "INFO: Partitions' #Macro = " << partition.macroStor.size() << endl;
-
+    bool isHorizontal,
+    std::shared_ptr<Logger> log) {
+  log->procBegin("Partition");
+  log->infoInt("NumMacros", partition.macroStor.size());
 
   // Return vector
   vector<pair<Partition, Partition>> ret;
   
-  double maxWidth = DBL_MIN;
-  double maxHeight = DBL_MIN;
+  double maxWidth = -1e30;
+  double maxHeight = -1e30;
   
   // segment stor
   // first: macroStor index
@@ -381,13 +360,13 @@ static vector<pair<Partition, Partition>> GetPart(
     segStor.push_back( 
         std::make_pair( &curMacro - &partition.macroStor[0], 
           (isHorizontal)? curMacro.lx : curMacro.ly ));
-
-    maxWidth = ( maxWidth < curMacro.w)? curMacro.w: maxWidth;
-    maxHeight = ( maxHeight < curMacro.h)? curMacro.h: maxHeight;
+    
+    maxWidth = std::fmax( maxWidth, curMacro.w );
+    maxHeight = std::fmax( maxHeight, curMacro.h );
   }
 
   double cutLineLimit = (isHorizontal)? maxWidth * 0.25 : maxHeight * 0.25;
-  double prevPushLimit = DBL_MIN;
+  double prevPushLimit = -1e30;
   bool isFirst = true;
   vector<double> cutLineStor;
  
@@ -418,7 +397,7 @@ static vector<pair<Partition, Partition>> GetPart(
           layout.ly() + (layout.uy() - layout.ly())/hardLimit * i );
     }
   }
-  cout << "INFO: NumCutline = " << cutLineStor.size() << endl;
+  log->infoInt("NumCutLines", cutLineStor.size());
   
   // Macro checker array
   // 0 for uninitialize
@@ -428,9 +407,10 @@ static vector<pair<Partition, Partition>> GetPart(
   int* chkArr = new int[partition.macroStor.size()];
   
   for(auto& cutLine : cutLineStor ) {
-    cout << "INFO: CutLine = " << cutLine << endl;
+    log->infoInt("CutLine", cutLine);
     CutRoundUp(layout, siteSizeX, siteSizeY, cutLine, isHorizontal);
-    cout << "INFO: Updated CutLine = " << cutLine << endl;
+    
+    log->infoInt("RoundUpCutLine", cutLine);
 
    
     // chkArr initialize 
@@ -517,9 +497,6 @@ static vector<pair<Partition, Partition>> GetPart(
       (isHorizontal)? partition.lx + partition.width - cutLine : partition.width, 
       (isHorizontal)? partition.height : partition.ly + partition.height - cutLine);
 
-
-
-    // cout << it->first << " " << it->second << endl;
     //
     // Fill in child partitons' macroStor
     for(auto& curMacro : partition.macroStor) {
@@ -591,21 +568,17 @@ static vector<pair<Partition, Partition>> GetPart(
     
     // impossible partitioning
     if( upperMacroArea > upperArea || lowerMacroArea > lowerArea) {
-      cout << "PROC: Impossible partition, continue" << endl;
+      log->infoString("Meets impossible partition, continue");
       continue;
     }
 
     pair<Partition, Partition> curPart( lowerPart, upperPart );
-
-    cout << "INFO: NumMacro in LowerPart[" << ret.size() << "] = " 
-      << lowerPart.macroStor.size() << endl;
-    cout << "INFO: NumMacro in UpperPart[" << ret.size() << "] = " 
-      << upperPart.macroStor.size() << endl;
-    
     ret.push_back( curPart );
   }
   delete[] chkArr;
-  cout << "PROC: End Partition " << endl << endl;
+  log->procEnd("Partition");
   
   return ret; 
+}
+
 }

@@ -62,6 +62,12 @@ void Logger::infoFloat(string input, float val, int verbose) {
   printf("[INFO] %s = %.6f\n", input.c_str(), val);
   fflush(stdout);
 }
+
+void Logger::infoFloatPair(string input, float val1, float val2, int verbose) {
+  VERBOSE_CHECK()
+  printf("[INFO] %s = (%.6f, %.6f)\n", input.c_str(), val1, val2);
+  fflush(stdout);
+}
 // SI format due to WNS/TNS
 void Logger::infoFloatSignificant(string input, float val, int verbose) {
   VERBOSE_CHECK()
@@ -69,9 +75,9 @@ void Logger::infoFloatSignificant(string input, float val, int verbose) {
   fflush(stdout);
 }
 
-void Logger::infoFloatPair(string input, float val1, float val2, int verbose) {
+void Logger::infoFloatSignificantPair(string input, float val1, float val2, int verbose) {
   VERBOSE_CHECK()
-  printf("[INFO] %s = (%.6f, %.6f)\n", input.c_str(), val1, val2);
+  printf("[INFO] %s = (%g, %g)\n", input.c_str(), val1, val2);
   fflush(stdout);
 }
 void Logger::infoString(string input, int verbose) {

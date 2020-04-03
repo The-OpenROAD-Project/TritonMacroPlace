@@ -1,15 +1,17 @@
 #ifndef __MACRO_PLACER_PARTITION__
-#define __MACRO_PLACER_PARTITION__ 
+#define __MACRO_PLACER_PARTITION__
 
 
 #include <string>
 #include <vector>
+#include <memory>
 #include <unordered_map>
 
 namespace MacroPlace {
 
 class MacroCircuit;
 class Macro;
+class Logger;
 
 enum PartClass {
   S, N, W, E, NW, NE, SW, SE, ALL, None
@@ -19,7 +21,7 @@ struct PartClassHash;
 struct PartClassEqual;
 
 class Partition {
-  public: 
+  public:
     PartClass partClass;
     double lx, ly;
     double width, height;
@@ -32,7 +34,7 @@ class Partition {
     Partition();
     Partition(PartClass _partClass, double _lx, double _ly,
         double _width, double _height );
-   
+
     // destructor
     ~Partition();
 
@@ -42,14 +44,14 @@ class Partition {
     // assign operator overloading
     Partition& operator= (const Partition& prev);
 
-    void FillNetlistTable(MacroCircuit& mckt,  
-        std::unordered_map<PartClass, std::vector<int>, 
+    void FillNetlistTable(MacroCircuit& mckt,
+        std::unordered_map<PartClass, std::vector<int>,
         PartClassHash, PartClassEqual>& macroPartMap);
 
     void Dump();
 
     // Call Parquet to have annealing solution
-    bool DoAnneal();
+    bool DoAnneal(std::shared_ptr<Logger>);
 
     // Update Macro location from MacroCircuit
     void UpdateMacroCoordi(MacroCircuit& mckt);
@@ -69,20 +71,20 @@ class Partition {
   private:
     void FillNetlistTableIncr();
     void FillNetlistTableDesc();
-}; 
+};
 
-struct PartClassHash { 
+struct PartClassHash {
   std::size_t operator()(const MacroPlace::PartClass &k) const {
     return k;
   }
 };
 
 struct PartClassEqual {
-  bool operator()(const MacroPlace::PartClass &p1, 
+  bool operator()(const MacroPlace::PartClass &p1,
       const MacroPlace::PartClass &p2) const {
     return p1 == p2;
   }
-}; 
+};
 
 }
 
