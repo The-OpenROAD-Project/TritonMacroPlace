@@ -280,14 +280,19 @@ void MacroCircuit::FillPinGroup(){
 
     // pin placement status
     dbPlacementStatus ppStatus = bTerm->getFirstPinPlacementStatus();
+    int placeX = 0, placeY = 0; 
+
     if( ppStatus == dbPlacementStatus::UNPLACED ||
         ppStatus == dbPlacementStatus::NONE ) {
-      log_->error("Pin " + string(bTerm->getConstName()) + " is not placed.", 4);
-      exit(1);
+      string msg = string(bTerm->getConstName()) 
+        + " toplevel port is not placed!\n";
+      msg += "       TritonMP will regard " 
+        + string(bTerm->getConstName()) + " is placed in (0, 0)";
+      log_->warn(msg, 1);
     } 
-   
-    int placeX, placeY; 
-    bTerm->getFirstPinLocation(placeX, placeY);
+    else {
+      bTerm->getFirstPinLocation(placeX, placeY);
+    }
     
     bool isFound = false;
     for(dbBPin* bPin : bTerm->getBPins()) {
