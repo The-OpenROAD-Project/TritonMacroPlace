@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
@@ -23,6 +24,7 @@ class dbDatabase;
 namespace MacroPlace{ 
 
 class Layout;
+class Logger;
 
 class MacroCircuit {
   public:
@@ -104,6 +106,8 @@ class MacroCircuit {
   private:
     odb::dbDatabase* db_;
     sta::dbSta* sta_;
+
+    std::shared_ptr<Logger> log_;
 
     std::string globalConfig_;
     std::string localConfig_;
