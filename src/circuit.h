@@ -4,8 +4,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <Eigen/Core>
-#include <Eigen/SparseCore>
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/SparseCore>
 
 #include "graph.h"
 #include "partition.h"

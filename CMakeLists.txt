@@ -8,8 +8,6 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-set(EIGEN_HOME ${PROJECT_SOURCE_DIR}/src/eigen )
-
 set(ABKCOMMON_HOME ${MPLACE_HOME}/module/ABKCommon )
 set(PARQUET_HOME ${MPLACE_HOME}/module/ParquetFP )
 
@@ -23,6 +21,7 @@ set(ENV{TYPE_CALL} library)
 find_package(TCL REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(SWIG REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 # for cimg
 find_package(Threads REQUIRED)
@@ -74,7 +73,6 @@ PUBLIC
   ${MPLACE_HOME}/include
 
 PRIVATE
-  ${EIGEN_HOME}
   ${ABKCOMMON_HOME}
   ${PARQUET_HOME}/src
 
@@ -98,5 +96,6 @@ PRIVATE
   ${DBSTA_HOME}/include
 
   ${TCL_INCLUDE_PATH}
+  Eigen3
   )
 
