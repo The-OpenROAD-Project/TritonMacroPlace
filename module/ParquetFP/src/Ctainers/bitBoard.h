@@ -40,7 +40,6 @@
 #define _BITBOARD_H_
 
 #include <ABKCommon/abkcommon.h>
-#include <ABKCommon/uofm_alloc.h>
 #include <iostream>
 
 

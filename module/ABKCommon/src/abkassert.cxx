@@ -54,13 +54,14 @@
 #include <stdio.h>
 #include <string.h>
 #include "abkassert.h"
-#include "pathDelims.h"
 
 
 void abkassert_stop_here() {}
 void  abkguess_stop_here() {}
 void  abkfatal_stop_here() {}
 void   abkwarn_stop_here() {}
+
+#define pathDelim '/'
 
 const char* SgnPartOfFileName(const char * fileName)
 {

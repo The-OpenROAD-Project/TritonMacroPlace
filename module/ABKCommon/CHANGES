@@ -104,4 +104,9 @@
  remove abklimiits.h
  remove numbits.cxx
  remove errorcheck.cxx
+ remove abkconst.h
+ remove abkio.cxx
+ remove pathDelims.cxx
+ remove uofm_alloc.h
  remove all sun conditions
+ 

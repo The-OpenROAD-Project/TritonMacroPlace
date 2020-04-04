@@ -38,7 +38,6 @@
 
 #include <queue>
 #include <iostream>
-#include "uofm_alloc.h"
 
 class ABKMessageBuf
 {

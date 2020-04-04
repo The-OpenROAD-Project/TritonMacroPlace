@@ -34,7 +34,6 @@
 #ifndef SEQPAIR_H
 #define SEQPAIR_H
 
-#include <ABKCommon/uofm_alloc.h>
 #include <fstream>
 #include <vector>
 #include <algorithm>

@@ -73,7 +73,6 @@ CHANGES
 #include <iostream>
 #include <cmath>
 #include <cstring>
-#include <ABKCommon/uofm_alloc.h>
 
 /* These classes are actually typedefed in the bottom of this class;
  statements are rather verbose, therefore not included here  -ILM

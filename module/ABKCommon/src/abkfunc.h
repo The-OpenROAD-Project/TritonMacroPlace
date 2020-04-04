@@ -34,7 +34,6 @@
 
 
 #include <cmath>
-#include <ABKCommon/uofm_alloc.h>
 
 //! author=" Devendra"
 /* This file contains all the declarations of functions for ABKCommon */

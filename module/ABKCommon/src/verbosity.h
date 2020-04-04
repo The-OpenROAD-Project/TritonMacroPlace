@@ -39,7 +39,7 @@
 #define _VERBOSITY_H_
 
 #include <iostream>
-#include <ABKCommon/uofm_alloc.h>
+#include <vector>
 
 //: Click to see more comments for verbosity
 //   The goal of standardization of verbosity options

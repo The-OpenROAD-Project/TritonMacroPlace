@@ -42,7 +42,6 @@
 #include <cmath>
 
 #include "mmapStreamBuf.h"
-#include "uofm_alloc.h"
 
 using std::cout;
 using std::endl;

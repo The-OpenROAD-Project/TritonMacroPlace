@@ -37,7 +37,6 @@
 #define MMAPSTREAMBUF_H
 
 #include <iostream>
-#include "uofm_alloc.h"
 
 /*
  * mmap stream buffer class to plug into the MMapIStream class

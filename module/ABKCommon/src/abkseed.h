@@ -45,7 +45,6 @@
 #include <climits>
 #include <fstream>
 #include <map>
-#include "uofm_alloc.h"
 
 //: Maintains all random seeds used by a process.
 //Idea:  First time you create a random object, an initial nondeterministic

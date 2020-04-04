@@ -33,12 +33,12 @@
 #ifndef BASEPACKING_H
 #define BASEPACKING_H
 
-#include <ABKCommon/uofm_alloc.h>
 #include <fstream>
 #include <string>
 #include <iostream>
 #include <iomanip>
 #include <cstring>
+#include <vector>
 
 // struct-like classes for representation conversion
 // --------------------------------------------------------

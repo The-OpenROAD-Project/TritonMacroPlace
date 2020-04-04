@@ -47,36 +47,7 @@
 
 #include <stdlib.h>
 
-/* #ifdef _MSC_VER
- #pragma warning (disable : 4786) // will be defaulted at the end of this file
- #endif
-*/
-/* This has been commented out because it should go 
- into stlcomp.h (see below) IF you use MS VC++.
- Add the following three lines right after the
- #ifndef __STLCOMP_H #define __STLCOMP_H pair:
- 
- #pragma warning(disable:4227)
- #pragma warning(disable:4804)
- #pragma warning(disable:4786)
-*/
-/*
-#ifndef _MSC_VER
-// Includes from STL for min/max/abs/bool/true/false/etc 
-#include <stl_config.h>
-#endif 
-*/
-
-/* Added by Xiaojian 08-12-02 */
-#ifdef _MSC_VER
-#ifndef rint
-#define rint(a) floor((a)+0.5)
-#endif
-#endif
-
 #include <utility>
-
-#include "abkconst.h"
 #include "abkassert.h"
 #include "abktempl.h"
 #include "infolines.h"
@@ -84,15 +55,9 @@
 #include "paramproc.h"
 #include "abktimer.h"
 #include "abkrand.h"
-#include "abkio.h"
-//#include "pathDelims.h"
 #include "verbosity.h"
 #include "abkfunc.h"
 
 #include "config.h"
 
-/* #ifdef _MSC_VER
- #pragma warning (default : 4786)
- #endif
-*/
 #endif 

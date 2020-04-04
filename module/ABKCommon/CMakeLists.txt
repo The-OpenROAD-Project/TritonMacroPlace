@@ -15,7 +15,6 @@ set( ABKCOMMON_SRC
   src/abkassert.cxx
   src/abkcpunorm.cxx
   src/abkfunc.cxx
-  src/abkio.cxx
   src/abkmessagebuf.cxx
   src/abkroot.cxx
   src/abktimer.cxx
@@ -23,7 +22,6 @@ set( ABKCOMMON_SRC
   src/infolines.cxx
   src/mmapStreamBuf.cxx
   src/paramproc.cxx
-  src/pathDelims.cxx
   src/platfDepend.cxx
   src/r1279.cxx
   src/r250.cxx
@@ -36,11 +34,9 @@ set( ABKCOMMON_SRC
 set (ABKCOMMON_HEADERS
   src/abkassert.h
   src/abkcommon.h
-  src/abkconst.h
   src/abkcpunorm.h
   src/abkCRC32.h
   src/abkfunc.h
-  src/abkio.h
   src/abkMD5.h
   src/abkmessagebuf.h
   src/abkrand.h
@@ -53,8 +49,7 @@ set (ABKCOMMON_HEADERS
   src/mmapIStream.h
   src/mmapStreamBuf.h
   src/paramproc.h
-  src/pathDelims.h
-  src/uofm_alloc.h
+
   src/verbosity.h
 )
 

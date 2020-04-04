@@ -43,7 +43,6 @@
 #include "abkrand.h"
 #include <cfloat>
 #include <cstdio>
-#include <ABKCommon/uofm_alloc.h>
 
 template <class RK>
 inline
