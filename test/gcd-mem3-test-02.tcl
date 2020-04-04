@@ -1,19 +1,20 @@
 source helpers.tcl
 set design gcd_mem3 
-set techDir nangate45-bench/tech
-set designDir nangate45-bench/design/${design}
+set tech_dir nangate45-bench/tech
+set design_dir nangate45-bench/design/${design}
+set test_name "gcd-mem3-test-02"
 
-read_liberty ${techDir}/NangateOpenCellLibrary_typical.lib
-read_liberty ${techDir}/fakeram45_64x7.lib
+read_liberty ${tech_dir}/NangateOpenCellLibrary_typical.lib
+read_liberty ${tech_dir}/fakeram45_64x7.lib
 
-read_lef ${techDir}/NangateOpenCellLibrary.lef
-read_lef ${techDir}/fakeram45_64x7.lef
+read_lef ${tech_dir}/NangateOpenCellLibrary.lef
+read_lef ${tech_dir}/fakeram45_64x7.lef
 
-read_def ${designDir}/${design}.def
-read_sdc ${designDir}/${design}.sdc
+read_def ${design_dir}/${design}.def
+read_sdc ${design_dir}/${design}.sdc
 
-macro_placement -global_config ${designDir}/halo_1.0.cfg
+macro_placement -global_config ${design_dir}/halo_1.0.cfg
 
-set def_file [make_result_file "gcd-mem3-test-02-mplace.def"]
+set def_file [make_result_file $test_name.def]
 write_def $def_file
-report_file $def_file
+diff_file $def_file $test_name.defok

@@ -4,7 +4,6 @@
 #include "tritonmp/MakeTritonMp.h"
 #include "tritonmp/TritonMacroPlace.h"
 
-
 namespace sta {
 extern const char *tritonmp_tcl_inits[];
 }

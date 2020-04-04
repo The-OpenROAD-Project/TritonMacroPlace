@@ -30,7 +30,6 @@ proc macro_placement { args } {
   
   if { [ord::db_has_rows] } {
     place_macros_cmd
-    puts "Total Extracted Solution: [get_macro_place_solution_count_cmd]"
   } else {
     puts "Error: no rows defined in design. Use initialize_floorplan to add rows."
   }
