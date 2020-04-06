@@ -1,5 +1,5 @@
 #include <tcl.h>
-#include "StaMain.hh"
+#include "sta/StaMain.hh"
 #include "openroad/OpenRoad.hh"
 #include "tritonmp/MakeTritonMp.h"
 #include "tritonmp/TritonMacroPlace.h"

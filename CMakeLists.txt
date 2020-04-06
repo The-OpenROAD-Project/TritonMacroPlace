@@ -77,20 +77,7 @@ PRIVATE
   ${ABKCOMMON_HOME}
   ${PARQUET_HOME}/src
 
-  ${OPENSTA_HOME}/app
-  ${OPENSTA_HOME}/dcalc
-  ${OPENSTA_HOME}/graph
-  ${OPENSTA_HOME}/liberty
-  ${OPENSTA_HOME}/network
-  ${OPENSTA_HOME}/parasitics
-  ${OPENSTA_HOME}/sdc
-  ${OPENSTA_HOME}/sdf
-  ${OPENSTA_HOME}/search
-  ${OPENSTA_HOME}/tcl
-  ${OPENSTA_HOME}/util
-  ${OPENSTA_HOME}/verilog
-  ${OPENSTA_HOME}/search
-  ${OPENSTA_HOME}/liberty
+  ${OPENSTA_HOME}/include
 
   ${OPENDB_HOME}/include
   ${OPENROAD_HOME}/include
