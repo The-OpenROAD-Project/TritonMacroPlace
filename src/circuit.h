@@ -5,8 +5,8 @@
 #include <vector>
 #include <memory>
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/SparseCore>
+#include <Eigen/Core>
+#include <Eigen/SparseCore>
 
 #include "graph.h"
 #include "partition.h"

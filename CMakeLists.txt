@@ -84,6 +84,8 @@ PRIVATE
   ${DBSTA_HOME}/include
 
   ${TCL_INCLUDE_PATH}
-  Eigen3
   )
 
+target_link_libraries( TritonMacroPlace
+  Eigen3::Eigen
+)
