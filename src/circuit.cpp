@@ -62,6 +62,9 @@ getPinGroupLocation(
     int cx, int cy, 
     int dieLx, int dieLy, int dieUx, int dieUy);
 
+static std::string
+getPinGroupLocationString(PinGroupLocation pg);
+
 
 MacroCircuit::MacroCircuit() 
   : db_(nullptr), sta_(nullptr), 
@@ -342,6 +345,11 @@ MacroCircuit::FillPinGroup(){
         }
       } 
       if( !isAxisFound ) {
+        dbBPin* bPin = *(bTerm->getBPins().begin());
+        int boxLx = bPin->getBox()->xMin();
+        int boxLy = bPin->getBox()->yMin(); 
+        int boxUx = bPin->getBox()->xMax();
+        int boxUy = bPin->getBox()->yMax();
         pgLoc = getPinGroupLocation( 
             (boxLx + boxUx)/2, (boxLy + boxUy)/2,
             dbuDieLx, dbuDieLy, dbuDieUx, dbuDieUy); 
@@ -350,7 +358,8 @@ MacroCircuit::FillPinGroup(){
           + " toplevel port is not placed in die border.\n";
         msg += "       TritonMP will regard " 
           + string(bTerm->getConstName()) 
-          + " is placed on " + pgLoc.name() + " side"; 
+          + " is placed on " 
+          + getPinGroupLocationString(pgLoc) + " side"; 
         log_->warn(msg, 2);
       } 
         
@@ -1569,6 +1578,22 @@ getPinGroupLocation(
     return North;
   }
   return West;
+}
+
+static std::string
+getPinGroupLocationString(PinGroupLocation pg) {
+  if( pg == West ) {
+    return "West";
+  }
+  if( pg == East ) {
+    return "East";
+  }
+  if( pg == North ) {
+    return "North";
+  }
+  if( pg == South ) {
+    return "South";
+  }
 }
 
 
