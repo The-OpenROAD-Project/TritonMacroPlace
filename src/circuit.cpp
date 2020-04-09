@@ -353,14 +353,6 @@ MacroCircuit::FillPinGroup(){
         pgLoc = getPinGroupLocation( 
             (boxLx + boxUx)/2, (boxLy + boxUy)/2,
             dbuDieLx, dbuDieLy, dbuDieUx, dbuDieUy); 
-            
-        string msg = string(bTerm->getConstName()) 
-          + " toplevel port is not placed in die border.\n";
-        msg += "       TritonMP will regard " 
-          + string(bTerm->getConstName()) 
-          + " is placed on " 
-          + getPinGroupLocationString(pgLoc) + " side"; 
-        log_->warn(msg, 2);
       } 
         
       // update pinGroups 
