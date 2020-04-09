@@ -72,6 +72,9 @@ checkLibertyCell(
     sta::Sta* sta,
     std::shared_ptr<Logger> log); 
 
+static bool 
+isMacroType(odb::dbMasterType mType);
+
 
 MacroCircuit::MacroCircuit() 
   : db_(nullptr), sta_(nullptr), 
@@ -184,7 +187,19 @@ void MacroCircuit::init() {
   FillMacroConnection();
 }
 
-
+static bool 
+isMacroType(odb::dbMasterType mType) {
+  switch(mType){
+    case odb::dbMasterType::BLOCK:
+    case odb::dbMasterType::BLOCK_BLACKBOX:
+    case odb::dbMasterType::BLOCK_SOFT:
+      return true;
+      break;
+    default:
+      break;
+  }
+  return false;
+}
 
 void MacroCircuit::FillMacroStor() {
   log_->procBegin("Extracting Macro Cells");
@@ -203,6 +218,11 @@ void MacroCircuit::FillMacroStor() {
   for(dbInst* inst : block->getInsts() ){ 
     // Skip for standard cells
     if( (int)inst->getBBox()->getDY() <= cellHeight) { 
+      continue;
+    }
+
+    // only concerns about macroType cells.
+    if( !isMacroType(inst->getMaster()->getType()) ) {
       continue;
     }
 
