@@ -57,6 +57,11 @@ static size_t
 TrimWhiteSpace(char *out, size_t len, 
     const char *str);
 
+static MacroPlace::PinGroupLocation
+getPinGroupLocation(
+    int cx, int cy, 
+    int dieLx, int dieLy, int dieUx, int dieUy);
+
 
 MacroCircuit::MacroCircuit() 
   : db_(nullptr), sta_(nullptr), 
@@ -259,10 +264,10 @@ MacroCircuit::FillPinGroup(){
   log_->infoInt("NumEdgeInSta", sta_->graph()->edgeCount());
   log_->infoInt("NumVertexInSta", sta_->graph()->vertexCount());
 
-  int dbuLx = static_cast<int>(round(lx_ * dbu));
-  int dbuLy = static_cast<int>(round(ly_ * dbu));
-  int dbuUx = static_cast<int>(round(ux_ * dbu));
-  int dbuUy = static_cast<int>(round(uy_ * dbu));
+  int dbuDieLx = static_cast<int>(round(lx_ * dbu));
+  int dbuDieLy = static_cast<int>(round(ly_ * dbu));
+  int dbuDieUx = static_cast<int>(round(ux_ * dbu));
+  int dbuDieUy = static_cast<int>(round(uy_ * dbu));
 
   using MacroPlace::PinGroupLocation;
 
@@ -315,41 +320,44 @@ MacroCircuit::FillPinGroup(){
         int boxUx = bPin->getBox()->xMax();
         int boxUy = bPin->getBox()->yMax();
 
-        if( isWithIn( dbuLx, boxLx, boxUx ) ) {
+        if( isWithIn( dbuDieLx, boxLx, boxUx ) ) {
           pgLoc = West;
           isAxisFound = true;
           break;
         }
-        else if( isWithIn( dbuUx, boxLx, boxUx ) ) {
+        else if( isWithIn( dbuDieUx, boxLx, boxUx ) ) {
           pgLoc = East;
           isAxisFound = true;
           break;
         }
-        else if( isWithIn( dbuLy, boxLy, boxUy ) ) {
+        else if( isWithIn( dbuDieLy, boxLy, boxUy ) ) {
           pgLoc = South;
           isAxisFound = true;
           break;
         }
-        else if( isWithIn( dbuUy, boxLy, boxUy ) ) {
+        else if( isWithIn( dbuDieUy, boxLy, boxUy ) ) {
           pgLoc = North;
           isAxisFound = true;
           break;
         }
       } 
-      if( isAxisFound ) {
-        // update pinGroups 
-        sta::Pin* pin = sta_->getDbNetwork()->dbToSta(bTerm);
-        pinGroupStor[static_cast<int>(pgLoc)].addPin(pin);
-        staToPinGroup[pin] = static_cast<int>(pgLoc);
-      }
-      else {
-        cout << "**ERROR: PIN " << bTerm->getConstName() 
-          << " is not PLACED in Border!!" << endl;
-        cout << "INFO: Place Information: " << placeX << " " << placeY << endl; 
-        cout << "INFO: Border Information: " << dbuLx << " " << dbuLy 
-          << " " << dbuUx << " " << dbuUy << endl;
-        exit(1);
+      if( !isAxisFound ) {
+        pgLoc = getPinGroupLocation( 
+            (boxLx + boxUx)/2, (boxLy + boxUy)/2,
+            dbuDieLx, dbuDieLy, dbuDieUx, dbuDieUy); 
+            
+        string msg = string(bTerm->getConstName()) 
+          + " toplevel port is not placed in die border.\n";
+        msg += "       TritonMP will regard " 
+          + string(bTerm->getConstName()) 
+          + " is placed on " + pgLoc.name() + " side"; 
+        log_->warn(msg, 2);
       } 
+        
+      // update pinGroups 
+      sta::Pin* pin = sta_->getDbNetwork()->dbToSta(bTerm);
+      pinGroupStor[static_cast<int>(pgLoc)].addPin(pin);
+      staToPinGroup[pin] = static_cast<int>(pgLoc);
     }
   }
 
@@ -1536,6 +1544,35 @@ TrimWhiteSpace(char *out, size_t len, const char *str)
 
   return out_size;
 }
+
+static MacroPlace::PinGroupLocation
+getPinGroupLocation(
+    int cx, int cy, 
+    int dieLx, int dieLy, int dieUx, int dieUy) {
+  int lxDx = abs(cx - dieLx);
+  int uxDx = abs(cx - dieUx);
+
+  int lyDy = abs(cy - dieLy);
+  int uyDy = abs(cy - dieUy);
+
+  int minDiff = std::min(lxDx, std::min(uxDx, std::min(lyDy, uyDy)));
+  if( minDiff == lxDx ) {
+    return West;
+  }
+  else if( minDiff == uxDx ) {
+    return East;
+  }
+  else if( minDiff == lyDy ) {
+    return South;
+  }
+  else if( minDiff == uyDy ) {
+    return North;
+  }
+  return West;
+}
+
+
+
 
 }
 
