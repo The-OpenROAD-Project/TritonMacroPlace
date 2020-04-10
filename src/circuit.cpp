@@ -65,13 +65,6 @@ getPinGroupLocation(
 static std::string
 getPinGroupLocationString(PinGroupLocation pg);
 
-static void
-checkLibertyCell(
-    sta::Instance* inst, 
-    sta::LibertyCell* cell, 
-    sta::Sta* sta,
-    std::shared_ptr<Logger> log); 
-
 static bool 
 isMacroType(odb::dbMasterType mType);
 
@@ -429,8 +422,6 @@ void MacroCircuit::FillVertexEdge() {
     sta::LibertyCell* libCell 
       = sta_->network()->libertyCell(inst);
 
-    checkLibertyCell(inst, libCell, sta_, log_);
-
     if( !libCell -> hasSequentials() 
         && macroInstMap.find(inst) == macroInstMap.end() ) {
       continue;
@@ -478,8 +469,6 @@ void MacroCircuit::FillVertexEdge() {
     if( !isTopPin ) {
       sta::Instance* inst = sta_->network()->instance(pin);
       sta::LibertyCell* libCell = sta_->network()->libertyCell(inst);
-      checkLibertyCell(inst, libCell, sta_, log_);
-
       if( !libCell -> hasSequentials() && macroInstMap.find(inst) == macroInstMap.end() ) {
         continue;
       }
@@ -507,8 +496,6 @@ void MacroCircuit::FillVertexEdge() {
         if( !sta_->network()->isTopLevelPort(adjPin) ) {
           sta::Instance* inst = sta_->network()->instance(adjPin);
           sta::LibertyCell* libCell = sta_->network()->libertyCell(inst);
-          checkLibertyCell(inst, libCell, sta_, log_);
-
           if( !libCell -> hasSequentials() && macroInstMap.find(inst) == macroInstMap.end() ) {
             continue;
           }
@@ -538,8 +525,6 @@ void MacroCircuit::FillVertexEdge() {
         if( !sta_->network()->isTopLevelPort(adjPin) ) {
           sta::Instance* inst = sta_->network()->instance(adjPin);
           sta::LibertyCell* libCell = sta_->network()->libertyCell(inst);
-          checkLibertyCell(inst, libCell, sta_, log_);
-
           if( !libCell -> hasSequentials() && macroInstMap.find(inst) == macroInstMap.end() ) {
             continue;
           }
@@ -1623,20 +1608,4 @@ getPinGroupLocationString(PinGroupLocation pg) {
   }
 }
 
-static void
-checkLibertyCell(
-  sta::Instance* inst, 
-  sta::LibertyCell* cell, 
-  sta::Sta* sta,
-  std::shared_ptr<Logger> log) {
-  if( !cell ) {
-    string msg = "  Cannot find liberty info for " 
-      + string(sta->network()->pathName(inst)) + "\n";
-    msg += "        Please double-check your liberty file\n";
-    log->error(msg, 4);
-    exit(4);
-  }
 }
-
-}
-
