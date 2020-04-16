@@ -34,22 +34,22 @@ Warning: gcd_mem1.sdc, 5 current_design for other than top cell not supported.
 [INFO] NumMacros = 1
 [INFO] NumCutLines = 1
 [INFO] CutLine = 23
-[INFO] RoundUpCutLine = 44
+[INFO] RoundUpCutLine = 23
 [PROC] End Partition
 [PROC] End One Level Partition
 [PROC] Begin Horizontal Partition ...
 [PROC] Begin East Partition ...
 [PROC] Begin Partition ...
-[INFO] NumMacros = 1
-[INFO] NumCutLines = 1
-[INFO] CutLine = 3
-[INFO] RoundUpCutLine = 2
+[INFO] NumMacros = 0
+[INFO] NumCutLines = 0
 [PROC] End Partition
 [PROC] End East Partition
 [PROC] Begin West Partition ...
 [PROC] Begin Partition ...
-[INFO] NumMacros = 0
-[INFO] NumCutLines = 0
+[INFO] NumMacros = 1
+[INFO] NumCutLines = 1
+[INFO] CutLine = 3
+[INFO] RoundUpCutLine = 2
 [PROC] End Partition
 [PROC] End West Partition
 [PROC] End Horizontal Partition

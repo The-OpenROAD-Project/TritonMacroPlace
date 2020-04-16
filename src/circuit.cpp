@@ -146,18 +146,17 @@ void MacroCircuit::init() {
   }
 
   dbBox* dieBox = block->getBBox();
-  const int dbu = db_->getTech()->getDbUnitsPerMicron();
+  const double dbu = db_->getTech()->getDbUnitsPerMicron();
 
-  Rect rowBox;
-  rows.begin()->getBBox(rowBox);  
+  dbSite* site = rows.begin()->getSite();
 
-  siteSizeX_ = static_cast<double>(rowBox.dx())/dbu;
-  siteSizeY_ = static_cast<double>(rowBox.dy())/dbu;
+  siteSizeX_ = site->getWidth() / dbu;
+  siteSizeY_ = site->getHeight() / dbu;
 
-  lx_ = static_cast<double>(dieBox->xMin())/dbu;
-  ly_ = static_cast<double>(dieBox->yMin())/dbu;
-  ux_ = static_cast<double>(dieBox->xMax())/dbu;
-  uy_ = static_cast<double>(dieBox->yMax())/dbu;
+  lx_ = dieBox->xMin() / dbu;
+  ly_ = dieBox->yMin() / dbu;
+  ux_ = dieBox->xMax() / dbu;
+  uy_ = dieBox->yMax() / dbu;
 
   // parsing from cfg file
   // global config
