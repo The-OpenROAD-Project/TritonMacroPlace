@@ -52,8 +52,8 @@ Warning: gcd_mem5.sdc, 5 current_design for other than top cell not supported.
 [INFO] NumCutLines = 2
 [INFO] CutLine = 0
 [INFO] RoundUpCutLine = 0
-[INFO] CutLine = 59
-[INFO] RoundUpCutLine = 59
+[INFO] CutLine = 67
+[INFO] RoundUpCutLine = 67
 [PROC] End Partition
 [PROC] End West Partition
 [PROC] End Horizontal Partition
@@ -64,8 +64,8 @@ Warning: gcd_mem5.sdc, 5 current_design for other than top cell not supported.
 [INFO] NumCutLines = 2
 [INFO] CutLine = 0
 [INFO] RoundUpCutLine = 0
-[INFO] CutLine = 59
-[INFO] RoundUpCutLine = 59
+[INFO] CutLine = 67
+[INFO] RoundUpCutLine = 67
 [PROC] End Partition
 [PROC] End East Partition
 [PROC] Begin West Partition ...
@@ -79,18 +79,18 @@ Warning: gcd_mem5.sdc, 5 current_design for other than top cell not supported.
 [PROC] Begin Parquet ...
 [INFO] Parquet BBOX exceed the given area
 [INFO] ParquetSolLayout = (51.12, 72)
-[INFO] TargetLayout = (69.35, 59.565)
+[INFO] TargetLayout = (69.35, 67.2)
 [PROC] Begin Parquet ...
 [INFO] Parquet BBOX exceed the given area
 [INFO] ParquetSolLayout = (51.12, 72)
-[INFO] TargetLayout = (69.35, 59.565)
+[INFO] TargetLayout = (69.35, 67.2)
 [PROC] Begin Parquet ...
 [INFO] Parquet BBOX exceed the given area
 [INFO] ParquetSolLayout = (51.12, 72)
-[INFO] TargetLayout = (69.35, 59.565)
+[INFO] TargetLayout = (69.35, 67.2)
 [PROC] Begin Parquet ...
 [INFO] Parquet BBOX exceed the given area
 [INFO] ParquetSolLayout = (51.12, 72)
-[INFO] TargetLayout = (69.35, 59.565)
+[INFO] TargetLayout = (69.35, 67.2)
 [INFO] NumFinalSols = 0
 No differences found.

@@ -89,6 +89,7 @@ class MacroCircuit {
     void setPlotEnable(bool mode);
 
     void setVerboseLevel(int verbose);
+    void setDieAreaMode(bool mode);
 
     void PlaceMacros(int& solCount);
 
@@ -119,6 +120,9 @@ class MacroCircuit {
 
     // verboseLevel
     int verbose_;
+
+    // dieAreaMode
+    bool dieAreaMode_;
 
     void FillMacroStor();
     void FillPinGroup();

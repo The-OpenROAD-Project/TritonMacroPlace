@@ -25,8 +25,10 @@ public:
   void setSta(sta::dbSta* sta);
   void setGlobalConfig(const char* globalConfig);
   void setLocalConfig(const char* localConfig);
-  
+
+  void setDieAreaMode(bool mode);
   void setPlotEnable(bool mode);
+
   bool placeMacros();
   int getSolutionCount();
 

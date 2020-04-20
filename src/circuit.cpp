@@ -68,6 +68,9 @@ getPinGroupLocationString(PinGroupLocation pg);
 static bool 
 isMacroType(odb::dbMasterType mType);
 
+static odb::Rect
+getCoreRectFromDb(dbSet<odb::dbRow> &rows);
+
 
 MacroCircuit::MacroCircuit() 
   : db_(nullptr), sta_(nullptr), 
@@ -78,7 +81,8 @@ MacroCircuit::MacroCircuit()
   haloX_(0), haloY_(0), 
   channelX_(0), channelY_(0), 
   netTable_(nullptr),
-  verbose_(1) {}
+  verbose_(1),
+  dieAreaMode_(false) {}
 
 MacroCircuit::MacroCircuit(
     odb::dbDatabase* db,
@@ -102,6 +106,7 @@ MacroCircuit::reset() {
   netTable_ = nullptr;
   globalConfig_ = localConfig_ = "";
   verbose_ = 1;
+  dieAreaMode_ = false; 
 }
 
 void 
@@ -134,6 +139,11 @@ MacroCircuit::setVerboseLevel(int verbose) {
   verbose_ = verbose;
 }
 
+void
+MacroCircuit::setDieAreaMode(bool mode) {
+  dieAreaMode_ = mode;
+}
+
 void MacroCircuit::init() {
   log_ = std::make_shared<Logger>("MAPL", verbose_);
 
@@ -145,7 +155,6 @@ void MacroCircuit::init() {
     exit(1);
   }
 
-  dbBox* dieBox = block->getBBox();
   const double dbu = db_->getTech()->getDbUnitsPerMicron();
 
   dbSite* site = rows.begin()->getSite();
@@ -153,11 +162,25 @@ void MacroCircuit::init() {
   siteSizeX_ = site->getWidth() / dbu;
   siteSizeY_ = site->getHeight() / dbu;
 
-  lx_ = dieBox->xMin() / dbu;
-  ly_ = dieBox->yMin() / dbu;
-  ux_ = dieBox->xMax() / dbu;
-  uy_ = dieBox->yMax() / dbu;
+  // die area mode
+  if( dieAreaMode_ ) {
+    dbBox* dieBox = block->getBBox();
 
+    lx_ = dieBox->xMin() / dbu;
+    ly_ = dieBox->yMin() / dbu;
+    ux_ = dieBox->xMax() / dbu;
+    uy_ = dieBox->yMax() / dbu;
+  }
+  // core area mode -- default
+  else {
+    odb::Rect coreRect 
+      = getCoreRectFromDb(rows); 
+
+    lx_ = coreRect.xMin() / dbu;
+    ly_ = coreRect.yMin() / dbu;
+    ux_ = coreRect.xMax() / dbu;
+    uy_ = coreRect.yMax() / dbu;
+  }
   // parsing from cfg file
   // global config
   ParseGlobalConfig(globalConfig_);
@@ -286,10 +309,10 @@ MacroCircuit::FillPinGroup(){
   log_->infoInt("NumEdgeInSta", sta_->graph()->edgeCount());
   log_->infoInt("NumVertexInSta", sta_->graph()->vertexCount());
 
-  int dbuDieLx = static_cast<int>(round(lx_ * dbu));
-  int dbuDieLy = static_cast<int>(round(ly_ * dbu));
-  int dbuDieUx = static_cast<int>(round(ux_ * dbu));
-  int dbuDieUy = static_cast<int>(round(uy_ * dbu));
+  int dbuCoreLx = static_cast<int>(round(lx_ * dbu));
+  int dbuCoreLy = static_cast<int>(round(ly_ * dbu));
+  int dbuCoreUx = static_cast<int>(round(ux_ * dbu));
+  int dbuCoreUy = static_cast<int>(round(uy_ * dbu));
 
   using MacroPlace::PinGroupLocation;
 
@@ -342,22 +365,22 @@ MacroCircuit::FillPinGroup(){
         int boxUx = bPin->getBox()->xMax();
         int boxUy = bPin->getBox()->yMax();
 
-        if( isWithIn( dbuDieLx, boxLx, boxUx ) ) {
+        if( isWithIn( dbuCoreLx, boxLx, boxUx ) ) {
           pgLoc = West;
           isAxisFound = true;
           break;
         }
-        else if( isWithIn( dbuDieUx, boxLx, boxUx ) ) {
+        else if( isWithIn( dbuCoreUx, boxLx, boxUx ) ) {
           pgLoc = East;
           isAxisFound = true;
           break;
         }
-        else if( isWithIn( dbuDieLy, boxLy, boxUy ) ) {
+        else if( isWithIn( dbuCoreLy, boxLy, boxUy ) ) {
           pgLoc = South;
           isAxisFound = true;
           break;
         }
-        else if( isWithIn( dbuDieUy, boxLy, boxUy ) ) {
+        else if( isWithIn( dbuCoreUy, boxLy, boxUy ) ) {
           pgLoc = North;
           isAxisFound = true;
           break;
@@ -371,7 +394,7 @@ MacroCircuit::FillPinGroup(){
         int boxUy = bPin->getBox()->yMax();
         pgLoc = getPinGroupLocation( 
             (boxLx + boxUx)/2, (boxLy + boxUy)/2,
-            dbuDieLx, dbuDieLy, dbuDieUx, dbuDieUy); 
+            dbuCoreLx, dbuCoreLy, dbuCoreUx, dbuCoreUy); 
       } 
         
       // update pinGroups 
@@ -1606,5 +1629,23 @@ getPinGroupLocationString(PinGroupLocation pg) {
     return "South";
   }
 }
+
+static odb::Rect
+getCoreRectFromDb(dbSet<odb::dbRow> &rows) {
+  int minX = INT_MAX, minY = INT_MAX;
+  int maxX = INT_MIN, maxY = INT_MIN;
+
+  for(dbRow* row : rows) {
+    Rect rowRect;
+    row->getBBox( rowRect );
+
+    minX = std::min(rowRect.xMin(), minX);
+    minY = std::min(rowRect.yMin(), minY);
+    maxX = std::max(rowRect.xMax(), maxX);
+    maxY = std::max(rowRect.yMax(), maxY);
+  }
+  return odb::Rect(minX, minY, maxX, maxY);
+}
+
 
 }

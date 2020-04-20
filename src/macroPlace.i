@@ -17,17 +17,24 @@ using MacroPlace::TritonMacroPlace;
 %inline %{
 
 void
-set_global_config_cmd(const char* file) 
+set_macro_place_global_config_cmd(const char* file) 
 {
   TritonMacroPlace* tritonMp = getTritonMp();
   tritonMp->setGlobalConfig(file); 
 }
 
 void
-set_local_config_cmd(const char* file)
+set_macro_place_local_config_cmd(const char* file)
 {
   TritonMacroPlace* tritonMp = getTritonMp();
   tritonMp->setLocalConfig(file); 
+}
+
+void
+set_macro_place_die_area_mode_cmd(bool mode)
+{
+  TritonMacroPlace* tritonMp = getTritonMp();
+  tritonMp->setDieAreaMode(mode); 
 }
 
 void
