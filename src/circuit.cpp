@@ -1431,11 +1431,11 @@ double MacroCircuit::GetWeightedWL() {
 
       double pointX1 = 0, pointY1 = 0;
       if( i == EAST_IDX ) {
-        pointX1 = lx_;
+        pointX1 = lx_ + width;
         pointY1 = ly_ + height /2.0;
       }
       else if( i == WEST_IDX) {
-        pointX1 = lx_ + width;
+        pointX1 = lx_;
         pointY1 = ly_ + height /2.0;
       }
       else if( i == NORTH_IDX ) { 
@@ -1453,11 +1453,11 @@ double MacroCircuit::GetWeightedWL() {
 
       double pointX2 = 0, pointY2 = 0;
       if( j == EAST_IDX ) {
-        pointX2 = lx_;
+        pointX2 = lx_ + width;
         pointY2 = ly_ + height /2.0;
       }
       else if( j == WEST_IDX) {
-        pointX2 = lx_ + width;
+        pointX2 = lx_;
         pointY2 = ly_ + height /2.0;
       }
       else if( j == NORTH_IDX ) { 

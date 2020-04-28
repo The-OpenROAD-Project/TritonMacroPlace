@@ -85,7 +85,7 @@ MacroCircuit::PlaceMacros(int& solCount) {
   UpdateMacroPartMap( *this, topLayout, globalMacroPartMap );
   topLayout.FillNetlistTable( *this, globalMacroPartMap );
 
-  UpdateNetlist(topLayout);
+   UpdateNetlist(topLayout);
  
   // push to the outer vector 
   vector<Partition> layoutSet;
@@ -429,7 +429,7 @@ static vector<pair<Partition, Partition>> GetPart(
           chkArr[i] += 1;
         }
         // upper is possible
-        if ( curMacro.w <= partition.width - cutLine) {
+        if ( curMacro.w <= partition.lx + partition.width - cutLine) {
           chkArr[i] += 2; 
         }
         // none of them
@@ -444,7 +444,7 @@ static vector<pair<Partition, Partition>> GetPart(
           chkArr[i] += 1;
         }
         // upper is possible
-        if (curMacro.h <= partition.height - cutLine) {
+        if (curMacro.h <= partition.ly + partition.height - cutLine) {
           chkArr[i] += 2;
         }
         // none of 
@@ -495,7 +495,7 @@ static vector<pair<Partition, Partition>> GetPart(
 
     Partition upperPart( uClass, 
       (isHorizontal)? cutLine : partition.lx, 
-      (isHorizontal)? partition.ly :cutLine,
+      (isHorizontal)? partition.ly : cutLine,
       (isHorizontal)? partition.lx + partition.width - cutLine : partition.width, 
       (isHorizontal)? partition.height : partition.ly + partition.height - cutLine);
 
