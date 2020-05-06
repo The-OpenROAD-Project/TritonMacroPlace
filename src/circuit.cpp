@@ -204,16 +204,7 @@ void MacroCircuit::init() {
 
 static bool 
 isMacroType(odb::dbMasterType mType) {
-  switch(mType){
-    case odb::dbMasterType::BLOCK:
-    case odb::dbMasterType::BLOCK_BLACKBOX:
-    case odb::dbMasterType::BLOCK_SOFT:
-      return true;
-      break;
-    default:
-      break;
-  }
-  return false;
+  return mType.isBlock();
 }
 
 void MacroCircuit::FillMacroStor() {
