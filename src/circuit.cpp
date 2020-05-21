@@ -68,10 +68,6 @@ getPinGroupLocationString(PinGroupLocation pg);
 static bool 
 isMacroType(odb::dbMasterType mType);
 
-static odb::Rect
-getCoreRectFromDb(dbSet<odb::dbRow> &rows);
-
-
 MacroCircuit::MacroCircuit() 
   : db_(nullptr), sta_(nullptr), 
   log_(nullptr),
@@ -173,8 +169,8 @@ void MacroCircuit::init() {
   }
   // core area mode -- default
   else {
-    odb::Rect coreRect 
-      = getCoreRectFromDb(rows); 
+    odb::Rect coreRect;
+    block->getCoreArea(coreRect);
 
     lx_ = coreRect.xMin() / dbu;
     ly_ = coreRect.yMin() / dbu;
@@ -1621,22 +1617,4 @@ getPinGroupLocationString(PinGroupLocation pg) {
   }
 }
 
-static odb::Rect
-getCoreRectFromDb(dbSet<odb::dbRow> &rows) {
-  int minX = INT_MAX, minY = INT_MAX;
-  int maxX = INT_MIN, maxY = INT_MIN;
-
-  for(dbRow* row : rows) {
-    Rect rowRect;
-    row->getBBox( rowRect );
-
-    minX = std::min(rowRect.xMin(), minX);
-    minY = std::min(rowRect.yMin(), minY);
-    maxX = std::max(rowRect.xMax(), maxX);
-    maxY = std::max(rowRect.yMax(), maxY);
-  }
-  return odb::Rect(minX, minY, maxX, maxY);
-}
-
-
-}
+} // namespace MacroPlace
