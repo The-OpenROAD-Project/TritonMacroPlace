@@ -261,7 +261,7 @@ void MacroCircuit::FillMacroStor() {
     inst->getLocation( placeX, placeY );
      
     MacroPlace::Macro 
-      tmpMacro( inst->getConstName(), 
+      curMacro ( inst->getConstName(), 
           inst->getMaster()->getConstName(), 
           static_cast<double>(placeX)/dbu, 
           static_cast<double>(placeY)/dbu,
@@ -270,7 +270,7 @@ void MacroCircuit::FillMacroStor() {
           curHaloX, curHaloY, 
           curChannelX, curChannelY,  
           nullptr, nullptr, inst );
-    macroStor.push_back( tmpMacro ); 
+    macroStor.push_back( curMacro ); 
   }
 
   if( macroStor.size() == 0 ) {
@@ -1238,19 +1238,7 @@ void MacroCircuit::ParseGlobalConfig(string fileName) {
     oStream >> varName >> val;
 
 #define IS_STRING_EXIST(varname, str) ( (varName).find((str)) != std::string::npos)
-    if( IS_STRING_EXIST(varName, "FIN_PITCH") ) {
-      // TODO
-      // ?
-    }
-    else if( IS_STRING_EXIST( varName, "ROW_HEIGHT") ) {
-      // TODO
-      // No Need
-    }
-    else if( IS_STRING_EXIST( varName, "SITE_WIDTH") ) {
-      // TODO
-      // No Need
-    }
-    else if( IS_STRING_EXIST( varName, "HALO_WIDTH_V") ) {
+    if( IS_STRING_EXIST( varName, "HALO_WIDTH_V") ) {
       haloY_ = val;
     }
     else if( IS_STRING_EXIST( varName, "HALO_WIDTH_H") ) {
@@ -1305,11 +1293,7 @@ void MacroCircuit::ParseLocalConfig(string fileName) {
     oStream >> varName >> masterName >> val;
 
 #define IS_STRING_EXIST(varname, str) ( (varName).find((str)) != std::string::npos)
-    if( IS_STRING_EXIST( varName, "ROW_HEIGHT") ) {
-      // TODO
-      // No Need
-    }
-    else if( IS_STRING_EXIST( varName, "HALO_WIDTH_V") ) {
+    if( IS_STRING_EXIST( varName, "HALO_WIDTH_V") ) {
       macroLocalMap[ masterName ].setHaloY(val);
     }
     else if( IS_STRING_EXIST( varName, "HALO_WIDTH_H") ) {
