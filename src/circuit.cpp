@@ -214,7 +214,7 @@ void MacroCircuit::FillMacroStor() {
   Rect dieBox;
   rows.begin()->getBBox(dieBox);
 
-  int cellHeight = dieBox.dy();
+  const int cellHeight = dieBox.dy();
   const int dbu = tech->getDbUnitsPerMicron();
 
   for(dbInst* inst : block->getInsts() ){ 
@@ -249,10 +249,10 @@ void MacroCircuit::FillMacroStor() {
     }
     else {
       MacroLocalInfo& m = mlPtr->second;
-      curHaloX = (m.GetHaloX() == 0)? haloX_ : m.GetHaloX();
-      curHaloY = (m.GetHaloY() == 0)? haloY_ : m.GetHaloY();
-      curChannelX = (m.GetChannelX() == 0)? channelX_ : m.GetChannelX();
-      curChannelY = (m.GetChannelY() == 0)? channelY_ : m.GetChannelY();
+      curHaloX = (m.getHaloX() == 0)? haloX_ : m.getHaloX();
+      curHaloY = (m.getHaloY() == 0)? haloY_ : m.getHaloY();
+      curChannelX = (m.getChannelX() == 0)? channelX_ : m.getChannelX();
+      curChannelY = (m.getChannelY() == 0)? channelY_ : m.getChannelY();
     }
 
     macroNameMap[ inst->getConstName() ] = macroStor.size();
@@ -263,10 +263,10 @@ void MacroCircuit::FillMacroStor() {
     MacroPlace::Macro 
       tmpMacro( inst->getConstName(), 
           inst->getMaster()->getConstName(), 
-          1.0*placeX/dbu, 
-          1.0*placeY/dbu,
-          1.0*inst->getBBox()->getDX()/dbu, 
-          1.0*inst->getBBox()->getDY()/dbu, 
+          static_cast<double>(placeX)/dbu, 
+          static_cast<double>(placeY)/dbu,
+          static_cast<double>(inst->getBBox()->getDX())/dbu, 
+          static_cast<double>(inst->getBBox()->getDY())/dbu, 
           curHaloX, curHaloY, 
           curChannelX, curChannelY,  
           nullptr, nullptr, inst );
@@ -1310,16 +1310,16 @@ void MacroCircuit::ParseLocalConfig(string fileName) {
       // No Need
     }
     else if( IS_STRING_EXIST( varName, "HALO_WIDTH_V") ) {
-      macroLocalMap[ masterName ].putHaloY(val);
+      macroLocalMap[ masterName ].setHaloY(val);
     }
     else if( IS_STRING_EXIST( varName, "HALO_WIDTH_H") ) {
-      macroLocalMap[ masterName ].putHaloX(val);
+      macroLocalMap[ masterName ].setHaloX(val);
     }
     else if( IS_STRING_EXIST( varName, "CHANNEL_WIDTH_V") ) {
-      macroLocalMap[ masterName ].putChannelY(val);
+      macroLocalMap[ masterName ].setChannelY(val);
     }
     else if( IS_STRING_EXIST( varName, "CHANNEL_WIDTH_H") ) {
-      macroLocalMap[ masterName ].putChannelX(val);
+      macroLocalMap[ masterName ].setChannelX(val);
     }
     else {
       cout << "ERROR: Cannot parse : " << varName << endl;

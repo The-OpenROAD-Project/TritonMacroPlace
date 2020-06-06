@@ -259,10 +259,10 @@ UpdateOpendbCoordi(dbDatabase* db, MacroCircuit& mckt) {
   const int dbu = tech->getDbUnitsPerMicron();
   
   for(auto& curMacro : mckt.macroStor) {
-    curMacro.dbInstPtr->setLocation( 
+    curMacro.dbInst()->setLocation( 
         static_cast<int>(round(curMacro.lx * dbu)), 
         static_cast<int>(round(curMacro.ly * dbu))) ;
-    curMacro.dbInstPtr->setPlacementStatus( dbPlacementStatus::LOCKED ) ;
+    curMacro.dbInst()->setPlacementStatus( dbPlacementStatus::LOCKED ) ;
   }
 }
 
@@ -511,7 +511,7 @@ static vector<pair<Partition, Partition>> GetPart(
               curMacro.haloX, curMacro.haloY,
               curMacro.channelX, curMacro.channelY, 
               curMacro.ptr, curMacro.staInstPtr,
-              curMacro.dbInstPtr )) ; 
+              curMacro.dbInst())) ; 
       }
       else if( chkArr[i] == 2 ) {
         upperPart.macroStor.push_back(
@@ -522,7 +522,7 @@ static vector<pair<Partition, Partition>> GetPart(
               curMacro.haloX, curMacro.haloY,
               curMacro.channelX, curMacro.channelY, 
               curMacro.ptr, curMacro.staInstPtr,
-              curMacro.dbInstPtr));
+              curMacro.dbInst()));
       }
       else if( chkArr[i] == 3 ) {
         double centerPoint = 
@@ -538,7 +538,7 @@ static vector<pair<Partition, Partition>> GetPart(
                 curMacro.haloX, curMacro.haloY,
                 curMacro.channelX, curMacro.channelY, 
                 curMacro.ptr, curMacro.staInstPtr,
-                curMacro.dbInstPtr )) ; 
+                curMacro.dbInst())) ; 
         
         }
         else {
@@ -550,7 +550,7 @@ static vector<pair<Partition, Partition>> GetPart(
                 curMacro.haloX, curMacro.haloY,
                 curMacro.channelX, curMacro.channelY, 
                 curMacro.ptr, curMacro.staInstPtr,
-                curMacro.dbInstPtr));
+                curMacro.dbInst()));
         }
       }
     }

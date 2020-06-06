@@ -10,14 +10,14 @@ Macro::Macro( std::string _name, std::string _type,
         double _haloX, double _haloY, 
         double _channelX, double _channelY,
         Vertex* _ptr, sta::Instance* _staInstPtr,
-        odb::dbInst* _dbInstPtr) 
+        odb::dbInst* dbInst) 
       : name(_name), type(_type), 
       lx(_lx), ly(_ly), 
       w(_w), h(_h),
       haloX(_haloX), haloY(_haloY),
       channelX(_channelX), channelY(_channelY), 
       ptr(_ptr), staInstPtr(_staInstPtr),
-      dbInstPtr(_dbInstPtr) {}
+      dbInst_(dbInst) {}
 
 void Macro::Dump() {
   std::cout << "MACRO " << name << " " 

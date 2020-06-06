@@ -15,6 +15,9 @@ namespace MacroPlace {
 
 class Vertex;
 class Macro {
+  private:  
+    odb::dbInst* dbInst_;
+
   public:
     std::string name;
     std::string type;  
@@ -24,14 +27,16 @@ class Macro {
     double channelX, channelY;
     Vertex* ptr;
     sta::Instance* staInstPtr;
-    odb::dbInst* dbInstPtr;
+
     Macro( std::string _name, std::string _type, 
         double _lx, double _ly, 
         double _w, double _h,
         double _haloX, double _haloY, 
         double _channelX, double _channelY,
         Vertex* _ptr, sta::Instance* _staInstPtr,
-        odb::dbInst* _dbInstPtr);
+        odb::dbInst* dbInst); 
+
+    odb::dbInst* dbInst() const { return dbInst_; }
     void Dump(); 
 };
 
@@ -42,14 +47,14 @@ private:
   double haloX_, haloY_, channelX_, channelY_;
 public:
   MacroLocalInfo(); 
-  void putHaloX(double haloX) { haloX_ = haloX; }
-  void putHaloY(double haloY) { haloY_ = haloY; }
-  void putChannelX(double channelX) { channelX_ = channelX; }
-  void putChannelY(double channelY) { channelY_ = channelY; }
-  double GetHaloX() { return haloX_; }
-  double GetHaloY() { return haloY_; }
-  double GetChannelX() { return channelX_; }
-  double GetChannelY() { return channelY_; }
+  void setHaloX(double haloX) { haloX_ = haloX; }
+  void setHaloY(double haloY) { haloY_ = haloY; }
+  void setChannelX(double channelX) { channelX_ = channelX; }
+  void setChannelY(double channelY) { channelY_ = channelY; }
+  double getHaloX() { return haloX_; }
+  double getHaloY() { return haloY_; }
+  double getChannelX() { return channelX_; }
+  double getChannelY() { return channelY_; }
 };
 
 
