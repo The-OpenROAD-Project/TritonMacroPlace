@@ -306,10 +306,10 @@ static void UpdateMacroPartMap(
     vector<int> curMacroStor;
     // convert macro Information into macroIdx
     for(auto& curMacro: part.macroStor) {
-      auto miPtr = mckt.macroInstMap.find( curMacro.staInstPtr );
+      auto miPtr = mckt.macroInstMap.find( curMacro.staInst());
       if( miPtr == mckt.macroInstMap.end() ) {
-        cout << "ERROR: macro " << curMacro.name 
-          << " not exists in macroInstMap: " << curMacro.staInstPtr << endl;
+        cout << "ERROR: macro " << curMacro.name() 
+          << " not exists in macroInstMap: " << curMacro.staInst() << endl;
         exit(1);
       }
       curMacroStor.push_back( miPtr->second) ;
@@ -505,23 +505,22 @@ static vector<pair<Partition, Partition>> GetPart(
       int i=&curMacro - &partition.macroStor[0];
       if( chkArr[i] == 1 ) {
         lowerPart.macroStor.push_back( 
-            Macro( curMacro.name, curMacro.type,
-              curMacro.lx, curMacro.ly,
+            Macro( curMacro.lx, curMacro.ly,
               curMacro.w, curMacro.h,
               curMacro.haloX, curMacro.haloY,
               curMacro.channelX, curMacro.channelY, 
-              curMacro.ptr, curMacro.staInstPtr,
+              curMacro.vertex(), curMacro.staInst(),
               curMacro.dbInst())) ; 
       }
       else if( chkArr[i] == 2 ) {
         upperPart.macroStor.push_back(
-            Macro( curMacro.name, curMacro.type,
+            Macro( 
               (isHorizontal)? curMacro.lx-cutLine : curMacro.lx, 
               (isHorizontal)? curMacro.ly : curMacro.ly-cutLine,
               curMacro.w, curMacro.h,
               curMacro.haloX, curMacro.haloY,
               curMacro.channelX, curMacro.channelY, 
-              curMacro.ptr, curMacro.staInstPtr,
+              curMacro.vertex(), curMacro.staInst(),
               curMacro.dbInst()));
       }
       else if( chkArr[i] == 3 ) {
@@ -532,24 +531,24 @@ static vector<pair<Partition, Partition>> GetPart(
 
         if( centerPoint < cutLine ) {
           lowerPart.macroStor.push_back( 
-              Macro( curMacro.name, curMacro.type,
+              Macro( 
                 curMacro.lx, curMacro.ly,
                 curMacro.w, curMacro.h,
                 curMacro.haloX, curMacro.haloY,
                 curMacro.channelX, curMacro.channelY, 
-                curMacro.ptr, curMacro.staInstPtr,
+                curMacro.vertex(), curMacro.staInst(),
                 curMacro.dbInst())) ; 
         
         }
         else {
           upperPart.macroStor.push_back(
-              Macro( curMacro.name, curMacro.type,
+              Macro( 
                 (isHorizontal)? curMacro.lx-cutLine : curMacro.lx, 
                 (isHorizontal)? curMacro.ly : curMacro.ly-cutLine,
                 curMacro.w, curMacro.h,
                 curMacro.haloX, curMacro.haloY,
                 curMacro.channelX, curMacro.channelY, 
-                curMacro.ptr, curMacro.staInstPtr,
+                curMacro.vertex(), curMacro.staInst(),
                 curMacro.dbInst()));
         }
       }

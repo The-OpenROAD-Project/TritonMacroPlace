@@ -17,26 +17,32 @@ class Vertex;
 class Macro {
   private:  
     odb::dbInst* dbInst_;
+    sta::Instance* staInst_;
+    Vertex* vertex_;
 
   public:
-    std::string name;
-    std::string type;  
     double lx, ly;
     double w, h;
     double haloX, haloY; 
     double channelX, channelY;
-    Vertex* ptr;
-    sta::Instance* staInstPtr;
 
-    Macro( std::string _name, std::string _type, 
-        double _lx, double _ly, 
+    Macro( double _lx, double _ly, 
         double _w, double _h,
         double _haloX, double _haloY, 
         double _channelX, double _channelY,
-        Vertex* _ptr, sta::Instance* _staInstPtr,
+        Vertex* vertex, sta::Instance* staInst,
         odb::dbInst* dbInst); 
 
     odb::dbInst* dbInst() const { return dbInst_; }
+    sta::Instance* staInst() const { return staInst_; }
+    Vertex* vertex() const { return vertex_; }
+
+    void setStaInst(sta::Instance* staInst) { staInst_ = staInst; }
+    void setVertex(Vertex* vertex) { vertex_ = vertex; }
+
+    std::string name();
+    std::string type();
+
     void Dump(); 
 };
 

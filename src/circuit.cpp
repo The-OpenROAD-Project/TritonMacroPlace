@@ -261,9 +261,7 @@ void MacroCircuit::FillMacroStor() {
     inst->getLocation( placeX, placeY );
      
     MacroPlace::Macro 
-      curMacro ( inst->getConstName(), 
-          inst->getMaster()->getConstName(), 
-          static_cast<double>(placeX)/dbu, 
+      curMacro( static_cast<double>(placeX)/dbu, 
           static_cast<double>(placeY)/dbu,
           static_cast<double>(inst->getBBox()->getDX())/dbu, 
           static_cast<double>(inst->getBBox()->getDY())/dbu, 
@@ -665,7 +663,7 @@ void MacroCircuit::CheckGraphInfo() {
   vector<MacroPlace::Vertex*> searchVert;
 
   for(auto& curMacro: macroStor) {
-    searchVert.push_back( curMacro.ptr );
+    searchVert.push_back( curMacro.vertex() );
   }
 
   for(int i=0; i<4; i++) {
@@ -680,7 +678,7 @@ void MacroCircuit::CheckGraphInfo() {
     vertexCover[i] = 0;
   }
   for(auto& curMacro: macroStor) {
-    auto vpPtr = vertexPtrMap.find(curMacro.ptr);
+    auto vpPtr = vertexPtrMap.find(curMacro.vertex());
     vertexCover[vpPtr->second] = 0;
   }
 
@@ -744,7 +742,7 @@ void MacroCircuit::FillMacroPinAdjMatrix() {
   // to have macroIdx --> updated macroPinAdjMatrix's index.
   //
   for(auto& curMacro: macroStor) {
-    auto vpPtr = vertexPtrMap.find(curMacro.ptr);
+    auto vpPtr = vertexPtrMap.find(curMacro.vertex());
     int macroVertIdx = vpPtr->second;
     searchVertIdx.push_back( macroVertIdx );
     macroPinAdjMatrixMap[macroVertIdx] = macroPinAdjIdx++;
@@ -839,7 +837,7 @@ void MacroCircuit::FillMacroConnection() {
   }
 
   for(auto& curMacro: macroStor) {
-    auto vpPtr = vertexPtrMap.find(curMacro.ptr);
+    auto vpPtr = vertexPtrMap.find(curMacro.vertex());
     int macroVertIdx = vpPtr->second;
     searchVertIdx.push_back( macroVertIdx );
   }
@@ -894,7 +892,7 @@ void MacroCircuit::UpdateVertexToMacroStor() {
       exit(1);
     } 
 
-    macroStor[mPtr->second].ptr = &curVertex;
+    macroStor[mPtr->second].setVertex( &curVertex );
   }
 }
 
@@ -918,7 +916,7 @@ void MacroCircuit::UpdateInstanceToMacroStor() {
     }
     
     // macro & macroInstMap update
-    macroStor[mnPtr->second].staInstPtr = inst;
+    macroStor[mnPtr->second].setStaInst(inst);
     macroInstMap[inst] = mnPtr->second; 
   }
 }
@@ -1090,9 +1088,9 @@ void MacroCircuit::UpdateMacroCoordi( MacroPlace::Partition& part) {
     / static_cast<float>(tech->getDbUnitsPerMicron());
 
   for(auto& curMacro : part.macroStor) {
-    auto mnPtr = macroNameMap.find(curMacro.name);
+    auto mnPtr = macroNameMap.find(curMacro.name());
     if( mnPtr == macroNameMap.end() ) {
-      cout << "ERROR: Macro not exists in MacroCircuit " << curMacro.name << endl;
+      cout << "ERROR: Macro not exists in MacroCircuit " << curMacro.name() << endl;
       exit(1);
     }
 
@@ -1345,7 +1343,7 @@ Plot(string fileName, vector<MacroPlace::Partition>& set) {
       << " fc rgb \"gold\"" << endl;
 
     // name
-    gpOut<<"set label '"<< curMacro.name 
+    gpOut<<"set label '"<< curMacro.name() 
       << "(" << &curMacro - &macroStor[0] << ")"
       << "'noenhanced at "
       << curMacro.lx + curMacro.w/5<<" , "
