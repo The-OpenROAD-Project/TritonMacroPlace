@@ -68,9 +68,13 @@ getPinGroupLocationString(PinGroupLocation pg);
 static bool 
 isMacroType(odb::dbMasterType mType);
 
+static bool
+isMissingLiberty(sta::Sta* sta);
+
 MacroCircuit::MacroCircuit() 
   : db_(nullptr), sta_(nullptr), 
   log_(nullptr),
+  isTiming_(false),
   isPlot_(false),
   lx_(0), ly_(0), ux_(0), uy_(0),
   siteSizeX_(0), siteSizeY_(0),
@@ -94,6 +98,7 @@ void
 MacroCircuit::reset() {
   db_ = nullptr;
   sta_ = nullptr;
+  isTiming_ = false;
   isPlot_ = false;
   lx_ = ly_ = ux_ = uy_ = 0;
   siteSizeX_ = siteSizeY_ = 0; 
@@ -190,12 +195,24 @@ void MacroCircuit::init() {
   FillMacroStor(); 
   FillPinGroup(); 
   UpdateInstanceToMacroStor();
-  FillVertexEdge();
-  UpdateVertexToMacroStor();
-  
-//  CheckGraphInfo();
-  FillMacroPinAdjMatrix();
-  FillMacroConnection();
+
+  // Timing-related feature will be skipped
+  // if there is some of liberty is missing.
+  isTiming_ = !isMissingLiberty(sta_);
+
+  if( isTiming_ ) {
+    FillVertexEdge();
+    UpdateVertexToMacroStor();
+    FillMacroPinAdjMatrix();
+    FillMacroConnection();
+  }
+  else {
+    string msg = "Missing Liberty Detected.\n";
+    msg += "       TritonMP will place macros without timing information";
+    log_->warn(msg, 1); 
+
+    UpdateVertexToMacroStor();
+  }
 }
 
 static bool 
@@ -887,10 +904,11 @@ void MacroCircuit::UpdateVertexToMacroStor() {
     if( curVertex.vertexType() != VertexType::MacroInstType ) {
       continue;
     }
-    string name = sta_->network()->pathName((sta::Instance*)curVertex.ptr());
-    auto mPtr = macroNameMap.find( name );
-    if( mPtr == macroNameMap.end() ) {
-      cout << "**ERROR: The Macro Name must be in macro NameMap: " << name << endl;
+
+    sta::Instance* staInst = (sta::Instance*) curVertex.ptr();
+    auto mPtr = macroInstMap.find( staInst );
+    if( mPtr == macroInstMap.end() ) {
+      cout << "**ERROR: The Macro Name must be in macro NameMap" <<  endl;
       exit(1);
     } 
 
@@ -1262,6 +1280,12 @@ void MacroCircuit::ParseGlobalConfig(string fileName) {
     else if( IS_STRING_EXIST( varName, "CHANNEL_WIDTH_H") ) {
       channelX_ = val;
     }
+    else if( IS_STRING_EXIST( varName, "FIN_PITCH") ) {
+    }
+    else if( IS_STRING_EXIST( varName, "ROW_HEIGHT") ) {
+    }
+    else if( IS_STRING_EXIST( varName, "SITE_WIDTH") ) {
+    }
     else {
       cout << "ERROR: Cannot parse : " << varName << endl;
       exit(1);
@@ -1459,8 +1483,16 @@ double MacroCircuit::GetWeightedWL() {
         pointX2 = macroStor[j].lx + macroStor[j].w;
         pointY2 = macroStor[j].ly + macroStor[j].h;
       }
-     
-      wwl += netTable_[ i*(macroStor.size())+j ] *
+
+      float edgeWeight = 0.0f;
+      if( isTiming_ ) {
+        edgeWeight = netTable_[ i*(macroStor.size())+j ];
+      }
+      else {
+        edgeWeight = 1;
+      }
+
+      wwl += edgeWeight *
         sqrt( (pointX1-pointX2)*(pointX1-pointX2) + 
             (pointY1-pointY2)*(pointY1-pointY2) );
     }
@@ -1615,6 +1647,31 @@ getPinGroupLocationString(PinGroupLocation pg) {
   if( pg == South ) {
     return "South";
   }
+}
+
+static bool
+isMissingLiberty(sta::Sta* sta) {
+  VertexIterator vIter(sta->graph());
+  
+  while(vIter.hasNext()) {
+    sta::Vertex* staVertex = vIter.next();
+    sta::Pin* pin = staVertex->pin();
+    // skip for top-level port 
+    bool isTopPin = sta->network()->isTopLevelPort(pin);
+    if( isTopPin ) {
+      continue;
+    }
+    
+    sta::Instance* inst 
+      = sta->network()->instance(pin);
+    sta::LibertyCell* libCell 
+      = sta->network()->libertyCell(inst);
+
+    if( !libCell ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 } // namespace MacroPlace

@@ -104,8 +104,11 @@ void Partition::PrintParquetFormat(string origName){
   costStor.reserve( (macroStor.size()+4)*(macroStor.size()+3)/2 );
   for(size_t i=0; i<macroStor.size()+4; i++) {
     for(size_t j=i+1; j<macroStor.size()+4; j++) {
-      int cost = netTable[ i*(macroStor.size()+4) + j] + 
-        netTable[ j*(macroStor.size()+4) + i ];
+      int cost = 0;
+      if( netTable ) {
+        cost = netTable[ i*(macroStor.size()+4) + j] 
+          + netTable[ j*(macroStor.size()+4) + i ];
+      }
       if( cost != 0 ) {
         netStor.push_back( std::make_pair( std::min(i,j), std::max(i,j) ) );
         costStor.push_back(cost);
@@ -548,13 +551,26 @@ bool Partition::DoAnneal(std::shared_ptr<Logger> log) {
 
   netStor.reserve( (macroStor.size()+4)*(macroStor.size()+3)/2 );
   costStor.reserve( (macroStor.size()+4)*(macroStor.size()+3)/2 );
+
   for(size_t i=0; i<macroStor.size()+4; i++) {
     for(size_t j=i+1; j<macroStor.size()+4; j++) {
-      int cost = netTable[ i*(macroStor.size()+4) + j] + 
-        netTable[ j*(macroStor.size()+4) + i ];
+      int cost = 0;
+      if( netTable ) {
+        cost = netTable[ i*(macroStor.size()+4) + j] 
+          + netTable[ j*(macroStor.size()+4) + i ];
+      }
       if( cost != 0 ) {
         netStor.push_back( std::make_pair( std::min(i,j), std::max(i,j) ) );
         costStor.push_back(cost);
+      }
+    }
+  }
+
+  if( netStor.size() == 0 ) {
+    for(size_t i=0; i<4; i++) {
+      for(size_t j=i+1; j<4; j++) {
+        netStor.push_back(std::make_pair(i, j));
+        costStor.push_back(1);
       }
     }
   }
