@@ -196,6 +196,7 @@ inline BTree::BTree(const BTree& newBtree)
      in_totalArea(newBtree.in_totalArea),
      in_totalWidth(newBtree.in_totalWidth),
      in_totalHeight(newBtree.in_totalHeight),
+     in_totalContourArea(newBtree.in_totalContourArea),
 
      TOLERANCE(newBtree.TOLERANCE),
 
@@ -225,6 +226,7 @@ inline bool BTree::operator =(const BTree& newBtree)
       in_totalArea = newBtree.in_totalArea;
       in_totalWidth = newBtree.in_totalWidth;
       in_totalHeight = newBtree.in_totalHeight;
+      in_totalContourArea = newBtree.in_totalContourArea; 
 
 	  in_obstacles.xloc = newBtree.in_obstacles.xloc;
 	  in_obstacles.yloc = newBtree.in_obstacles.yloc;
