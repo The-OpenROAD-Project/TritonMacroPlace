@@ -93,6 +93,8 @@ class MacroCircuit {
 
     void PlaceMacros(int& solCount);
 
+    const bool isTiming() const { return isTiming_; }
+
   private:
     odb::dbDatabase* db_;
     sta::dbSta* sta_;
@@ -102,6 +104,7 @@ class MacroCircuit {
     std::string globalConfig_;
     std::string localConfig_;
 
+    bool isTiming_;
     bool isPlot_;
 
     // layout

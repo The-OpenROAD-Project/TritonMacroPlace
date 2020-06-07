@@ -83,9 +83,12 @@ MacroCircuit::PlaceMacros(int& solCount) {
   unordered_map< PartClass, vector<int>, 
     PartClassHash, PartClassEqual> globalMacroPartMap;
   UpdateMacroPartMap( *this, topLayout, globalMacroPartMap );
-  topLayout.FillNetlistTable( *this, globalMacroPartMap );
 
-   UpdateNetlist(topLayout);
+  if( isTiming_ ) {
+    topLayout.FillNetlistTable( *this, globalMacroPartMap );
+    UpdateNetlist(topLayout);
+  }
+
  
   // push to the outer vector 
   vector<Partition> layoutSet;
@@ -127,9 +130,11 @@ MacroCircuit::PlaceMacros(int& solCount) {
           for(auto& curSet: oneSet) {
             UpdateMacroPartMap( *this, curSet, macroPartMap );
           }
-
-          for(auto& curSet: oneSet) {
-            curSet.FillNetlistTable( *this, macroPartMap );
+          
+          if( isTiming_ ) { 
+            for(auto& curSet: oneSet) {
+              curSet.FillNetlistTable( *this, macroPartMap );
+            }
           }
 
           allSets.push_back( oneSet );
@@ -151,9 +156,11 @@ MacroCircuit::PlaceMacros(int& solCount) {
           for(auto& curSet: oneSet) {
             UpdateMacroPartMap( *this, curSet, macroPartMap );
           }
-
-          for(auto& curSet: oneSet) {
-            curSet.FillNetlistTable( *this, macroPartMap );
+          
+          if( isTiming_ ) { 
+            for(auto& curSet: oneSet) {
+              curSet.FillNetlistTable( *this, macroPartMap );
+            }
           }
 
           allSets.push_back( oneSet );
@@ -180,8 +187,10 @@ MacroCircuit::PlaceMacros(int& solCount) {
               UpdateMacroPartMap( *this, curSet, macroPartMap );
             }
 
-            for(auto& curSet: oneSet) {
-              curSet.FillNetlistTable( *this, macroPartMap );
+            if( isTiming_ ) { 
+              for(auto& curSet: oneSet) {
+                curSet.FillNetlistTable( *this, macroPartMap );
+              }
             }
 
             allSets.push_back( oneSet );
@@ -226,7 +235,7 @@ MacroCircuit::PlaceMacros(int& solCount) {
     for(auto& curPart : curSet) { 
       curPart.UpdateMacroCoordi(*this);
     }
-      
+
     double curWwl = GetWeightedWL();
     log_->infoInt("SetId", &curSet - &allSets[0]);
     log_->infoFloat("WeightedWL", curWwl);
