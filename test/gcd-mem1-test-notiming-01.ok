@@ -1,0 +1,59 @@
+Notice 0: Reading LEF file:  nangate45-bench/tech/NangateOpenCellLibrary.lef
+Notice 0:     Created 22 technology layers
+Notice 0:     Created 27 technology vias
+Notice 0:     Created 134 library cells
+Notice 0: Finished LEF file:  nangate45-bench/tech/NangateOpenCellLibrary.lef
+Notice 0: Reading LEF file:  nangate45-bench/tech/fakeram45_64x7.lef
+Notice 0:     Created 1 library cells
+Notice 0: Finished LEF file:  nangate45-bench/tech/fakeram45_64x7.lef
+Notice 0: 
+Reading DEF file: nangate45-bench/design/gcd_mem1/gcd_mem1.def
+Notice 0: Design: gcd_mem1
+Notice 0:     Created 61 pins.
+Notice 0:     Created 307 components and 1738 component-terminals.
+Notice 0:     Created 2 special nets and 0 connections.
+Notice 0:     Created 384 nets and 1124 connections.
+Notice 0: Finished DEF file: nangate45-bench/design/gcd_mem1/gcd_mem1.def
+[PROC] End Parsing Global Config
+[PROC] Begin Extracting Macro Cells ...
+[PROC] End Extracting Macro Cells
+[INFO] NumMacros = 1
+[INFO] NumEdgeInSta = 801
+[INFO] NumVertexInSta = 1185
+[INFO] NumEastPins = 9
+[INFO] NumWestPins = 22
+[INFO] NumNorthPins = 12
+[INFO] NumSouthPins = 18
+[WARN] Missing Liberty Detected.
+       TritonMP will place macros without timing information (MAPL-1)
+[PROC] Begin One Level Partition ...
+[PROC] Begin Partition ...
+[INFO] NumMacros = 1
+[INFO] NumCutLines = 1
+[INFO] CutLine = 23
+[INFO] RoundUpCutLine = 23
+[PROC] End Partition
+[PROC] End One Level Partition
+[PROC] Begin Horizontal Partition ...
+[PROC] Begin East Partition ...
+[PROC] Begin Partition ...
+[INFO] NumMacros = 0
+[INFO] NumCutLines = 0
+[PROC] End Partition
+[PROC] End East Partition
+[PROC] Begin West Partition ...
+[PROC] Begin Partition ...
+[INFO] NumMacros = 1
+[INFO] NumCutLines = 1
+[INFO] CutLine = 3
+[INFO] RoundUpCutLine = 2
+[PROC] End Partition
+[PROC] End West Partition
+[PROC] End Horizontal Partition
+[INFO] NumExtractedSets = 1
+[PROC] Begin Parquet ...
+[PROC] End Parquet
+[INFO] SetId = 1
+[INFO] WeightedWL = 344.965088
+[INFO] NumFinalSols = 1
+No differences found.
