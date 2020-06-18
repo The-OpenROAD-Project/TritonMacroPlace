@@ -1280,12 +1280,6 @@ void MacroCircuit::ParseGlobalConfig(string fileName) {
     else if( IS_STRING_EXIST( varName, "CHANNEL_WIDTH_H") ) {
       channelX_ = val;
     }
-    else if( IS_STRING_EXIST( varName, "FIN_PITCH") ) {
-    }
-    else if( IS_STRING_EXIST( varName, "ROW_HEIGHT") ) {
-    }
-    else if( IS_STRING_EXIST( varName, "SITE_WIDTH") ) {
-    }
     else {
       cout << "ERROR: Cannot parse : " << varName << endl;
       exit(1);
