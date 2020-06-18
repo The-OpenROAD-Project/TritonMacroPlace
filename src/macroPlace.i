@@ -38,6 +38,13 @@ set_macro_place_die_area_mode_cmd(bool mode)
 }
 
 void
+set_macro_place_timing_mode_cmd(bool mode)
+{
+  TritonMacroPlace* tritonMp = getTritonMp();
+  tritonMp->setTimingMode(mode); 
+}
+
+void
 place_macros_cmd()
 {
   TritonMacroPlace* tritonMp = getTritonMp();

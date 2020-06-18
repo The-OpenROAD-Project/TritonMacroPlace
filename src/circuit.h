@@ -90,6 +90,7 @@ class MacroCircuit {
 
     void setVerboseLevel(int verbose);
     void setDieAreaMode(bool mode);
+    void setTimingMode(bool mode);
 
     void PlaceMacros(int& solCount);
 
@@ -105,6 +106,7 @@ class MacroCircuit {
     std::string localConfig_;
 
     bool isTiming_;
+    bool setTiming_;
     bool isPlot_;
 
     // layout

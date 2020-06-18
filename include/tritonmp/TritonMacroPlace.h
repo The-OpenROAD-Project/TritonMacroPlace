@@ -27,6 +27,7 @@ public:
   void setLocalConfig(const char* localConfig);
 
   void setDieAreaMode(bool mode);
+  void setTimingMode(bool mode);
   void setPlotEnable(bool mode);
 
   bool placeMacros();

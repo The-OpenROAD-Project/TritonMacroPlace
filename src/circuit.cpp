@@ -75,6 +75,7 @@ MacroCircuit::MacroCircuit()
   : db_(nullptr), sta_(nullptr), 
   log_(nullptr),
   isTiming_(false),
+  setTiming_(false), 
   isPlot_(false),
   lx_(0), ly_(0), ux_(0), uy_(0),
   siteSizeX_(0), siteSizeY_(0),
@@ -99,6 +100,7 @@ MacroCircuit::reset() {
   db_ = nullptr;
   sta_ = nullptr;
   isTiming_ = false;
+  setTiming_ = false;
   isPlot_ = false;
   lx_ = ly_ = ux_ = uy_ = 0;
   siteSizeX_ = siteSizeY_ = 0; 
@@ -143,6 +145,12 @@ MacroCircuit::setVerboseLevel(int verbose) {
 void
 MacroCircuit::setDieAreaMode(bool mode) {
   dieAreaMode_ = mode;
+}
+
+void
+MacroCircuit::setTimingMode(bool mode) {
+  setTiming_ = true;
+  isTiming_ = mode;
 }
 
 void MacroCircuit::init() {
@@ -198,7 +206,9 @@ void MacroCircuit::init() {
 
   // Timing-related feature will be skipped
   // if there is some of liberty is missing.
-  isTiming_ = !isMissingLiberty(sta_);
+  if( !setTiming_ ) {
+    isTiming_ = !isMissingLiberty(sta_);
+  }
 
   if( isTiming_ ) {
     FillVertexEdge();
@@ -207,9 +217,15 @@ void MacroCircuit::init() {
     FillMacroConnection();
   }
   else {
-    string msg = "Missing Liberty Detected.\n";
-    msg += "       TritonMP will place macros without timing information";
-    log_->warn(msg, 1); 
+    string msg = "";
+    if( !setTiming_ ) {
+      msg = "Missing Liberty Detected.\n";
+      msg += "       TritonMP will place macros without timing information";
+      log_->warn(msg, 1); 
+    }
+      
+    msg = "TritonMP will skip the sequential timing graph building";
+    log_->warn(msg, 2);
 
     UpdateVertexToMacroStor();
   }

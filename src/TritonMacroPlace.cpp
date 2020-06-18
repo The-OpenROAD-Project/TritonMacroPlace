@@ -42,6 +42,11 @@ TritonMacroPlace::setPlotEnable(bool mode) {
   mckt_->setPlotEnable(mode);
 }
 
+void
+TritonMacroPlace::setTimingMode(bool mode) {
+  mckt_->setTimingMode(mode);
+}
+
 
 
 bool 

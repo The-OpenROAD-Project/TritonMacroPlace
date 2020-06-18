@@ -5,7 +5,7 @@ sta::define_cmd_args "macro_placement" {
 
 proc macro_placement { args } {
   sta::parse_key_args "macro_placement" args \
-    keys {-global_config -local_config} flags {-die_area}
+    keys {-global_config -local_config} flags {-die_area -no_timing}
 
   if { ![info exists keys(-global_config)] } {
     puts "Error: -global_config must exist."
@@ -33,6 +33,11 @@ proc macro_placement { args } {
   } else {
     set_macro_place_die_area_mode_cmd false
   }
+ 
+  # disable sequential graph / timing 
+  if { [info exists flags(-no_timing)] } {
+    set_macro_place_timing_mode_cmd false 
+  } 
   
   if { [ord::db_has_rows] } {
     place_macros_cmd
