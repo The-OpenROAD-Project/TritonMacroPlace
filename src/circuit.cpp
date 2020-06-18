@@ -69,7 +69,8 @@ static bool
 isMacroType(odb::dbMasterType mType);
 
 static bool
-isMissingLiberty(sta::Sta* sta);
+isMissingLiberty(sta::Sta* sta,
+    vector<Macro>& macroStor);
 
 MacroCircuit::MacroCircuit() 
   : db_(nullptr), sta_(nullptr), 
@@ -198,7 +199,7 @@ void MacroCircuit::init() {
 
   // Timing-related feature will be skipped
   // if there is some of liberty is missing.
-  isTiming_ = !isMissingLiberty(sta_);
+  isTiming_ = !isMissingLiberty(sta_, macroStor);
 
   if( isTiming_ ) {
     FillVertexEdge();
@@ -1628,23 +1629,22 @@ getPinGroupLocationString(PinGroupLocation pg) {
 }
 
 static bool
-isMissingLiberty(sta::Sta* sta) {
-  VertexIterator vIter(sta->graph());
-  
-  while(vIter.hasNext()) {
-    sta::Vertex* staVertex = vIter.next();
-    sta::Pin* pin = staVertex->pin();
-    // skip for top-level port 
-    bool isTopPin = sta->network()->isTopLevelPort(pin);
-    if( isTopPin ) {
-      continue;
+isMissingLiberty(sta::Sta* sta, vector<Macro>& macroStor) {
+  sta::LeafInstanceIterator *instIter 
+    = sta->network()->leafInstanceIterator();
+  while (instIter->hasNext()) {
+    sta::Instance *inst = instIter->next();
+    if ( !sta->network()->libertyCell(inst) ) {
+      delete instIter;
+      return true;
     }
-    
-    sta::Instance* inst 
-      = sta->network()->instance(pin);
+  }
+  delete instIter;
+  
+  for(auto& macro: macroStor) {
+    sta::Instance* staInst = macro.staInstPtr;
     sta::LibertyCell* libCell 
-      = sta->network()->libertyCell(inst);
-
+      = sta->network()->libertyCell(staInst);
     if( !libCell ) {
       return true;
     }
