@@ -301,6 +301,7 @@ void MacroCircuit::FillMacroStor() {
           curHaloX, curHaloY, 
           curChannelX, curChannelY,  
           nullptr, nullptr, inst );
+    cout << "macro: " << inst->getConstName() << endl;
     macroStor.push_back( curMacro ); 
   }
 
@@ -932,26 +933,10 @@ void MacroCircuit::UpdateVertexToMacroStor() {
 
 // macroStr & macroInstMap update
 void MacroCircuit::UpdateInstanceToMacroStor() {
-  VertexIterator vIter(sta_->graph());
-
-  while(vIter.hasNext()) {
-    sta::Vertex* staVertex = vIter.next();
-    sta::Pin* pin = staVertex->pin();
-
-    if( sta_->network()->isTopLevelPort(pin) ) {
-      continue;
-    }
-    sta::Instance* inst = sta_->network()->instance(pin);
-    string instName = sta_->network()->pathName(inst);
-
-    auto mnPtr = macroNameMap.find(instName); 
-    if( mnPtr == macroNameMap.end()) {
-      continue; 
-    }
-    
-    // macro & macroInstMap update
-    macroStor[mnPtr->second].setStaInst(inst);
-    macroInstMap[inst] = mnPtr->second; 
+  for(auto& macro: macroStor) {
+    sta::Instance* staInst = sta_->getDbNetwork()->dbToSta(macro.dbInst());
+    macro.setStaInst(staInst);
+    macroInstMap[staInst] = &macro - &macroStor[0];
   }
 }
 
