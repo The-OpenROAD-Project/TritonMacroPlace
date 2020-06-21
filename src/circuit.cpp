@@ -9,6 +9,7 @@
 #include "circuit.h"
 #include "logger.h"
 
+// None of these are necessary because they are included in circuit.h -cherry
 #include "sta/Graph.hh"
 #include "sta/Sta.hh"
 #include "sta/Network.hh"
@@ -26,6 +27,7 @@
 
 namespace MacroPlace {
 
+// None of these are necessary because they are included in circuit.h -cherry
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
@@ -36,10 +38,12 @@ using std::to_string;
 using std::cout;
 using std::endl;
 
+// None of these are necessary because they are included in circuit.h -cherry
 using Eigen::VectorXf;
 typedef Eigen::SparseMatrix<int, Eigen::RowMajor> SMatrix;
 typedef Eigen::Triplet<int> T;
 
+// Really bad to use a namespace -cherry
 using namespace odb;
 
 using sta::VertexIterator;
@@ -319,6 +323,7 @@ MacroCircuit::FillPinGroup(){
   int dbuCoreUx = static_cast<int>(round(ux_ * dbu));
   int dbuCoreUy = static_cast<int>(round(uy_ * dbu));
 
+  // never makes sense to 'using' inside a function -cherry
   using MacroPlace::PinGroupLocation;
 
   // this is always four array.
@@ -1617,15 +1622,17 @@ getPinGroupLocationString(PinGroupLocation pg) {
   if( pg == West ) {
     return "West";
   }
-  if( pg == East ) {
+  else if( pg == East ) {
     return "East";
   }
-  if( pg == North ) {
+  else if( pg == North ) {
     return "North";
   }
-  if( pg == South ) {
+  else if( pg == South ) {
     return "South";
   }
+  else
+    return "??";
 }
 
 static bool
