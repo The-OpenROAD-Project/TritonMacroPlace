@@ -26,8 +26,8 @@ public:
   void setGlobalConfig(const char* globalConfig);
   void setLocalConfig(const char* localConfig);
 
-  void setDieAreaMode(bool mode);
   void setPlotEnable(bool mode);
+  void setFenceRegion(double lx, double ly, double ux, double uy);
 
   bool placeMacros();
   int getSolutionCount();

@@ -89,7 +89,7 @@ class MacroCircuit {
     void setPlotEnable(bool mode);
 
     void setVerboseLevel(int verbose);
-    void setDieAreaMode(bool mode);
+    void setFenceRegion(double lx, double ly, double ux, double uy);
 
     void PlaceMacros(int& solCount);
 
@@ -110,6 +110,8 @@ class MacroCircuit {
     // layout
     double lx_, ly_, ux_, uy_;
 
+    double fenceLx_, fenceLy_, fenceUx_, fenceUy_;
+
     double siteSizeX_, siteSizeY_;
 
     // haloX, haloY
@@ -124,8 +126,8 @@ class MacroCircuit {
     // verboseLevel
     int verbose_;
 
-    // dieAreaMode
-    bool dieAreaMode_;
+    // fenceRegionMode 
+    bool fenceRegionMode_;
 
     void FillMacroStor();
     void FillPinGroup();

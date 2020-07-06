@@ -31,10 +31,10 @@ set_macro_place_local_config_cmd(const char* file)
 }
 
 void
-set_macro_place_die_area_mode_cmd(bool mode)
+set_macro_place_fence_region_cmd(double lx, double ly, double ux, double uy)
 {
   TritonMacroPlace* tritonMp = getTritonMp();
-  tritonMp->setDieAreaMode(mode); 
+  tritonMp->setFenceRegion(lx, ly, ux, uy); 
 }
 
 void

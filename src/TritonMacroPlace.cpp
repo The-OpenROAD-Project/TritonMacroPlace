@@ -32,16 +32,15 @@ TritonMacroPlace::setLocalConfig(const char* localConfig) {
   mckt_->setLocalConfig(localConfig);
 }
 
-void
-TritonMacroPlace::setDieAreaMode(bool mode) {
-  mckt_->setDieAreaMode(mode);
-}
-
 void 
 TritonMacroPlace::setPlotEnable(bool mode) {
   mckt_->setPlotEnable(mode);
 }
 
+void
+TritonMacroPlace::setFenceRegion(double lx, double ly, double ux, double uy) {
+  mckt_->setFenceRegion(lx, ly, ux, uy);
+}
 
 
 bool 

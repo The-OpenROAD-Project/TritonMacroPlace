@@ -87,7 +87,7 @@ MacroCircuit::MacroCircuit()
   channelX_(0), channelY_(0), 
   netTable_(nullptr),
   verbose_(1),
-  dieAreaMode_(false) {}
+  fenceRegionMode_(false) {}
 
 MacroCircuit::MacroCircuit(
     odb::dbDatabase* db,
@@ -112,7 +112,7 @@ MacroCircuit::reset() {
   netTable_ = nullptr;
   globalConfig_ = localConfig_ = "";
   verbose_ = 1;
-  dieAreaMode_ = false; 
+  fenceRegionMode_ = false; 
 }
 
 void 
@@ -146,8 +146,12 @@ MacroCircuit::setVerboseLevel(int verbose) {
 }
 
 void
-MacroCircuit::setDieAreaMode(bool mode) {
-  dieAreaMode_ = mode;
+MacroCircuit::setFenceRegion(double lx, double ly, double ux, double uy) {
+  fenceRegionMode_ = true;
+  lx_ = lx; 
+  ly_ = ly; 
+  ux_ = ux;
+  uy_ = uy;
 }
 
 void MacroCircuit::init() {
@@ -168,17 +172,9 @@ void MacroCircuit::init() {
   siteSizeX_ = site->getWidth() / dbu;
   siteSizeY_ = site->getHeight() / dbu;
 
-  // die area mode
-  if( dieAreaMode_ ) {
-    dbBox* dieBox = block->getBBox();
-
-    lx_ = dieBox->xMin() / dbu;
-    ly_ = dieBox->yMin() / dbu;
-    ux_ = dieBox->xMax() / dbu;
-    uy_ = dieBox->yMax() / dbu;
-  }
-  // core area mode -- default
-  else {
+  // if fenceRegion is not set
+  // (lx, ly) - (ux, uy) becomes core area
+  if( !fenceRegionMode_ ) {
     odb::Rect coreRect;
     block->getCoreArea(coreRect);
 
@@ -187,6 +183,7 @@ void MacroCircuit::init() {
     ux_ = coreRect.xMax() / dbu;
     uy_ = coreRect.yMax() / dbu;
   }
+
   // parsing from cfg file
   // global config
   ParseGlobalConfig(globalConfig_);
